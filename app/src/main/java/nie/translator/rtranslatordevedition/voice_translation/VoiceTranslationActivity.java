@@ -44,6 +44,8 @@ import androidx.core.app.TaskStackBuilder;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import nie.translator.rtranslatordevedition.GeneralActivity;
@@ -67,9 +69,23 @@ import com.bluetooth.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieFragment;
 import nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService;
 
+import io.socket.client.IO;
+import io.socket.client.Socket;
+
 ///CỔNG VÀO THỨ 2
 //đây là activity chổ show các user co thể connect với máy mình
 public class VoiceTranslationActivity extends GeneralActivity {
+
+    private Socket mSocket;
+    {
+        try {
+            String urlS = "http://chat.socket.io";
+
+            mSocket = IO.socket(urlS);
+            Log.d("CHUNG-", "CHUNG- mSocket() -> DA TAO "+ mSocket);
+        } catch (URISyntaxException e) {}
+    }
+
     //flags
     public static final int NORMAL_START = 0;
     public static final int FIRST_START = 1;
