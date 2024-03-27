@@ -17,6 +17,7 @@
 package nie.translator.rtranslatordevedition.voice_translation;
 
 import android.Manifest;
+import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -31,6 +32,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -65,7 +67,8 @@ import com.bluetooth.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieFragment;
 import nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService;
 
-
+///CỔNG VÀO THỨ 2
+//đây là activity chổ show các user co thể connect với máy mình
 public class VoiceTranslationActivity extends GeneralActivity {
     //flags
     public static final int NORMAL_START = 0;
@@ -97,28 +100,42 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onCreate");
         super.onCreate(savedInstanceState);
+        //chính class này là class load activity_main.xml
         setContentView(R.layout.activity_main);
-        global = (Global) getApplication();
+
+        //The getApplication() method is a method of the Context class in Android which returns a context object for the entire application
+        //thử lấy biến toàn app
+        Application mapp = getApplication();
+        global = (Global) mapp; //cast no về thành Global
+
+        //đây là main thread khởi taọ biến chạy trên main thread
         mainHandler = new Handler(Looper.getMainLooper());
 
         // Clean fragments (only if the app is recreated (When user disable permission))
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        //khởi tạo fragment manager.
+        FragmentManager mfragmentManager = getSupportFragmentManager();
+
+        int entryCount = mfragmentManager.getBackStackEntryCount();
+        if (entryCount > 0) {
+            mfragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
 
         // Remove previous fragments (case of the app was restarted after changed permission on android 6 and higher)
-        List<Fragment> fragmentList = fragmentManager.getFragments();
-        for (Fragment fragment : fragmentList) {
-            if (fragment != null) {
-                fragmentManager.beginTransaction().remove(fragment).commit();
+        List<Fragment> fragmentList = mfragmentManager.getFragments();
+
+        for (Fragment item : fragmentList) {
+            if (item != null) {
+                mfragmentManager.beginTransaction().remove(item).commit();
             }
         }
 
+        //edit custom status bar
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
+        //fragment_container CÁI NÀY khai báo trong layout activity_main.xml
         fragmentContainer = findViewById(R.id.fragment_container);
 
         /*if (savedInstanceState != null) {
@@ -129,10 +146,17 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
     @Override
     protected void onStart() {
+        //GOI SOCKET IO TẠI ĐÂY
+
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onStart");
         super.onStart();
         // when we return to the app's gui based on the service that was saved in the last closure we choose which fragment to start
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        setFragment(sharedPreferences.getInt("fragment", DEFAULT_FRAGMENT));
+        SharedPreferences msharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        int x = msharedPreferences.getInt("fragment", DEFAULT_FRAGMENT);
+
+        //gọi fragment ra , fragment sô 1
+        setFragment(0);
     }
 
     @Override
@@ -161,7 +185,13 @@ public class VoiceTranslationActivity extends GeneralActivity {
     }
 
     public void setFragment(int fragmentName) {
+        int currentFragment = fragmentName;
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment "+ currentFragment);
+        //nếu là currentFragment = 0 -> gọi paringFragment
+        //nếu là currentFragment = 1 -> gọi conversationFragment
+        //nếu là currentFragment = 2 -> gọi walkieTalkieFragment
         switch (fragmentName) {
+            //0 là đi tới PAIRING_FRAGMENT
             case PAIRING_FRAGMENT: {
                 // possible stop of the Conversation and WalkieTalkie Service
                 stopConversationService();
@@ -181,6 +211,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 }
                 break;
             }
+            //1 là đi tới CONVERSATION_FRAGMENT
             case CONVERSATION_FRAGMENT: {
                 // possible setting of the fragment
                 if (getCurrentFragment() != CONVERSATION_FRAGMENT) {
@@ -198,6 +229,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 }
                 break;
             }
+            //2 là đi tới WALKIE_TALKIE_FRAGMENT
             case WALKIE_TALKIE_FRAGMENT: {
                 // possible setting of the fragment
                 if (getCurrentFragment() != WALKIE_TALKIE_FRAGMENT) {
@@ -360,6 +392,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     if (walkieTalkieFragment.isEditTextOpen()) {
                         walkieTalkieFragment.deleteEditText();
                     } else {
+                        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment "+ currentFragment);
                         setFragment(DEFAULT_FRAGMENT);
                     }
                 }
@@ -375,6 +408,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
         if (global.getBluetoothCommunicator().getConnectedPeersList().size() > 0) {
             global.getBluetoothCommunicator().disconnectFromAll();
         } else {
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment "+ currentFragment);
             setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
         }
     }

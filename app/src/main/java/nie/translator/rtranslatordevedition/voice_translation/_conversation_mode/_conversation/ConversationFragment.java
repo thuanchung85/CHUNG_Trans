@@ -17,6 +17,7 @@
 package nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +44,7 @@ import nie.translator.rtranslatordevedition.voice_translation._conversation_mode
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.connection_info.PeersInfoFragment;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.main.ConversationMainFragment;
 
-
+//đây là ConversationFragment chổ người dùng connect và nói chuyên
 public class ConversationFragment extends PairingToolbarFragment {
     private ConstraintLayout constraintLayout;
     private ImageButton exitButton;
@@ -61,6 +62,7 @@ public class ConversationFragment extends PairingToolbarFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("CHUNG-", "CHUNG- ConversationFragment() -> onCreate ");
         communicatorCallback = new VoiceTranslationActivity.Callback() {
             @Override
             public void onSearchStarted() {

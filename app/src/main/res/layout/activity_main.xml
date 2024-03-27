@@ -15,13 +15,13 @@
     * limitations under the License.
     *-->
 
-
+<!--CAI LAY OUT NÀY ĐƯỢC DÙNG TẠI CLASS VoiceTranslationActivity -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fragment_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/very_very_light_gray"
+    android:background="@color/red"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintHorizontal_bias="0"

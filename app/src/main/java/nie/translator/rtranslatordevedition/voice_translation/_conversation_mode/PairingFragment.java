@@ -86,6 +86,7 @@ public class PairingFragment extends PairingToolbarFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate ");
         communicatorCallback = new VoiceTranslationActivity.Callback() {
             @Override
             public void onSearchStarted() {
@@ -129,6 +130,7 @@ public class PairingFragment extends PairingToolbarFragment {
                 super.onConnectionSuccess(peer);
                 connectingPeer = null;
                 resetConnectionTimer();
+                Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
                 activity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
             }
 
@@ -287,6 +289,7 @@ public class PairingFragment extends PairingToolbarFragment {
             @Override
             public void onClick(View view) {
                 if (walkieTalkieButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
+                    Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
                     activity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
                 }
             }

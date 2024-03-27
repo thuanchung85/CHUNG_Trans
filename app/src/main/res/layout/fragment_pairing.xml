@@ -18,6 +18,7 @@
 
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -84,9 +85,9 @@
         android:layout_marginStart="24dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/nunito_sans_light"
-        android:text="@string/app_name"
+        android:text="this is PAIRRING fragment"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textColor="@color/primary"
+        android:textColor="@color/red"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
@@ -201,6 +202,23 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0" />
+
+            <nie.translator.rtranslatordevedition.tools.gui.WalkieTalkieButton
+                android:id="@+id/buttonStartCHUNG"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="88dp"
+                android:clickable="true"
+                android:elevation="16dp"
+                android:focusable="true"
+                android:src="@drawable/walkie_talkie_white_icon"
+                android:tint="@color/red"
+                app:backgroundTint="@color/accent_white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:maxImageSize="40dp"
+                app:rippleColor="@color/light_gray" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 

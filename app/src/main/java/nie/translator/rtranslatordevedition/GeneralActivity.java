@@ -26,6 +26,7 @@ import nie.translator.rtranslatordevedition.api_management.ApiManagementActivity
 import nie.translator.rtranslatordevedition.tools.ErrorCodes;
 
 
+//class này chính là class mà LoadingActivity kế thừa và nó lại là một FragmentActivity
 public abstract class GeneralActivity extends FragmentActivity {
 
     public void showMissingGoogleTTSDialog() {

@@ -19,6 +19,7 @@ package nie.translator.rtranslatordevedition.voice_translation._conversation_mod
 import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,6 +52,7 @@ import com.bluetooth.communicator.Peer;
 import com.bluetooth.communicator.tools.Timer;
 
 
+//class này là lo xử lý về số người đang connect, nó hay dùng với class CONVERSATION_FRAGMENT
 public class PeersInfoFragment extends Fragment {
     private RequestDialog connectionRequestDialog;
     private RequestDialog connectionConfirmDialog;
@@ -62,7 +64,7 @@ public class PeersInfoFragment extends Fragment {
     private TextView discoveryDescription;
     private TextView noPermissions;
     private TextView noBluetoothLe;
-    private VoiceTranslationActivity activity;
+    private VoiceTranslationActivity voiceTranslationActivity;
     private Global global;
     private final Object lock = new Object();
     private VoiceTranslationActivity.Callback communicatorCallback;
@@ -84,15 +86,15 @@ public class PeersInfoFragment extends Fragment {
                 if (peer != null) {
                     String time = DateFormat.getDateTimeInstance().format(new Date());
                     FileLog.appendLog("\nnearby " + time + ": received connection request from:" + peer.getUniqueName());
-                    connectionRequestDialog = new RequestDialog(activity, getResources().getString(R.string.dialog_confirm_connection_request) + peer.getName() + " ?", 15000, new DialogInterface.OnClickListener() {
+                    connectionRequestDialog = new RequestDialog(voiceTranslationActivity, getResources().getString(R.string.dialog_confirm_connection_request) + peer.getName() + " ?", 15000, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            activity.acceptConnection(peer);
+                            voiceTranslationActivity.acceptConnection(peer);
                         }
                     }, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            activity.rejectConnection(peer);
+                            voiceTranslationActivity.rejectConnection(peer);
                         }
                     });
                     connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -133,7 +135,7 @@ public class PeersInfoFragment extends Fragment {
                 if (connectingPeer != null) {
                     if (connectionTimer != null && !connectionTimer.isFinished() && errorCode != BluetoothCommunicator.CONNECTION_REJECTED) {
                         // the timer has not expired and the connection has not been refused, so we try again
-                        activity.connect(peer);
+                        voiceTranslationActivity.connect(peer);
                     } else {
                         // the timer has expired, so the failure is reported
                         clearFoundPeers();
@@ -144,9 +146,9 @@ public class PeersInfoFragment extends Fragment {
                         activateInputs();
                         connectingPeer = null;
                         if (errorCode == BluetoothCommunicator.CONNECTION_REJECTED) {
-                            Toast.makeText(activity, peer.getName() + getResources().getString(R.string.error_connection_rejected), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(voiceTranslationActivity, peer.getName() + getResources().getString(R.string.error_connection_rejected), Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(activity, getResources().getString(R.string.error_connection), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_connection), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -259,7 +261,8 @@ public class PeersInfoFragment extends Fragment {
                         activateInputs();
                     }
                     if (peersLeft == 0) {
-                        activity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
+                        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
+                        voiceTranslationActivity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
                     }
                 }
             }
@@ -322,17 +325,17 @@ public class PeersInfoFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        activity = (VoiceTranslationActivity) requireActivity();
-        global = (Global) activity.getApplication();
+        voiceTranslationActivity = (VoiceTranslationActivity) requireActivity();
+        global = (Global) voiceTranslationActivity.getApplication();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         initializePeerList();
-        activity.addCallback(communicatorCallback);
+        voiceTranslationActivity.addCallback(communicatorCallback);
         // if you have the permission for the search it is activated from here, otherwise the permission will be requested at the time of the click or selection
-        if (selected && Tools.hasPermissions(activity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
+        if (selected && Tools.hasPermissions(voiceTranslationActivity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
             startSearch();
         }
     }
@@ -350,19 +353,19 @@ public class PeersInfoFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        activity.removeCallback(communicatorCallback);
+        voiceTranslationActivity.removeCallback(communicatorCallback);
         if (selected) {
             stopSearch();
             communicatorCallback.onSearchStopped();
             if (connectingPeer != null) {
-                activity.disconnect(connectingPeer);
+                voiceTranslationActivity.disconnect(connectingPeer);
                 connectingPeer = null;
             }
         }
     }
 
     public void startSearch() {
-        int result = activity.startSearch();
+        int result = voiceTranslationActivity.startSearch();
         if (result != BluetoothCommunicator.SUCCESS) {
             if (result == BluetoothCommunicator.BLUETOOTH_LE_NOT_SUPPORTED && noBluetoothLe.getVisibility() != View.VISIBLE) {
                 // appearance of the bluetooth le missing sign
@@ -370,24 +373,24 @@ public class PeersInfoFragment extends Fragment {
                 discoveryDescription.setVisibility(View.GONE);
                 noBluetoothLe.setVisibility(View.VISIBLE);
             } else if (result != VoiceTranslationActivity.NO_PERMISSIONS && result != BluetoothCommunicator.ALREADY_STARTED) {
-                Toast.makeText(activity, getResources().getString(R.string.error_starting_search), Toast.LENGTH_SHORT).show();
+                Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_starting_search), Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     private void stopSearch() {
-        activity.stopSearch(true);
+        voiceTranslationActivity.stopSearch(true);
     }
 
     private void connect(final Peer peer) {
         connectingPeer = peer;
         confirmConnectionPeer = peer;
-        connectionConfirmDialog = new RequestDialog(activity, getResources().getString(R.string.dialog_confirm_connection) + peer.getName() + "?", new DialogInterface.OnClickListener() {
+        connectionConfirmDialog = new RequestDialog(voiceTranslationActivity, getResources().getString(R.string.dialog_confirm_connection) + peer.getName() + "?", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 deactivateInputs();
                 appearLoading();
-                activity.connect(peer);
+                voiceTranslationActivity.connect(peer);
                 startConnectionTimer();
             }
         }, null);
@@ -460,24 +463,26 @@ public class PeersInfoFragment extends Fragment {
     }
 
     private void initializePeerList() {
-        ArrayList<GuiPeer> connectedPeers = activity.getConnectedPeersList();
+        ArrayList<GuiPeer> connectedPeers = voiceTranslationActivity.getConnectedPeersList();
+        //nếu số người connect lớn hơn 0 thì chạy code if
         if (connectedPeers.size() > 0) {
-            InfoArray connectedPeersInfo = new InfoArray(activity, connectedPeers);
-            listView = new PeerListAdapter(activity, connectedPeersInfo, new PeerListAdapter.Callback() {
+            InfoArray connectedPeersInfo = new InfoArray(voiceTranslationActivity, connectedPeers);
+            listView = new PeerListAdapter(voiceTranslationActivity, connectedPeersInfo, new PeerListAdapter.Callback() {
                 @Override
                 public void onClickExit(final Peer peer) {
                     super.onClickExit(peer);
                     if (listView != null && listView.isClickable()) {
-                        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(voiceTranslationActivity);
                         builder.setCancelable(true);
                         builder.setMessage(getResources().getString(R.string.dialog_confirm_disconnection) + peer.getName() + "?");
                         builder.setPositiveButton(android.R.string.yes,
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        activity.disconnect(peer);
-                                        if (activity.getConnectedPeersList().size() == 0) {
-                                            activity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
+                                        voiceTranslationActivity.disconnect(peer);
+                                        if (voiceTranslationActivity.getConnectedPeersList().size() == 0) {
+                                            Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
+                                            voiceTranslationActivity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
                                         }
                                     }
                                 });
@@ -494,9 +499,9 @@ public class PeersInfoFragment extends Fragment {
                 public void onClickNotAllowed(boolean showToast) {
                     super.onClickNotAllowed(showToast);
                     if (disconnectingPeers.size() > 0) {
-                        Toast.makeText(activity, getResources().getString(R.string.error_cannot_interact_disconnection), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_cannot_interact_disconnection), Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(activity, getResources().getString(R.string.error_cannot_interact_connection), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_cannot_interact_connection), Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -516,8 +521,13 @@ public class PeersInfoFragment extends Fragment {
                     }
                 }
             });
-        } else {
-            activity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
+        }
+
+        //nếu số người bằng 0 thì đá về fragment default của VoiceTranslationActivity
+        else
+        {
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment về 0 do connectedPeers.size = 0 ");
+            voiceTranslationActivity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
         }
     }
 }

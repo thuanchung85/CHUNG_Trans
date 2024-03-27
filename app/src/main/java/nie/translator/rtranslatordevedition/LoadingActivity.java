@@ -16,11 +16,14 @@
 
 package nie.translator.rtranslatordevedition;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+
 import androidx.appcompat.app.AlertDialog;
 import java.util.ArrayList;
 import nie.translator.rtranslatordevedition.access.AccessActivity;
@@ -28,25 +31,30 @@ import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.ErrorCodes;
 import nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationActivity;
 
-
-public class LoadingActivity extends GeneralActivity {
+///CỔNG VÀO ĐẦU TIÊN
+//đây là class màn hình loading có logo ở giữa -> đây là cổng vào đầu tiên nó chính là LAUNCHER
+public class LoadingActivity extends GeneralActivity
+{
     private Handler mainHandler;
     private boolean isVisible = false;
     private boolean startVoiceTranslationActivity = false;
     private Global global;
 
     public LoadingActivity() {
+        Log.d("CHUNG-", "CHUNG- LoadingActivity()");
         // Required empty public constructor
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("CHUNG-", "CHUNG- LoadingActivity() -> onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
         mainHandler = new Handler(Looper.getMainLooper());
     }
 
     public void onResume() {
+        Log.d("CHUNG-", "CHUNG- LoadingActivity() -> onResume");
         super.onResume();
         isVisible = true;
         global = (Global) getApplication();
@@ -65,11 +73,13 @@ public class LoadingActivity extends GeneralActivity {
 
     @Override
     protected void onPause() {
+        Log.d("CHUNG-", "CHUNG- LoadingActivity() -> onPause");
         super.onPause();
         isVisible = false;
     }
 
     private void initializeApp() {
+        Log.d("CHUNG-", "CHUNG- LoadingActivity() -> initializeApp");
         global.getLanguages(false, new Global.GetLocalesListListener() {
             @Override
             public void onSuccess(ArrayList<CustomLocale> result) {
@@ -92,10 +102,14 @@ public class LoadingActivity extends GeneralActivity {
     }
 
     private void startVoiceTranslationActivity() {
-        Intent intent = new Intent(LoadingActivity.this, VoiceTranslationActivity.class);
+        Log.d("CHUNG-", "CHUNG- LoadingActivity() -> startVoiceTranslationActivity");
+        //khai báo context, LoadingActivity.this là 1 context
+        Context mcontext  = LoadingActivity.this;
+
+        //load VoiceTranslationActivity vao intent và chay start activity đó lên
+        Intent intent = new Intent(mcontext, VoiceTranslationActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
 
