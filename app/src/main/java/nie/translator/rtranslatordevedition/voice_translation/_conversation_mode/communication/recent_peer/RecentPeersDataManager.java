@@ -19,6 +19,8 @@ package nie.translator.rtranslatordevedition.voice_translation._conversation_mod
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Room;
@@ -93,6 +95,7 @@ public class RecentPeersDataManager {
     }
 
 
+    //hàm lấy các peer gần nhất với bluetooth user -> save database
     public void getRecentPeers(final RecentPeersListener responseListener) {
         if (cachedRecentPeers == null) {
             new ObtainRecentPeersTask(responseListener).execute(database.myDao());
@@ -139,6 +142,7 @@ public class RecentPeersDataManager {
 
 
     public void getRecentPeer(final String deviceID, final RecentPeerListener responseListener) {
+        Log.d("CHUNG-", "CHUNG- RecentPeersDataManager() -> getRecentPeer() -> đi lấy RecentPeer ");
         if (cachedRecentPeers == null) {
             new ObtainRecentPeerTask(deviceID, responseListener).execute(database.myDao());
         } else {

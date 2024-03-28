@@ -27,7 +27,7 @@ import nie.translator.rtranslatordevedition.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslatordevedition.tools.gui.peers.Listable;
 import com.bluetooth.communicator.Peer;
 
-
+//đây là class mô tả 1 peer dùng cho RecentPeersDataManager
 public class RecentPeer implements Parcelable, Listable {
     private String deviceID;
     @NonNull

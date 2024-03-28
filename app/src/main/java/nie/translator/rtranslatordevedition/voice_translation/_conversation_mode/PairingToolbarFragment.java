@@ -40,7 +40,7 @@ public abstract class PairingToolbarFragment extends Fragment {
     protected ButtonSearch buttonSearch;
     private ProgressBar loading;
     protected Global global;
-    protected VoiceTranslationActivity activity;
+    protected VoiceTranslationActivity voiceTranslationActivity;
     private ArrayList<CustomAnimator.EndListener> listeners = new ArrayList<>();
     private CustomAnimator animator = new CustomAnimator();
 
@@ -55,8 +55,9 @@ public abstract class PairingToolbarFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        activity = (VoiceTranslationActivity) requireActivity();
-        global = (Global) activity.getApplication();
+        ///chổ này chính là nơi làm ra kết nối theo biến giữa VoiceTranslationActivity và PairingFrament, do class base là PairingToolbarFragment tạo link tớiVoiceTranslationActivity
+        voiceTranslationActivity = (VoiceTranslationActivity) requireActivity();
+        global = (Global) voiceTranslationActivity.getApplication();
     }
 
     @Override
@@ -65,8 +66,8 @@ public abstract class PairingToolbarFragment extends Fragment {
         buttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (activity.isSearching()) {
-                    activity.stopSearch(false);
+                if (voiceTranslationActivity.isSearching()) {
+                    voiceTranslationActivity.stopSearch(false);
                     clearFoundPeers();
                 } else {
                     startSearch();
@@ -91,7 +92,7 @@ public abstract class PairingToolbarFragment extends Fragment {
                 buttonSearch.setVisible(false, new CustomAnimator.EndListener() {
                     @Override
                     public void onAnimationEnd() {
-                        int loadingSizePx = Tools.convertDpToPixels(activity, LOADING_SIZE_DP);
+                        int loadingSizePx = Tools.convertDpToPixels(voiceTranslationActivity, LOADING_SIZE_DP);
                         Animator animation = animator.createAnimatorSize(loading, 1, 1, loadingSizePx, loadingSizePx, getResources().getInteger(R.integer.durationShort));
                         animation.addListener(new Animator.AnimatorListener() {
                             @Override
@@ -143,7 +144,7 @@ public abstract class PairingToolbarFragment extends Fragment {
             if (loading.getVisibility() != View.GONE) {  // if the object has not already disappeared graphically
                 // animation execution
                 isLoadingAnimating = true;
-                int loadingSizePx = Tools.convertDpToPixels(activity, LOADING_SIZE_DP);
+                int loadingSizePx = Tools.convertDpToPixels(voiceTranslationActivity, LOADING_SIZE_DP);
                 Animator animation = animator.createAnimatorSize(loading,loadingSizePx, loadingSizePx,1,1, getResources().getInteger(R.integer.durationShort));
                 animation.addListener(new Animator.AnimatorListener() {
                     @Override

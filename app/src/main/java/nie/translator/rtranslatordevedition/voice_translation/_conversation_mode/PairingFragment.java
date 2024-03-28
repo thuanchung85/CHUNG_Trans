@@ -17,10 +17,9 @@
 package nie.translator.rtranslatordevedition.voice_translation._conversation_mode;
 
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,10 +33,17 @@ import android.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.Fragment;
+
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.tools.FileLog;
@@ -54,11 +60,146 @@ import com.bluetooth.communicator.BluetoothCommunicator;
 import com.bluetooth.communicator.Peer;
 import com.bluetooth.communicator.tools.Timer;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
 
-
+//đây là màn hình show các người dùng đang tìm thấy đươc xung quanh
 public class PairingFragment extends PairingToolbarFragment {
+
+
+    //======CUC SOCKET=====///
+
+    List<RecentPeer> arr_recentPeersFormWebSocket = new ArrayList<RecentPeer>();
+    //khởi tao websocket listener hứng data websocket trở về
+    private Emitter.Listener onLoginCallBack = new Emitter.Listener() {
+        @Override
+        //hàm websocket server tra ra data về
+        public void call(final Object... args) {
+            String argsReponse =  Arrays.toString(args);
+            //covert json data từ server về data native android
+            try {
+                JSONArray jsonArray = new JSONArray(argsReponse);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    // Accessing data in the JSONObject
+                    boolean success = jsonObject.getBoolean("success");
+                    System.out.println(success);
+                    if(success != true){
+                        Log.d("CHUNG-", String.format("CHUNG- mSocket() -> server reply CO VAN DE-> %b ", success));
+                        return;
+                    }
+                    String username = jsonObject.getString("username");
+                    System.out.println(username);
+                    long createdTime = jsonObject.getLong("__createdtime__");
+                    System.out.println(createdTime);
+
+                    JSONArray usersArray = new JSONArray(jsonObject.getString("users"));
+
+                    //duyet loop qua các user trong usersArray
+                    for (int each =0 ; each < usersArray.length(); each++) {
+
+                        JSONObject userObject = usersArray.getJSONObject(each); // Assuming there's only one user
+                        String userUsername = userObject.getString("username");
+                        String userFirstname = userObject.getString("firstname");
+                        String userLastname = userObject.getString("lastname");
+                        String userPersonal_language = userObject.getString("personal_language");
+                        boolean userSkip = userObject.getBoolean("skip");
+
+                        double userCreatedTime = userObject.getDouble("__createdtime__");
+                        double userUpdatedtime = userObject.getDouble("__updatedtime__");
+                        int userActive = userObject.getInt("active");
+
+                        Log.d("CHUNG-", "CHUNG- mSocket() -> onLoginCallBack server reply DATA->  "+
+                                userUsername + " " + userFirstname + " " + userLastname + " " + userPersonal_language + " " + userSkip + " " + userCreatedTime + " " + userUpdatedtime + " " + userActive);
+
+                        //tao object RecentPeer để add vào arr recentPeersArrayFormWebSocket, để dùng sau này
+                        RecentPeer recentPeer = new RecentPeer(userUsername,userLastname + userFirstname);
+                        //add vao array
+                        arr_recentPeersFormWebSocket.add(recentPeer);
+
+                    }
+
+                    System.out.println(arr_recentPeersFormWebSocket);
+                    final PeerListAdapter.Callback callback = new PeerListAdapter.Callback() {
+                        @Override
+                        public void onFirstItemAdded() {
+                            super.onFirstItemAdded();
+                            discoveryDescription.setVisibility(View.GONE);
+                            noDevices.setVisibility(View.GONE);
+                            listViewGui.setVisibility(View.VISIBLE);
+                        }
+
+                        @Override
+                        public void onLastItemRemoved() {
+                            super.onLastItemRemoved();
+                            listViewGui.setVisibility(View.GONE);
+                            if (noPermissions.getVisibility() != View.VISIBLE) {
+                                discoveryDescription.setVisibility(View.VISIBLE);
+                                noDevices.setVisibility(View.VISIBLE);
+                            }
+                        }
+
+                        @Override
+                        public void onClickNotAllowed(boolean showToast) {
+                            super.onClickNotAllowed(showToast);
+                            Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_cannot_interact_connection), Toast.LENGTH_SHORT).show();
+                        }
+                    };
+                    voiceTranslationActivity.runOnUiThread(new Runnable() {
+
+                                                               @Override
+                                                               public void run() {
+                                                                   listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity,
+                                                                           arr_recentPeersFormWebSocket), callback);
+                                                                   listViewGui.setAdapter(listView);
+                                                               };
+                                                           });
+
+                }
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+    };
+    //khởi tạo websocket object
+    private Socket mSocket;
+    {
+        try {
+            String urlS = "http://192.168.1.52:4000";
+
+            mSocket = IO.socket(urlS);
+            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() -> DA TAO SUCCESSES!!"+ mSocket);
+
+
+
+        } catch (URISyntaxException e) {
+            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() -> FAIL ->  "+ e.getMessage());
+
+        }
+    }
+
+    public void SendData_to_mSocket(String usernamedata, String firstnamedata, String lastnamedata , String personal_languagedata) {
+
+        String jsonString = String.format("{\"username\": \"%s\", \"firstname\": \"%s\", \"lastname\": \"%s\", \"personal_language\": \"%s\"}",usernamedata, firstnamedata, lastnamedata, personal_languagedata);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("login", jsonObject);
+            Log.d("CHUNG-", "CHUNG- PairingFragment() -> mSocket.emit(\"login\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
     public static final int CONNECTION_TIMEOUT = 5000;
     private RequestDialog connectionRequestDialog;
     private RequestDialog connectionConfirmDialog;
@@ -74,6 +215,8 @@ public class PairingFragment extends PairingToolbarFragment {
     private TextView noPermissions;
     private TextView noBluetoothLe;
     private final Object lock = new Object();
+
+    ///communicatorCallback là 1 abstract class cung i như interface, dùng để class mẹ gọi class con làm giùm gì đó
     private VoiceTranslationActivity.Callback communicatorCallback;
     private RecentPeersDataManager recentPeersDataManager;
     private CustomAnimator animator = new CustomAnimator();
@@ -84,35 +227,43 @@ public class PairingFragment extends PairingToolbarFragment {
     }
 
     @Override
+    //cũng giống như bên activity oncreate, chổ này khởi tạo các callback
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate ");
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate -> khởi tạo callback object communicatorCallback");
+        //khởi tạo callback object communicatorCallback
         communicatorCallback = new VoiceTranslationActivity.Callback() {
             @Override
+            //bắt đầu search cac nguoi dùng khác
             public void onSearchStarted() {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onSearchStarted call back ");
                 buttonSearch.setSearching(true, animator);
             }
 
             @Override
+            //stop search các người dùng khác
             public void onSearchStopped() {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onSearchStopped call back ");
                 buttonSearch.setSearching(false, animator);
             }
 
             @Override
+            //khi nhận đươc yêu cầu connect từ người khác
             public void onConnectionRequest(final GuiPeer peer) {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onConnectionRequest call back ");
                 super.onConnectionRequest(peer);
                 if (peer != null) {
                     String time = DateFormat.getDateTimeInstance().format(new Date());
                     FileLog.appendLog("\nnearby " + time + ": received connection request from:" + peer.getUniqueName());
-                    connectionRequestDialog = new RequestDialog(activity, getResources().getString(R.string.dialog_confirm_connection_request) + peer.getName() + " ?", 15000, new DialogInterface.OnClickListener() {
+                    connectionRequestDialog = new RequestDialog(voiceTranslationActivity, getResources().getString(R.string.dialog_confirm_connection_request) + peer.getName() + " ?", 15000, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            activity.acceptConnection(peer);
+                            voiceTranslationActivity.acceptConnection(peer);
                         }
                     }, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            activity.rejectConnection(peer);
+                            voiceTranslationActivity.rejectConnection(peer);
                         }
                     });
                     connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -126,21 +277,24 @@ public class PairingFragment extends PairingToolbarFragment {
             }
 
             @Override
+            //khi connect được với máy khác
             public void onConnectionSuccess(GuiPeer peer) {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onConnectionSuccess call back ");
                 super.onConnectionSuccess(peer);
                 connectingPeer = null;
                 resetConnectionTimer();
-                Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
-                activity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
             }
 
             @Override
+            //khi connect thất bại
             public void onConnectionFailed(GuiPeer peer, int errorCode) {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onConnectionFailed call back ");
                 super.onConnectionFailed(peer, errorCode);
                 if (connectingPeer != null) {
                     if (connectionTimer != null && !connectionTimer.isFinished() && errorCode != BluetoothCommunicator.CONNECTION_REJECTED) {
                         // the timer has not expired and the connection has not been refused, so we try again
-                        activity.connect(peer);
+                        voiceTranslationActivity.connect(peer);
                     } else {
                         // the timer has expired, so the failure is notified
                         clearFoundPeers();
@@ -149,16 +303,18 @@ public class PairingFragment extends PairingToolbarFragment {
                         disappearLoading(true, null);
                         connectingPeer = null;
                         if (errorCode == BluetoothCommunicator.CONNECTION_REJECTED) {
-                            Toast.makeText(activity, peer.getName() + getResources().getString(R.string.error_connection_rejected), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(voiceTranslationActivity, peer.getName() + getResources().getString(R.string.error_connection_rejected), Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(activity, getResources().getString(R.string.error_connection), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_connection), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
             }
 
             @Override
+            //khi tìm thấy ai đó xung quanh
             public void onPeerFound(GuiPeer peer) {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onPeerFound call back ");
                 super.onPeerFound(peer);
                 synchronized (lock) {
                     if (listView != null) {
@@ -189,13 +345,17 @@ public class PairingFragment extends PairingToolbarFragment {
             }
 
             @Override
+            //khi tìm thấy ai đó xung quanh update
             public void onPeerUpdated(GuiPeer peer, GuiPeer newPeer) {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onPeerUpdated call back ");
                 super.onPeerUpdated(peer, newPeer);
                 onPeerFound(newPeer);
             }
 
             @Override
+            //khi mất kết nối với ai đó
             public void onPeerLost(GuiPeer peer) {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onPeerLost call back ");
                 synchronized (lock) {
                     if (listView != null) {
                         int recentIndex = listView.indexOfRecentPeer(peer);  // because we don't have the name but only the address of the device
@@ -218,12 +378,15 @@ public class PairingFragment extends PairingToolbarFragment {
             }
 
             @Override
+            //khi bluetooth không support
             public void onBluetoothLeNotSupported() {
-
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onBluetoothLeNotSupported call back ");
             }
 
             @Override
+            //khi thiếu quyền Search nào đó trên điện thoại
             public void onMissingSearchPermission() {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onMissingSearchPermission call back ");
                 super.onMissingSearchPermission();
                 clearFoundPeers();
                 if (noPermissions.getVisibility() != View.VISIBLE) {
@@ -236,7 +399,9 @@ public class PairingFragment extends PairingToolbarFragment {
             }
 
             @Override
+            //khi có quyền Search trên điện thoại
             public void onSearchPermissionGranted() {
+                Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onSearchPermissionGranted call back ");
                 super.onSearchPermissionGranted();
                 if (noPermissions.getVisibility() == View.VISIBLE) {
                     // disappearance of the written of missing permission
@@ -251,16 +416,32 @@ public class PairingFragment extends PairingToolbarFragment {
                 startSearch();
             }
         };
+
+
+        ///====KHỞi Tạo SOCKET CONNECTION========//
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
+        mSocket.on("login", onLoginCallBack);
+        mSocket.connect();
+
+        //bắn data vào websocket thông tin của user
+        SendData_to_mSocket("johnpham11", "John", "Pham", "vi");
+
     }
 
+    //======================================================//
+    //=================VUNG UI của FRAGMENT================//
     @Override
+    //hàm này trong frament chính là lúc nó được khởi tạo vẽ ra trong bộ nhớ, không nên làm gì nhiều ở đây vì chính fragment còn chưa init xong
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreateView  -> fragment đang cấp bộ nhớ ");
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_pairing, container, false);
     }
 
     @Override
+    //hàm này là khi fragment đã hoan thanh tạo ra trong app nên thưc hiện findViewById các UI member trong này
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onViewCreated ->fragment onViewCreated completed ");
         super.onViewCreated(view, savedInstanceState);
         constraintLayout = view.findViewById(R.id.container);
         walkieTalkieButton = view.findViewById(R.id.buttonStart);
@@ -272,14 +453,17 @@ public class PairingFragment extends PairingToolbarFragment {
     }
 
     @Override
+    //chổ này bắt đầu init list view các user gần đây
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onActivityCreated ->fragment onActivityCreated ");
         super.onActivityCreated(savedInstanceState);
-        Toolbar toolbar = activity.findViewById(R.id.toolbarPairing);
-        activity.setActionBar(toolbar);
-        recentPeersDataManager = ((Global) activity.getApplication()).getRecentPeersDataManager();
+        Toolbar toolbar = voiceTranslationActivity.findViewById(R.id.toolbarPairing);
+        voiceTranslationActivity.setActionBar(toolbar);
+        Context cc = voiceTranslationActivity.getApplication();
+        recentPeersDataManager = ((Global) cc).getRecentPeersDataManager();
         // we give the constraint layout the information on the system measures (status bar etc.), which has the fragmentContainer,
         // because they are not passed to it if started with a Transaction and therefore it overlaps the status bar because it fitsSystemWindows does not work
-        WindowInsets windowInsets = activity.getFragmentContainer().getRootWindowInsets();
+        WindowInsets windowInsets = voiceTranslationActivity.getFragmentContainer().getRootWindowInsets();
         if (windowInsets != null) {
             constraintLayout.dispatchApplyWindowInsets(windowInsets.replaceSystemWindowInsets(windowInsets.getSystemWindowInsetLeft(),windowInsets.getSystemWindowInsetTop(),windowInsets.getSystemWindowInsetRight(),0));
         }
@@ -290,31 +474,47 @@ public class PairingFragment extends PairingToolbarFragment {
             public void onClick(View view) {
                 if (walkieTalkieButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
                     Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
-                    activity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
+                    voiceTranslationActivity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
                 }
             }
         });
 
         // setting of array adapter
         initializePeerList();
+
+        //tạo click event cho các item trong list view
         listViewGui.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> listViewGui -> onItemClick %s", i));
                 synchronized (lock) {
                     if (listView != null) {
                         // start the pop up and then connect to the peer
                         if (listView.isClickable()) {
                             Listable item = listView.get(i);
+                            //kiểm tra nếu item bi click đó thoải điều kiện là 1 PEER thì mới cho vào
                             if (item instanceof Peer) {
                                 Peer peer = (Peer) item;
+                                //thực hiện connect tới peer user
                                 connect(peer);
                             }
+                            else{
+                                Toast.makeText(voiceTranslationActivity, "không thoải điều kiện là 1 PEER", Toast.LENGTH_SHORT).show();
+                            }
+
                             if (item instanceof RecentPeer) {
                                 RecentPeer recentPeer = (RecentPeer) item;
                                 if (recentPeer.isAvailable()) {
                                     connect(recentPeer.getPeer());
                                 }
+                                else{
+                                    Toast.makeText(voiceTranslationActivity, "không thoải điều kiện là 1 RECENTPEER có recentPeer.isAvailable() = true", Toast.LENGTH_SHORT).show();
+                                }
                             }
+                            else{
+                                Toast.makeText(voiceTranslationActivity, "không thoải điều kiện là 1 RECENTPEER", Toast.LENGTH_SHORT).show();
+                            }
+
                         } else {
                             listView.getCallback().onClickNotAllowed(listView.getShowToast());
                         }
@@ -325,19 +525,23 @@ public class PairingFragment extends PairingToolbarFragment {
     }
 
     @Override
+    //chổ này kich hoạt hàm  startSearch() khi fragment start
     public void onStart() {
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onStart -> start PairingFragment ");
         super.onStart();
         // release buttons and eliminate any loading
         activateInputs();
         disappearLoading(true, null);
         // if you don't have permission to search, activate from here
-        if (!Tools.hasPermissions(activity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
+        if (!Tools.hasPermissions(voiceTranslationActivity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
             startSearch();
         }
     }
 
     @Override
+    //chổ này kich hoạt hàm  startSearch() khi fragment resume
     public void onResume() {
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onResume -> resume PairingFragment ");
         super.onResume();
         //restore status
         /*if (activity.getConnectingPeersList().size() > 0) {
@@ -350,37 +554,46 @@ public class PairingFragment extends PairingToolbarFragment {
         }*/
         clearFoundPeers();
 
-        activity.addCallback(communicatorCallback);
+        //đây là lúc communicatorCallback tạo ở lúc oncreate đươc dùng, tạo callback cho activity cha cua fragment
+        voiceTranslationActivity.addCallback(communicatorCallback);
+
         // if you have permission to search it is activated from here
-        if (Tools.hasPermissions(activity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
+        if (Tools.hasPermissions(voiceTranslationActivity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
+            //gọi starSearch cac user xung quanh
             startSearch();
         }
     }
 
     @Override
     public void onPause() {
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onPause -> pause PairingFragment ");
         super.onPause();
-        activity.removeCallback(communicatorCallback);
+        voiceTranslationActivity.removeCallback(communicatorCallback);
         stopSearch();
         //communicatorCallback.onSearchStopped();
         if (connectingPeer != null) {
-            activity.disconnect(connectingPeer);
+            voiceTranslationActivity.disconnect(connectingPeer);
             connectingPeer = null;
         }
     }
 
     private void connect(final Peer peer) {
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> connect(final Peer peer) -> connect peer!!! ");
         connectingPeer = peer;
         confirmConnectionPeer = peer;
-        connectionConfirmDialog = new RequestDialog(activity, getResources().getString(R.string.dialog_confirm_connection) + peer.getName() + "?", new DialogInterface.OnClickListener() {
+
+        //khởi tạo dialog box nhắc nhở user ok thì tiếp
+        connectionConfirmDialog = new RequestDialog(voiceTranslationActivity, getResources().getString(R.string.dialog_confirm_connection) + peer.getName() + "?", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 deactivateInputs();
                 appearLoading(null);
-                activity.connect(peer);
+                voiceTranslationActivity.connect(peer);
                 startConnectionTimer();
             }
         }, null);
+
+        //add cancel cho dialog box khi user không muốn connect
         connectionConfirmDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
@@ -388,12 +601,14 @@ public class PairingFragment extends PairingToolbarFragment {
                 connectionConfirmDialog = null;
             }
         });
+        //show dialogbox
         connectionConfirmDialog.show();
     }
 
     @Override
     protected void startSearch() {
-        int result = activity.startSearch();
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> startSearch() -> startSearch peer!!! ");
+        int result = voiceTranslationActivity.startSearch();
         if (result != BluetoothCommunicator.SUCCESS) {
             if (result == BluetoothCommunicator.BLUETOOTH_LE_NOT_SUPPORTED && noBluetoothLe.getVisibility() != View.VISIBLE) {
                 // appearance of the bluetooth le missing sign
@@ -402,13 +617,15 @@ public class PairingFragment extends PairingToolbarFragment {
                 discoveryDescription.setVisibility(View.GONE);
                 noBluetoothLe.setVisibility(View.VISIBLE);
             } else if (result != VoiceTranslationActivity.NO_PERMISSIONS && result != BluetoothCommunicator.ALREADY_STARTED) {
-                Toast.makeText(activity, getResources().getString(R.string.error_starting_search), Toast.LENGTH_SHORT).show();
+                Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_starting_search), Toast.LENGTH_SHORT).show();
             }
         }
     }
 
+    //=======================================================//
+    //=================HELPPER FUNCTIONS================/////
     private void stopSearch() {
-        activity.stopSearch(connectingPeer == null);
+        voiceTranslationActivity.stopSearch(connectingPeer == null);
     }
 
     private void activateInputs() {
@@ -450,6 +667,7 @@ public class PairingFragment extends PairingToolbarFragment {
     }
 
     private void initializePeerList() {
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> initializePeerList -> khởi tạo peer list view ");
         final PeerListAdapter.Callback callback = new PeerListAdapter.Callback() {
             @Override
             public void onFirstItemAdded() {
@@ -472,21 +690,31 @@ public class PairingFragment extends PairingToolbarFragment {
             @Override
             public void onClickNotAllowed(boolean showToast) {
                 super.onClickNotAllowed(showToast);
-                Toast.makeText(activity, getResources().getString(R.string.error_cannot_interact_connection), Toast.LENGTH_SHORT).show();
+                Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_cannot_interact_connection), Toast.LENGTH_SHORT).show();
             }
         };
 
-        recentPeersDataManager.getRecentPeers(new RecentPeersDataManager.RecentPeersListener() {
-            @Override
-            public void onRecentPeersObtained(ArrayList<RecentPeer> recentPeers) {
-                if (recentPeers.size() > 0) {
-                    listView = new PeerListAdapter(activity, new PairingArray(activity,recentPeers), callback);
-                } else {
-                    listView = new PeerListAdapter(activity, new PairingArray(activity), callback);
-                }
-                listViewGui.setAdapter(listView);
-            }
-        });
+       RecentPeersDataManager.RecentPeersListener ll = new RecentPeersDataManager.RecentPeersListener(){
+           @Override
+           public void onRecentPeersObtained(ArrayList<RecentPeer> recentPeers) {
+               if (recentPeers.size() > 0) {
+                   Log.d("CHUNG-", "CHUNG- PairingFragment() -> RecentPeersListener -> onRecentPeersObtained recentPeers.size() > 0");
+                   recentPeers.add(1, new RecentPeer("IDOFCHUNGTEST_1123", "CHUNGTEST1123"));
+                   recentPeers.add(2, new RecentPeer("IDOFCHUNGTEST_3423", "NguyenThinh"));
+                   recentPeers.add(3, new RecentPeer("IDOFCHUNGTEST_1563", "ThiTHi"));
+                   recentPeers.add(4, new RecentPeer("IDOFCHUNGTEST_9562", "TruongSon"));
+                   //recentPeers.add(arr_recentPeersFormWebSocket.get(0));
+                   //recentPeers.add(arr_recentPeersFormWebSocket.get(1));
+                   listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity,recentPeers), callback);
+               } else {
+                   Log.d("CHUNG-", "CHUNG- PairingFragment() -> RecentPeersListener -> onRecentPeersObtained recentPeers.size() <= 0");
+                   listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity), callback);
+               }
+               //listViewGui.setAdapter(listView);
+           }
+        };
+
+        recentPeersDataManager.getRecentPeers(ll);
     }
 
     public void clearFoundPeers() {

@@ -37,6 +37,7 @@
             android:dividerHeight="6dp"
             android:overScrollMode="never"
             android:visibility="visible"
+            android:background="@color/black"
             app:layout_constraintBottom_toTopOf="@+id/discoveryDescription"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -18,6 +18,7 @@ package nie.translator.rtranslatordevedition.tools.gui.peers;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -53,6 +54,7 @@ public class PeerListAdapter extends BaseAdapter {
     private boolean showToast = false;
 
     public PeerListAdapter(Activity activity, PeerListArray array, Callback callback) {
+        Log.d("CHUNG-", "CHUNG- PeerListAdapter() -> PeerListAdapter INIT" );
         this.array = array;
         recentPeersDataManager = ((Global) activity.getApplication()).getRecentPeersDataManager();
         this.callback = callback;
@@ -111,8 +113,10 @@ public class PeerListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View view, ViewGroup viewGroup) {
+
         final Object item = getItem(position);
         int itemType = getItemViewType(position);
+        Log.d("CHUNG-", "CHUNG- PeerListAdapter() -> getView " + position + "--itemType->" + itemType + "");
 
         if (itemType == HEADER) {
             String headerText = ((Header) item).getText();

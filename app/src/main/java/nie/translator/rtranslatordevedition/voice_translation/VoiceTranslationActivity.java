@@ -47,7 +47,10 @@ import androidx.fragment.app.FragmentTransaction;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.GeneralActivity;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
@@ -66,6 +69,12 @@ import nie.translator.rtranslatordevedition.voice_translation._conversation_mode
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
 import com.bluetooth.communicator.BluetoothCommunicator;
 import com.bluetooth.communicator.Peer;
+import com.google.gson.JsonObject;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieFragment;
 import nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService;
 
@@ -76,16 +85,9 @@ import io.socket.client.Socket;
 //đây là activity chổ show các user co thể connect với máy mình
 public class VoiceTranslationActivity extends GeneralActivity {
 
-    private Socket mSocket;
-    {
-        try {
-            String urlS = "http://chat.socket.io";
 
-            mSocket = IO.socket(urlS);
-            Log.d("CHUNG-", "CHUNG- mSocket() -> DA TAO "+ mSocket);
-        } catch (URISyntaxException e) {}
-    }
 
+    ///========================================
     //flags
     public static final int NORMAL_START = 0;
     public static final int FIRST_START = 1;
@@ -116,6 +118,9 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+
+
         Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onCreate");
         super.onCreate(savedInstanceState);
         //chính class này là class load activity_main.xml
@@ -162,7 +167,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
     @Override
     protected void onStart() {
-        //GOI SOCKET IO TẠI ĐÂY
+
 
         Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onStart");
         super.onStart();
@@ -173,6 +178,11 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
         //gọi fragment ra , fragment sô 1
         setFragment(0);
+
+
+
+
+
     }
 
     @Override
@@ -214,6 +224,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 stopWalkieTalkieService();
                 // possible setting of the fragment
                 if (getCurrentFragment() != PAIRING_FRAGMENT) {
+                    Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> new PairingFragment ");
                     PairingFragment paringFragment = new PairingFragment();
                     FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     Bundle bundle = new Bundle();
@@ -231,6 +242,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
             case CONVERSATION_FRAGMENT: {
                 // possible setting of the fragment
                 if (getCurrentFragment() != CONVERSATION_FRAGMENT) {
+                    Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> new ConversationFragment ");
                     ConversationFragment conversationFragment = new ConversationFragment();
                     Bundle bundle = new Bundle();
                     bundle.putBoolean("firstStart", true);
@@ -321,8 +333,13 @@ public class VoiceTranslationActivity extends GeneralActivity {
         return global.getBluetoothCommunicator().isSearching();
     }
 
+
+    ///=================HAM CONNECT KẾT NỐi user và đi vào fragment Conversation====/////////
     public void connect(Peer peer) {
-        stopSearch(false);
+
+        stopSearch(false);//stop search user gần đó
+
+        ///HÀM QUAN TRONG: CONNECT BLUETOOTH/////OK THI mơi có cửa đi tiếp đến conversation
         global.getBluetoothCommunicator().connect(peer);
     }
 
@@ -640,3 +657,6 @@ public class VoiceTranslationActivity extends GeneralActivity {
         }
     }
 }
+
+
+

@@ -98,11 +98,11 @@ public class ConversationFragment extends PairingToolbarFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Toolbar toolbar = activity.findViewById(R.id.toolbarConversation);
-        activity.setActionBar(toolbar);
+        Toolbar toolbar = voiceTranslationActivity.findViewById(R.id.toolbarConversation);
+        voiceTranslationActivity.setActionBar(toolbar);
         // we give the constraint layout the information on the system measures (status bar etc.), which the fragmentContainer has, because they are not passed
         // to it if started with a Transaction and therefore it overlaps the status bar because fitsSystemWindows does not work
-        WindowInsets windowInsets = activity.getFragmentContainer().getRootWindowInsets();
+        WindowInsets windowInsets = voiceTranslationActivity.getFragmentContainer().getRootWindowInsets();
         if (windowInsets != null) {
             constraintLayout.dispatchApplyWindowInsets(windowInsets.replaceSystemWindowInsets(windowInsets.getSystemWindowInsetLeft(),windowInsets.getSystemWindowInsetTop(),windowInsets.getSystemWindowInsetRight(),0));
         }
@@ -112,7 +112,7 @@ public class ConversationFragment extends PairingToolbarFragment {
         titles.add(getResources().getString(R.string.conversation));
         titles.add(getResources().getString(R.string.connection));
 
-        pagerAdapter = new CustomFragmentPagerAdapter(activity, getChildFragmentManager(), titles, new Fragment[]{new ConversationMainFragment(), new PeersInfoFragment()});
+        pagerAdapter = new CustomFragmentPagerAdapter(voiceTranslationActivity, getChildFragmentManager(), titles, new Fragment[]{new ConversationMainFragment(), new PeersInfoFragment()});
         pager.setAdapter(pagerAdapter);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -145,7 +145,7 @@ public class ConversationFragment extends PairingToolbarFragment {
         exitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                activity.onBackPressed();
+                voiceTranslationActivity.onBackPressed();
             }
         });
     }
