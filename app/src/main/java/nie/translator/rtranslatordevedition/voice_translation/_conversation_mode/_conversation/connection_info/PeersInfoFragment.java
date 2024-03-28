@@ -527,7 +527,8 @@ public class PeersInfoFragment extends Fragment {
         else
         {
             Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment về 0 do connectedPeers.size = 0 ");
-            voiceTranslationActivity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
+            //-->chơi ăn gian tạm thời bỏ điều kiện nếu không có còn peer connect nào thì kiêu voiceTranslationActivity đá về DEFAULT_FRAGMENT
+            //voiceTranslationActivity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
         }
     }
 }

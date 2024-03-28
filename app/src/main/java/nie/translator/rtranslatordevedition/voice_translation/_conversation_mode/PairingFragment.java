@@ -156,6 +156,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                                                    listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity,
                                                                            arr_recentPeersFormWebSocket), callback);
                                                                    listViewGui.setAdapter(listView);
+                                                                   mSocket.disconnect();
                                                                };
                                                            });
 
@@ -173,12 +174,12 @@ public class PairingFragment extends PairingToolbarFragment {
             String urlS = "http://192.168.1.52:4000";
 
             mSocket = IO.socket(urlS);
-            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() -> DA TAO SUCCESSES!!"+ mSocket);
+            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() PairingFragment -> DA TAO SUCCESSES!!"+ mSocket);
 
 
 
         } catch (URISyntaxException e) {
-            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() -> FAIL ->  "+ e.getMessage());
+            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() PairingFragment -> FAIL ->  "+ e.getMessage());
 
         }
     }
@@ -277,12 +278,14 @@ public class PairingFragment extends PairingToolbarFragment {
             }
 
             @Override
-            //khi connect được với máy khác
+            //khi connect được với máy khác THANH CONG THI BẮn tính hiệu mở CONVERSATION_FRAGMENT cho activity cha voiceTranslationActivity
             public void onConnectionSuccess(GuiPeer peer) {
                 Log.e("CHUNG-", "CHUNG- PairingFragment() communicatorCallback-> onConnectionSuccess call back ");
                 super.onConnectionSuccess(peer);
                 connectingPeer = null;
                 resetConnectionTimer();
+
+                //===QUAN TRONG===//
                 voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
             }
 
@@ -424,7 +427,11 @@ public class PairingFragment extends PairingToolbarFragment {
         mSocket.connect();
 
         //bắn data vào websocket thông tin của user
-        SendData_to_mSocket("johnpham11", "John", "Pham", "vi");
+       String tempUserChungPhone = "Usertest1";
+        String tempUserChungPhoneFirstname = "tester1Firstname";
+        String tempUserChungPhoneLastname = "tester1Lastname";
+        String tempUserChungPhoneLanguage = "vi";
+        SendData_to_mSocket(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
 
     }
 
@@ -508,6 +515,9 @@ public class PairingFragment extends PairingToolbarFragment {
                                     connect(recentPeer.getPeer());
                                 }
                                 else{
+                                    //chơi ăn gian===> đi thẳng vào luôn
+                                    voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+
                                     Toast.makeText(voiceTranslationActivity, "không thoải điều kiện là 1 RECENTPEER có recentPeer.isAvailable() = true", Toast.LENGTH_SHORT).show();
                                 }
                             }

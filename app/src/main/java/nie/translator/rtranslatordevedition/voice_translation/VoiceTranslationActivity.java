@@ -238,6 +238,9 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 }
                 break;
             }
+
+
+
             //1 là đi tới CONVERSATION_FRAGMENT
             case CONVERSATION_FRAGMENT: {
                 // possible setting of the fragment
@@ -257,6 +260,11 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 }
                 break;
             }
+
+
+
+
+
             //2 là đi tới WALKIE_TALKIE_FRAGMENT
             case WALKIE_TALKIE_FRAGMENT: {
                 // possible setting of the fragment
