@@ -86,7 +86,7 @@
         android:layout_marginBottom="8dp"
         android:background="@null"
         android:src="@drawable/three_dot_icon"
-        android:tint="@color/very_very_dark_gray"
+        android:tint="@color/primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1"

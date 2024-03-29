@@ -16,7 +16,7 @@
     *-->
 
 <resources>
-    <color name="primary">#43a047</color>
+    <color name="primary">#739BD0</color>
     <color name="primary_dark">#388e3c</color>
     <color name="primary_lite">#66bb6a</color>
     <color name="accent">#36b024</color>

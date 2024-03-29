@@ -22,6 +22,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -34,7 +35,21 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bluetooth.communicator.Message;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.api_management.ApiManagementActivity;
@@ -46,8 +61,252 @@ import nie.translator.rtranslatordevedition.tools.gui.DeactivableButton;
 import nie.translator.rtranslatordevedition.tools.gui.MicrophoneComunicable;
 import nie.translator.rtranslatordevedition.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslatordevedition.tools.gui.messages.MessagesAdapter;
+import nie.translator.rtranslatordevedition.tools.gui.peers.PeerListAdapter;
+import nie.translator.rtranslatordevedition.tools.gui.peers.array.PairingArray;
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 
+//===QUAN TRONG==//
 public abstract class VoiceTranslationFragment extends Fragment implements MicrophoneComunicable {
+
+    //=================khi nhận được login từ server trả về================//
+    private List<RecentPeer> arr_recentPeersFormWebSocket = new ArrayList<RecentPeer>();
+    private Emitter.Listener onReceive_loginCallBack = new Emitter.Listener() {
+        @Override
+        //hàm websocket server tra ra data về
+        public void call(final Object... args) {
+            String argsReponse =  Arrays.toString(args);
+            //covert json data từ server về data native android
+            try {
+                JSONArray jsonArray = new JSONArray(argsReponse);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    // Accessing data in the JSONObject
+                    boolean success = jsonObject.getBoolean("success");
+                    System.out.println(success);
+                    if(success != true){
+                        Log.d("CHUNG-", String.format("CHUNG- mSocket() -> server reply CO VAN DE-> %b ", success));
+                        return;
+                    }
+                    String username = jsonObject.getString("username");
+                    System.out.println(username);
+                    long createdTime = jsonObject.getLong("__createdtime__");
+                    System.out.println(createdTime);
+
+                    JSONArray usersArray = new JSONArray(jsonObject.getString("users"));
+
+                    //duyet loop qua các user trong usersArray
+                    for (int each =0 ; each < usersArray.length(); each++) {
+
+                        JSONObject userObject = usersArray.getJSONObject(each); // Assuming there's only one user
+                        String userUsername = userObject.getString("username");
+                        String userFirstname = userObject.getString("firstname");
+                        String userLastname = userObject.getString("lastname");
+                        String userPersonal_language = userObject.getString("personal_language");
+                        boolean userSkip = userObject.getBoolean("skip");
+
+                        double userCreatedTime = userObject.getDouble("__createdtime__");
+                        double userUpdatedtime = userObject.getDouble("__updatedtime__");
+                        int userActive = userObject.getInt("active");
+
+                        Log.d("CHUNG-", "CHUNG- mSocket() -> onLoginCallBack server reply DATA->  "+
+                                userUsername + " " + userFirstname + " " + userLastname + " " + userPersonal_language + " " + userSkip + " " + userCreatedTime + " " + userUpdatedtime + " " + userActive);
+
+                        //tao object RecentPeer để add vào arr recentPeersArrayFormWebSocket, để dùng sau này
+                        RecentPeer recentPeer = new RecentPeer(userUsername,userLastname + userFirstname);
+                        //add vao array
+                        arr_recentPeersFormWebSocket.add(recentPeer);
+
+
+                    }
+
+                    System.out.println(arr_recentPeersFormWebSocket);
+                    //OK LOGIN XONG GOI TIEP cai khac event "CALL" connect to user
+                    SendData_to_mSocket_FORCONNECT2USER("Usertest1", "johnpham");
+
+
+                }
+            } catch (JSONException e) {
+                Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onReceive_loginCallBack ->JSONException  " + e.getMessage() );
+                throw new RuntimeException(e);
+            }
+
+        }
+    };
+
+    //=========== khi nhận được receive_call từ server trả về====///
+    String bienRoomName = "";
+    private Emitter.Listener onReceive_receive_callCallBack = new Emitter.Listener() {
+        @Override
+        //hàm websocket server tra ra data về
+        public void call(final Object... args) {
+            String argsReponse =  Arrays.toString(args);
+            try {
+                JSONArray jsonArray = new JSONArray(argsReponse);
+                //for (int i = 0; i < jsonArray.length(); i++){
+                   // JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    // Accessing data in the JSONObject
+                    //String room = jsonObject.getString("room");
+                    //emit vao room : join_room: {room: "123123123"}
+                    //SendData_to_mSocket_FOR_JOINROOM(room);
+                    //bienRoomName = room;
+                    //khi có room -> save lại
+                    // khi vào man hình nói chuyên -> emit tiếp "send_message" : { message, username, to, createdtime }
+                    //SendData_to_mSocket_FOR_SENDMESSAGE("HELLO HELLO HELLO", "Usertest1", "");
+
+                    // lắng nghe : "receive_message"
+                    //String data = jsonObject.getString("data");
+
+                    //
+
+                //}
+
+            } catch (JSONException e) {
+                Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onReceive_receive_callCallBack ->JSONException  " + e.getMessage() );
+                throw new RuntimeException(e);
+            }
+
+        }
+    };
+
+    //======khi nhận được receive_message từ server gọi về
+    private Emitter.Listener onReceive_receive_messageCallBack = new Emitter.Listener(){
+        @Override
+        //hàm websocket server tra ra data về
+        public void call(final Object... args){
+            String argsReponse =  Arrays.toString(args);
+            try {
+                JSONArray jsonArray = new JSONArray(argsReponse);
+                //anh tự dich nhé.
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    String socketreturn_message = jsonObject.getString("message");
+                    String socketreturn_from = jsonObject.getString("from");
+
+                    String socketreturn_to = jsonObject.getString("to");
+                    String socketreturn_translated = jsonObject.getString("translated");
+
+                    //gan text phan hoi vao recyclerview tren UI( neu la tu user khac)
+                    if(socketreturn_from.equals("Usertest1")) {
+                        activity.runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() ->runOnUiThread update recyclerview ");
+                                Message mstypeFORGUI = new Message(activity, socketreturn_from, socketreturn_translated);
+                                GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true);
+                                if (mAdapter != null) {
+                                    mAdapter.addMessage(msFOR_recyclerview);
+                                }
+                            };
+                        });
+                    }
+                    //tu user khac reply (co the là johnpham)
+                    else{
+                        activity.runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() ->runOnUiThread update recyclerview ");
+                                Message mstypeFORGUI = new Message(activity, socketreturn_from, socketreturn_translated);
+                                GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, false, true);
+                                if (mAdapter != null) {
+                                    mAdapter.addMessage(msFOR_recyclerview);
+                                }
+                                Message mstypeFORGUI2 = new Message(activity, socketreturn_from, socketreturn_message);
+                                GuiMessage msFOR_recyclerview2 = new GuiMessage(mstypeFORGUI2, false, true);
+                                if (mAdapter != null) {
+                                    mAdapter.addMessage(msFOR_recyclerview2);
+                                }
+
+                            };
+                        });
+                    }
+                }
+
+            } catch (JSONException e) {
+                Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onReceive_receive_messageCallBack ->JSONException  " + e.getMessage() );
+                throw new RuntimeException(e);
+            }
+        }
+    };
+
+
+
+    private Socket mSocket;
+    {
+        try {
+            String urlS = "http://27.74.249.34:8017";
+
+            mSocket = IO.socket(urlS);
+            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() ConversationFragment -> DA TAO SUCCESSES!!"+ mSocket);
+
+
+
+        } catch (URISyntaxException e) {
+            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() ConversationFragment -> FAIL ->  "+ e.getMessage());
+
+        }
+    }
+
+
+    //{"from": "johnpham", "to": "johnpham11"}
+    public void SendData_to_mSocket_FORCONNECT2USER(String fromUser, String toUser) {
+
+        String jsonString = String.format("{\"from\": \"%s\", \"to\": \"%s\"}",fromUser, toUser);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("call", jsonObject);
+            Log.d("CHUNG-", "CHUNG- ConversationFragment() -> mSocket.emit(\"call\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void SendData_to_mSocket_FORLOGIN(String usernamedata, String firstnamedata, String lastnamedata , String personal_languagedata) {
+
+        String jsonString = String.format("{\"username\": \"%s\", \"firstname\": \"%s\", \"lastname\": \"%s\", \"personal_language\": \"%s\"}",usernamedata, firstnamedata, lastnamedata, personal_languagedata);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("login", jsonObject);
+            Log.d("CHUNG-", "CHUNG- ConversationFragment() -> mSocket.emit(\"login\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    //bắn vào socket thông tin event là send_message json là { message, username, to, createdtime }
+    public void SendData_to_mSocket_FOR_SENDMESSAGE(String message, String fromUser, String toOtherUser ) {
+
+        String jsonString = String.format("{\"message\": \"%s\", \"from\": \"%s\", \"to\": \"%s\"}",message, fromUser, toOtherUser);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("send_message", jsonObject);
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> mSocket.emit(\"send_message\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void SendData_to_mSocket_FOR_JOINROOM(String roomName) {
+
+        String jsonString = String.format("{\"room\": \"%s\"}",roomName);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("join_room", jsonObject);
+            Log.d("CHUNG-", "CHUNG- ConversationFragment() -> mSocket.emit(\"join_room\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+//===========================================================================================================================//
+
     //gui
     private boolean isEditTextOpen = false;
     private boolean isInputActive = true;
@@ -69,6 +328,25 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        ///====KHỞi Tạo SOCKET CONNECTION========//
+        ///STEP 3:
+        // nhận về Event receive_call để nhận
+
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
+        mSocket.on("login", onReceive_loginCallBack);
+        //mSocket.on("receive_call", onReceive_receive_callCallBack);
+        mSocket.on("receive_message", onReceive_receive_messageCallBack);
+        mSocket.connect();
+
+        //bắn login trước tiên sau đó luồng login sẽ auto bắn tiếp các request khác vao socket
+        String tempUserChungPhone = "Usertest1";
+        String tempUserChungPhoneFirstname = "tester1Firstname";
+        String tempUserChungPhoneLastname = "tester1Lastname";
+        String tempUserChungPhoneLanguage = "vi";
+        SendData_to_mSocket_FORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
+
     }
 
     @Override
@@ -86,14 +364,18 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> beforeTextChanged() -> %s",charSequence));
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onTextChanged() -> %s",charSequence));
             }
 
             @Override
             public void afterTextChanged(Editable text) {
+                Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> afterTextChanged() -> %s",text));
+
                 if ((text == null || text.length() == 0) && microphone.getState() == ButtonMic.STATE_SEND) {
                     microphone.setState(ButtonMic.STATE_RETURN);
                 } else if (microphone.getState() == ButtonMic.STATE_RETURN) {
@@ -372,14 +654,26 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     if (message.isMine()) {
                         int previewIndex = mAdapter.getPreviewIndex();
                         if (previewIndex != -1) {
+                            Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(1) -> %s",message.getMessage().getText()));
+                            //======ban data text cho socket========//
+                            SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), "Usertest1", "johnpham");
+
                             mAdapter.setMessage(previewIndex, message);
                         } else {
+                            Message mm = message.getMessage();
+                            String smm = mm.getText();
+                            Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(2) -> %s",smm));
                             mAdapter.addMessage(message);
                             //smooth scroll
                             smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
                             mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
                         }
-                    } else {
+                    }
+                    else
+                    {
+                        Message mm = message.getMessage();
+                        String smm = mm.getText();
+                        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(3) -> %s",smm));
                         mAdapter.addMessage(message);
                         //smooth scroll
                         int previewIndex = mAdapter.getPreviewIndex();
@@ -390,14 +684,26 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                         }
                         mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
                     }
-                } else {
+                }
+
+
+                else
+                {
                     GuiMessage preview = mAdapter.getPreview();
                     if (preview != null) {
                         // update the component_message_preview
+                        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(4) -> %s",message.getMessage().getText()));
+                        //======ban data text cho socket========//
+                        //SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), "Usertest1", "johnpham");
+
                         mAdapter.setPreviewText(message.getMessage().getText());
 
                     } else {
                         //add the component_message_preview
+                        //==khi nói thì nó set text vào đây=//
+                        Message mm = message.getMessage();
+                        String smm = mm.getText();
+                        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(5) -> %s",smm));
                         mAdapter.addMessage(message);
                         //smooth scroll
                         smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);

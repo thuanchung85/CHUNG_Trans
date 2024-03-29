@@ -30,7 +30,7 @@
     <string name="loading">loading…</string>
     <string name="forward">forward</string>
     <string name="no_graph_data">No usage data present</string>
-    <string name="conversation">conversation</string>
+    <string name="conversation">conversation SOCKET</string>
     <string name="connection">connection</string>
 
     <string name="notification_channel_name">use in background notification</string>

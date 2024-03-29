@@ -31,7 +31,8 @@ import nie.translator.rtranslatordevedition.tools.services_communication.Service
 import nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationFragment;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.ConversationService;
 
-
+//=======cổng thứ 3a===///
+//đây là fragment handle các tac vụ nói vào micro cua user
 public class ConversationMainFragment extends VoiceTranslationFragment {
     private TextView micInput;
     private Handler mHandler = new Handler();
@@ -62,6 +63,8 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        //đây là chổ show ra text đã translante trên page ConversationMainFragment -> recycler_view
+        //===QUAN TRONG===///
         return inflater.inflate(R.layout.fragment_voice_translation, container, false);
     }
 

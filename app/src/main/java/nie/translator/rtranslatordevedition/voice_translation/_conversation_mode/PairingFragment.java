@@ -79,6 +79,7 @@ public class PairingFragment extends PairingToolbarFragment {
         @Override
         //hàm websocket server tra ra data về
         public void call(final Object... args) {
+            Log.d("CHUNG-", String.format("CHUNG- PairingFragment - > mSocket() -> server reply -> %s ", args.toString()));
             String argsReponse =  Arrays.toString(args);
             //covert json data từ server về data native android
             try {
@@ -136,10 +137,10 @@ public class PairingFragment extends PairingToolbarFragment {
                         @Override
                         public void onLastItemRemoved() {
                             super.onLastItemRemoved();
-                            listViewGui.setVisibility(View.GONE);
+                            //listViewGui.setVisibility(View.GONE);
                             if (noPermissions.getVisibility() != View.VISIBLE) {
                                 discoveryDescription.setVisibility(View.VISIBLE);
-                                noDevices.setVisibility(View.VISIBLE);
+                                //noDevices.setVisibility(View.VISIBLE);
                             }
                         }
 
@@ -171,7 +172,7 @@ public class PairingFragment extends PairingToolbarFragment {
     private Socket mSocket;
     {
         try {
-            String urlS = "http://192.168.1.52:4000";
+            String urlS = "http://27.74.249.34:8017";
 
             mSocket = IO.socket(urlS);
             Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() PairingFragment -> DA TAO SUCCESSES!!"+ mSocket);
@@ -394,7 +395,7 @@ public class PairingFragment extends PairingToolbarFragment {
                 clearFoundPeers();
                 if (noPermissions.getVisibility() != View.VISIBLE) {
                     // appearance of the written of missing permission
-                    listViewGui.setVisibility(View.GONE);
+                    //listViewGui.setVisibility(View.GONE);
                     noDevices.setVisibility(View.GONE);
                     discoveryDescription.setVisibility(View.GONE);
                     noPermissions.setVisibility(View.VISIBLE);
@@ -409,7 +410,7 @@ public class PairingFragment extends PairingToolbarFragment {
                 if (noPermissions.getVisibility() == View.VISIBLE) {
                     // disappearance of the written of missing permission
                     noPermissions.setVisibility(View.GONE);
-                    noDevices.setVisibility(View.VISIBLE);
+                    //noDevices.setVisibility(View.VISIBLE);
                     discoveryDescription.setVisibility(View.VISIBLE);
                     initializePeerList();
                 } else {
@@ -421,17 +422,7 @@ public class PairingFragment extends PairingToolbarFragment {
         };
 
 
-        ///====KHỞi Tạo SOCKET CONNECTION========//
-        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
-        mSocket.on("login", onLoginCallBack);
-        mSocket.connect();
 
-        //bắn data vào websocket thông tin của user
-       String tempUserChungPhone = "Usertest1";
-        String tempUserChungPhoneFirstname = "tester1Firstname";
-        String tempUserChungPhoneLastname = "tester1Lastname";
-        String tempUserChungPhoneLanguage = "vi";
-        SendData_to_mSocket(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
 
     }
 
@@ -457,6 +448,9 @@ public class PairingFragment extends PairingToolbarFragment {
         noDevices = view.findViewById(R.id.noDevices);
         noPermissions = view.findViewById(R.id.noPermission);
         noBluetoothLe = view.findViewById(R.id.noBluetoothLe);
+
+
+
     }
 
     @Override
@@ -532,6 +526,53 @@ public class PairingFragment extends PairingToolbarFragment {
                 }
             }
         });
+
+
+        //====TEST THU LIST VIEW CO HOAT DONG KHONG====//
+        //tao object RecentPeer để add vào arr recentPeersArrayFormWebSocket, để dùng sau này
+        RecentPeer recentPeer = new RecentPeer("TESTLISTVIEW","TEST...");
+        //add vao array
+        arr_recentPeersFormWebSocket.add(recentPeer);
+        final PeerListAdapter.Callback callback = new PeerListAdapter.Callback() {
+            @Override
+            public void onFirstItemAdded() {
+                super.onFirstItemAdded();
+                discoveryDescription.setVisibility(View.GONE);
+                noDevices.setVisibility(View.GONE);
+                listViewGui.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onLastItemRemoved() {
+                super.onLastItemRemoved();
+                //listViewGui.setVisibility(View.GONE);
+                if (noPermissions.getVisibility() != View.VISIBLE) {
+                    discoveryDescription.setVisibility(View.VISIBLE);
+                    //noDevices.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onClickNotAllowed(boolean showToast) {
+                super.onClickNotAllowed(showToast);
+                Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_cannot_interact_connection), Toast.LENGTH_SHORT).show();
+            }
+        };
+        listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity,
+                arr_recentPeersFormWebSocket), callback);
+        listViewGui.setAdapter(listView);
+
+        ///====KHỞi Tạo SOCKET CONNECTION========//
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
+        mSocket.on("login", onLoginCallBack);
+        mSocket.connect();
+
+        //bắn data vào websocket thông tin của user
+        String tempUserChungPhone = "Usertest1";
+        String tempUserChungPhoneFirstname = "tester1Firstname";
+        String tempUserChungPhoneLastname = "tester1Lastname";
+        String tempUserChungPhoneLanguage = "vi";
+        SendData_to_mSocket(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
     }
 
     @Override
@@ -619,10 +660,11 @@ public class PairingFragment extends PairingToolbarFragment {
     protected void startSearch() {
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> startSearch() -> startSearch peer!!! ");
         int result = voiceTranslationActivity.startSearch();
+
         if (result != BluetoothCommunicator.SUCCESS) {
             if (result == BluetoothCommunicator.BLUETOOTH_LE_NOT_SUPPORTED && noBluetoothLe.getVisibility() != View.VISIBLE) {
                 // appearance of the bluetooth le missing sign
-                listViewGui.setVisibility(View.GONE);
+                //listViewGui.setVisibility(View.GONE);
                 noDevices.setVisibility(View.GONE);
                 discoveryDescription.setVisibility(View.GONE);
                 noBluetoothLe.setVisibility(View.VISIBLE);
@@ -690,10 +732,10 @@ public class PairingFragment extends PairingToolbarFragment {
             @Override
             public void onLastItemRemoved() {
                 super.onLastItemRemoved();
-                listViewGui.setVisibility(View.GONE);
+               // listViewGui.setVisibility(View.GONE);
                 if (noPermissions.getVisibility() != View.VISIBLE) {
                     discoveryDescription.setVisibility(View.VISIBLE);
-                    noDevices.setVisibility(View.VISIBLE);
+                    //noDevices.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -717,6 +759,7 @@ public class PairingFragment extends PairingToolbarFragment {
                    //recentPeers.add(arr_recentPeersFormWebSocket.get(1));
                    listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity,recentPeers), callback);
                } else {
+
                    Log.d("CHUNG-", "CHUNG- PairingFragment() -> RecentPeersListener -> onRecentPeersObtained recentPeers.size() <= 0");
                    listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity), callback);
                }

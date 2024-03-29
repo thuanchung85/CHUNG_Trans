@@ -85,9 +85,9 @@
         android:layout_marginStart="24dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/nunito_sans_light"
-        android:text="this is PAIRRING fragment"
+        android:text="PAIRRING SOCKET"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textColor="@color/red"
+        android:textColor="@color/primary"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
@@ -114,22 +114,22 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/black">
+            android:background="@color/accent_white">
 
             <ListView
                 android:id="@+id/list_view"
-                android:layout_margin="20dp"
-                android:background="@color/gray"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
+                android:layout_margin="20dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
                 android:animateLayoutChanges="true"
+                android:background="@color/white"
                 android:childDivider="#00000000"
                 android:divider="#00000000"
                 android:dividerHeight="6dp"
                 android:overScrollMode="never"
-                android:visibility="gone"
+                android:backgroundTint="@color/white"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -144,7 +144,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/no_devices"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -162,7 +162,7 @@
                 android:text="@string/description_discovery"
                 android:textAlignment="center"
                 android:textColor="@color/light_gray"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -206,22 +206,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0" />
 
-            <nie.translator.rtranslatordevedition.tools.gui.WalkieTalkieButton
-                android:id="@+id/buttonStartCHUNG"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="88dp"
-                android:clickable="true"
-                android:elevation="16dp"
-                android:focusable="true"
-                android:src="@drawable/walkie_talkie_white_icon"
-                android:tint="@color/red"
-                app:backgroundTint="@color/accent_white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:maxImageSize="40dp"
-                app:rippleColor="@color/light_gray" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 

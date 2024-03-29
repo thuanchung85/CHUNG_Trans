@@ -57,9 +57,10 @@ import nie.translator.rtranslatordevedition.voice_translation._conversation_mode
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.main.ConversationMainFragment;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 
+///==Cổng thứ 3====///
 //đây là ConversationFragment chổ người dùng connect và nói chuyên
 public class ConversationFragment extends PairingToolbarFragment {
-
+/*
     //=================khi nhận được login từ server trả về================//
     private List<RecentPeer> arr_recentPeersFormWebSocket = new ArrayList<RecentPeer>();
     private Emitter.Listener onReceive_loginCallBack = new Emitter.Listener() {
@@ -137,7 +138,7 @@ public class ConversationFragment extends PairingToolbarFragment {
                     // Accessing data in the JSONObject
                     String room = jsonObject.getString("room");
                     //emit vao room : join_room: {room: "123123123"}
-                    SendData_to_mSocket_FOR_JOINROOM(room);
+                    //SendData_to_mSocket_FOR_JOINROOM(room);
                     //khi có room -> save lại
                     // khi vào man hình nói chuyên -> emit tiếp "send_message" : { message, username, to, createdtime }
                     SendData_to_mSocket_FOR_SENDMESSAGE("HELLO HELLO HELLO", "Usertest1", room, "10:10:10");
@@ -244,6 +245,8 @@ public class ConversationFragment extends PairingToolbarFragment {
             e.printStackTrace();
         }
     }
+*/
+//=============================================================================////
 
 
     private ConstraintLayout constraintLayout;
@@ -283,6 +286,7 @@ public class ConversationFragment extends PairingToolbarFragment {
 
 
 
+        /*
         ///====KHỞi Tạo SOCKET CONNECTION========//
         ///STEP 3:
         // nhận về Event receive_call để nhận
@@ -299,11 +303,11 @@ public class ConversationFragment extends PairingToolbarFragment {
         String tempUserChungPhoneLastname = "tester1Lastname";
         String tempUserChungPhoneLanguage = "vi";
         SendData_to_mSocket_FORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
+*/
 
 
 
-
-    }
+    }// on create
 
 
 
@@ -340,11 +344,17 @@ public class ConversationFragment extends PairingToolbarFragment {
         titles.add(getResources().getString(R.string.conversation));
         titles.add(getResources().getString(R.string.connection));
 
-        pagerAdapter = new CustomFragmentPagerAdapter(voiceTranslationActivity, getChildFragmentManager(), titles, new Fragment[]{new ConversationMainFragment(), new PeersInfoFragment()});
+        //có 2 page trong adapter là "conversation", và "connection"
+        //page chính là ConversationMainFragment xử lý âm thanh, nó được bỏ vào adapter để chuyển qua lại
+        pagerAdapter = new CustomFragmentPagerAdapter(voiceTranslationActivity,
+                getChildFragmentManager(), titles,
+                new Fragment[]{new ConversationMainFragment(), new PeersInfoFragment()});
+
         pager.setAdapter(pagerAdapter);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                Log.d("CHUNG-", "CHUNG- ConversationFragment() -> onPageScrolled()");
                 if (position == 0 && positionOffset == 0 && pagerPosition == 1) {
                     pagerPosition = 0;
                     global.getBluetoothCommunicator().removeCallback(communicatorCallback);
@@ -362,10 +372,12 @@ public class ConversationFragment extends PairingToolbarFragment {
 
             @Override
             public void onPageSelected(int position) {
+                Log.d("CHUNG-", "CHUNG- ConversationFragment() -> onPageSelected()");
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
+                Log.d("CHUNG-", "CHUNG- ConversationFragment() -> onPageScrollStateChanged()");
             }
         });
 
