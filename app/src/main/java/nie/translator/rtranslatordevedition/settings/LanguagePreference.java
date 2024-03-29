@@ -18,6 +18,7 @@ package nie.translator.rtranslatordevedition.settings;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
@@ -145,12 +146,16 @@ public class LanguagePreference extends Preference {
                         listViewGui.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                                Log.e("CHUNG-", "CHUNG- LanguagePreference() -> onItemClick -> " + position);
+                                //save language chọn vào global
                                 global.getLanguages(true, new Global.GetLocalesListListener() {
+
                                     @Override
                                     public void onSuccess(ArrayList<CustomLocale> result) {
                                         if (result.contains((CustomLocale) listView.getItem(position))) {
                                             global.setLanguage((CustomLocale) listView.getItem(position));
                                             CustomLocale item=(CustomLocale) listView.getItem(position);
+                                            Log.e("CHUNG-", "CHUNG- LanguagePreference() -> save language onSuccess to global: -> " + item.getDisplayName());
                                             setSummary(item.getDisplayName());
                                         }
                                     }
@@ -160,6 +165,7 @@ public class LanguagePreference extends Preference {
                                         onFailureUpdatingSummary(reasons, value);
                                     }
                                 });
+                                //đóng dialog box language dài xoc
                                 dialog.dismiss();
                             }
                         });

@@ -96,7 +96,7 @@ public class RecentPeer implements Parcelable, Listable {
     }
 
     public String getName() {
-        return peer.getName();
+        return peer.getUniqueName();
     }
 
     public String getUniqueName() {

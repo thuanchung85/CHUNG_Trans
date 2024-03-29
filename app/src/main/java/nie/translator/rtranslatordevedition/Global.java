@@ -51,7 +51,7 @@ public class Global extends Application {
     public static final List<String> SCOPE = Collections.singletonList("https://www.googleapis.com/auth/cloud-platform");
     private static final int TOKEN_FETCH_MARGIN = 60 * 1000; // one minute
     private ArrayList<CustomLocale> languages = new ArrayList<>();
-    private CustomLocale language;
+    public CustomLocale language;
     private CustomLocale firstLanguage;
     private CustomLocale secondLanguage;
     private RecentPeersDataManager recentPeersDataManager;
@@ -70,6 +70,7 @@ public class Global extends Application {
     private ArrayDeque<ApiTokenListener> apiTokenListeners = new ArrayDeque<>();
     private static Handler mHandler = new Handler();
     private final Object lock = new Object();
+    private String peerWantTalkName = "";
 
     @Override
     public void onCreate() {
@@ -255,6 +256,23 @@ public class Global extends Application {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("language", language.getCode());
         editor.apply();
+    }
+
+    public String getCurrentLanguageinPhone(){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return sharedPreferences.getString("language","");
+    }
+    public void setPeerWantTalkName(String peerWantTalkName) {
+        this.peerWantTalkName = peerWantTalkName;
+        Log.d("CHUNG-", "CHUNG- GLOBAL() -> setPeerWantTalkName - > +" + peerWantTalkName);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("peerWantTalkName", peerWantTalkName);
+        editor.apply();
+    }
+    public String getPeerWantTalkName(){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return sharedPreferences.getString("peerWantTalkName","");
     }
 
     public void setFirstLanguage(CustomLocale language) {

@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -129,6 +130,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        Log.d("CHUNG-", "CHUNG- SettingsFragment() -> onActivityCreated() - > gọi SettingsFragment");
         super.onActivityCreated(savedInstanceState);
         activity = (SettingsActivity) requireActivity();
         global = (Global) activity.getApplication();
@@ -227,6 +229,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     public LanguagePreference getLanguagePreference() {
+        Log.d("CHUNG-", "CHUNG- SettingsFragment() -> getLanguagePreference() - > gọi getLanguagePreference");
         return languagePreference;
     }
 

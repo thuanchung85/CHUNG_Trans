@@ -15,7 +15,8 @@
  */
 
 package nie.translator.rtranslatordevedition.voice_translation._conversation_mode;
-
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -33,6 +34,7 @@ import android.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.preference.PreferenceManager;
 
 import java.net.URISyntaxException;
 import java.text.DateFormat;
@@ -46,6 +48,8 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
+import nie.translator.rtranslatordevedition.settings.UserNamePreference;
+import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.FileLog;
 import nie.translator.rtranslatordevedition.tools.Tools;
 import nie.translator.rtranslatordevedition.tools.gui.RequestDialog;
@@ -118,7 +122,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                 userUsername + " " + userFirstname + " " + userLastname + " " + userPersonal_language + " " + userSkip + " " + userCreatedTime + " " + userUpdatedtime + " " + userActive);
 
                         //tao object RecentPeer để add vào arr recentPeersArrayFormWebSocket, để dùng sau này
-                        RecentPeer recentPeer = new RecentPeer(userUsername,userLastname + userFirstname);
+                        RecentPeer recentPeer = new RecentPeer(userUsername,userUsername);
                         //add vao array
                         arr_recentPeersFormWebSocket.add(recentPeer);
 
@@ -496,11 +500,14 @@ public class PairingFragment extends PairingToolbarFragment {
                             //kiểm tra nếu item bi click đó thoải điều kiện là 1 PEER thì mới cho vào
                             if (item instanceof Peer) {
                                 Peer peer = (Peer) item;
+
+
                                 //thực hiện connect tới peer user
                                 connect(peer);
                             }
                             else{
                                 Toast.makeText(voiceTranslationActivity, "không thoải điều kiện là 1 PEER", Toast.LENGTH_SHORT).show();
+
                             }
 
                             if (item instanceof RecentPeer) {
@@ -509,6 +516,13 @@ public class PairingFragment extends PairingToolbarFragment {
                                     connect(recentPeer.getPeer());
                                 }
                                 else{
+                                    //cố lấy user name cua peer mà mình muốn ket nối khi click vào
+                                    RecentPeer peer = (RecentPeer) item;
+
+                                    String nameOfpeer = peer.getName();
+                                    global.setPeerWantTalkName(nameOfpeer);
+                                    Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> listViewGui -> want to talk %s", nameOfpeer));
+
                                     //chơi ăn gian===> đi thẳng vào luôn
                                     voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
 
@@ -527,10 +541,13 @@ public class PairingFragment extends PairingToolbarFragment {
             }
         });
 
+        //===thữ lấy user name của user đang cai app=====//
+        //String usernameCurrent = global.getName();
 
-        //====TEST THU LIST VIEW CO HOAT DONG KHONG====//
+        //====TEST THU LIST VIEW CO HOLoAT DONG KHONG====//
+        /*
         //tao object RecentPeer để add vào arr recentPeersArrayFormWebSocket, để dùng sau này
-        RecentPeer recentPeer = new RecentPeer("TESTLISTVIEW","TEST...");
+        RecentPeer recentPeer = new RecentPeer("TESTLISTVIEW",usernameCurrent);
         //add vao array
         arr_recentPeersFormWebSocket.add(recentPeer);
         final PeerListAdapter.Callback callback = new PeerListAdapter.Callback() {
@@ -560,7 +577,7 @@ public class PairingFragment extends PairingToolbarFragment {
         };
         listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity,
                 arr_recentPeersFormWebSocket), callback);
-        listViewGui.setAdapter(listView);
+        listViewGui.setAdapter(listView);*/
 
         ///====KHỞi Tạo SOCKET CONNECTION========//
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
@@ -568,10 +585,15 @@ public class PairingFragment extends PairingToolbarFragment {
         mSocket.connect();
 
         //bắn data vào websocket thông tin của user
-        String tempUserChungPhone = "Usertest1";
-        String tempUserChungPhoneFirstname = "tester1Firstname";
-        String tempUserChungPhoneLastname = "tester1Lastname";
-        String tempUserChungPhoneLanguage = "vi";
+        String tempUserChungPhone =  global.getName();
+        String tempUserChungPhoneFirstname =  "f_" + global.getName();
+        String tempUserChungPhoneLastname =  "l_" + global.getName();
+
+
+
+        //String lang = global.getDisplayFirstLanguage();
+        //String tempUserChungPhoneLanguage =global.language.getDisplayName();
+        String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
         SendData_to_mSocket(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
     }
 

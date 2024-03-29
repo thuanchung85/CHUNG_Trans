@@ -120,48 +120,14 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     }
 
                     System.out.println(arr_recentPeersFormWebSocket);
-                    //OK LOGIN XONG GOI TIEP cai khac event "CALL" connect to user
-                    SendData_to_mSocket_FORCONNECT2USER("Usertest1", "johnpham");
+
+                    //OK LOGIN XONG GOI TIEP cai khac event "CALL" connect to user nameOfpeerWantConnect
+                    SendData_to_mSocket_FORCONNECT2USER(global.getName(), nameOfpeerWantConnect);
 
 
                 }
             } catch (JSONException e) {
                 Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onReceive_loginCallBack ->JSONException  " + e.getMessage() );
-                throw new RuntimeException(e);
-            }
-
-        }
-    };
-
-    //=========== khi nhận được receive_call từ server trả về====///
-    String bienRoomName = "";
-    private Emitter.Listener onReceive_receive_callCallBack = new Emitter.Listener() {
-        @Override
-        //hàm websocket server tra ra data về
-        public void call(final Object... args) {
-            String argsReponse =  Arrays.toString(args);
-            try {
-                JSONArray jsonArray = new JSONArray(argsReponse);
-                //for (int i = 0; i < jsonArray.length(); i++){
-                   // JSONObject jsonObject = jsonArray.getJSONObject(i);
-                    // Accessing data in the JSONObject
-                    //String room = jsonObject.getString("room");
-                    //emit vao room : join_room: {room: "123123123"}
-                    //SendData_to_mSocket_FOR_JOINROOM(room);
-                    //bienRoomName = room;
-                    //khi có room -> save lại
-                    // khi vào man hình nói chuyên -> emit tiếp "send_message" : { message, username, to, createdtime }
-                    //SendData_to_mSocket_FOR_SENDMESSAGE("HELLO HELLO HELLO", "Usertest1", "");
-
-                    // lắng nghe : "receive_message"
-                    //String data = jsonObject.getString("data");
-
-                    //
-
-                //}
-
-            } catch (JSONException e) {
-                Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onReceive_receive_callCallBack ->JSONException  " + e.getMessage() );
                 throw new RuntimeException(e);
             }
 
@@ -186,17 +152,15 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     String socketreturn_translated = jsonObject.getString("translated");
 
                     //gan text phan hoi vao recyclerview tren UI( neu la tu user khac)
-                    if(socketreturn_from.equals("Usertest1")) {
+                    if(socketreturn_from.equals(global.getName())) {
                         activity.runOnUiThread(new Runnable() {
-
+                                //ghi ra câu dịch của text của chính mình
                             @Override
                             public void run() {
                                 Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() ->runOnUiThread update recyclerview ");
-                                Message mstypeFORGUI = new Message(activity, socketreturn_from, socketreturn_translated);
-                                GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true);
-                                if (mAdapter != null) {
-                                    mAdapter.addMessage(msFOR_recyclerview);
-                                }
+                                //Message mstypeFORGUI = new Message(activity, socketreturn_from, socketreturn_translated);
+                                //GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true);
+                               // if (mAdapter != null) {mAdapter.addMessage(msFOR_recyclerview);}
                             };
                         });
                     }
@@ -207,16 +171,12 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             @Override
                             public void run() {
                                 Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() ->runOnUiThread update recyclerview ");
-                                Message mstypeFORGUI = new Message(activity, socketreturn_from, socketreturn_translated);
+                                Message mstypeFORGUI = new Message(activity, socketreturn_from, socketreturn_translated + "\n(" + socketreturn_message +")");
                                 GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, false, true);
                                 if (mAdapter != null) {
                                     mAdapter.addMessage(msFOR_recyclerview);
                                 }
-                                Message mstypeFORGUI2 = new Message(activity, socketreturn_from, socketreturn_message);
-                                GuiMessage msFOR_recyclerview2 = new GuiMessage(mstypeFORGUI2, false, true);
-                                if (mAdapter != null) {
-                                    mAdapter.addMessage(msFOR_recyclerview2);
-                                }
+
 
                             };
                         });
@@ -231,7 +191,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     };
 
 
-
+    private String nameOfpeerWantConnect = "";
     private Socket mSocket;
     {
         try {
@@ -330,22 +290,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         super.onCreate(savedInstanceState);
 
 
-        ///====KHỞi Tạo SOCKET CONNECTION========//
-        ///STEP 3:
-        // nhận về Event receive_call để nhận
 
-        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
-        mSocket.on("login", onReceive_loginCallBack);
-        //mSocket.on("receive_call", onReceive_receive_callCallBack);
-        mSocket.on("receive_message", onReceive_receive_messageCallBack);
-        mSocket.connect();
-
-        //bắn login trước tiên sau đó luồng login sẽ auto bắn tiếp các request khác vao socket
-        String tempUserChungPhone = "Usertest1";
-        String tempUserChungPhoneFirstname = "tester1Firstname";
-        String tempUserChungPhoneLastname = "tester1Lastname";
-        String tempUserChungPhoneLanguage = "vi";
-        SendData_to_mSocket_FORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
 
     }
 
@@ -383,6 +328,12 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 }
             }
         });
+
+
+
+
+
+
     }
 
     @Override
@@ -499,7 +450,36 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 }
             }
         });
-    }
+
+
+
+
+        ///====KHỞi Tạo SOCKET CONNECTION========//
+        ///STEP 3:
+        // nhận về Event receive_call để nhận
+
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
+        mSocket.on("login", onReceive_loginCallBack);
+        //mSocket.on("receive_call", onReceive_receive_callCallBack);
+        mSocket.on("receive_message", onReceive_receive_messageCallBack);
+        mSocket.connect();
+
+         nameOfpeerWantConnect = global.getPeerWantTalkName();
+        Toast.makeText(activity, "You will connect to " + nameOfpeerWantConnect, Toast.LENGTH_SHORT).show();
+        String tempUserChungPhone =  global.getName();
+        String tempUserChungPhoneFirstname =  "f_" + global.getName();
+        String tempUserChungPhoneLastname =  "l_" + global.getName();
+        String tempUserChungPhoneLanguage = activity.getResources().getConfiguration().locale.getLanguage();
+        //bắn login trước tiên sau đó luồng login sẽ auto bắn tiếp các request khác vao socket
+        //String tempUserChungPhone = "Usertest1";
+        //String tempUserChungPhoneFirstname = "tester1Firstname";
+        //String tempUserChungPhoneLastname = "tester1Lastname";
+        //String tempUserChungPhoneLanguage = "vi";
+        SendData_to_mSocket_FORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
+
+
+
+    }//end onActivityCreated
 
     protected void connectToService() {
     }
@@ -656,7 +636,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                         if (previewIndex != -1) {
                             Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(1) -> %s",message.getMessage().getText()));
                             //======ban data text cho socket========//
-                            SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), "Usertest1", "johnpham");
+                            SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect);
 
                             mAdapter.setMessage(previewIndex, message);
                         } else {

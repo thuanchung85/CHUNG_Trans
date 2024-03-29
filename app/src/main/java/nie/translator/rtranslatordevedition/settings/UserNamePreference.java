@@ -40,7 +40,7 @@ import com.bluetooth.communicator.tools.BluetoothTools;
 
 
 public class UserNamePreference extends Preference {
-    private TextView username;
+    public TextView username;
     private Activity activity;
     private Global global;
     private Context context;
