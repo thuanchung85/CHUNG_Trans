@@ -48,6 +48,7 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
+import nie.translator.rtranslatordevedition.settings.LanguagePreference;
 import nie.translator.rtranslatordevedition.settings.UserNamePreference;
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.FileLog;
@@ -74,7 +75,7 @@ import nie.translator.rtranslatordevedition.voice_translation._conversation_mode
 //đây là màn hình show các người dùng đang tìm thấy đươc xung quanh
 public class PairingFragment extends PairingToolbarFragment {
 
-
+    private LanguagePreference languagePreference;
     //======CUC SOCKET=====///
 
     List<RecentPeer> arr_recentPeersFormWebSocket = new ArrayList<RecentPeer>();
@@ -590,10 +591,21 @@ public class PairingFragment extends PairingToolbarFragment {
         String tempUserChungPhoneLastname =  "l_" + global.getName();
 
 
-
-        //String lang = global.getDisplayFirstLanguage();
-        //String tempUserChungPhoneLanguage =global.language.getDisplayName();
         String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
+        String lang = global.getCurrentLanguageinPhone();
+        if(lang.equals("Tiếng Hàn (Hàn Quốc)") ){
+            tempUserChungPhoneLanguage = "ko";
+        }
+        else{
+            if(lang.equals("Tiếng Việt (Việt Nam)") ){
+                tempUserChungPhoneLanguage = "vi";
+            }
+            else{
+
+                    tempUserChungPhoneLanguage = "en";
+            }
+        }
+
         SendData_to_mSocket(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
     }
 

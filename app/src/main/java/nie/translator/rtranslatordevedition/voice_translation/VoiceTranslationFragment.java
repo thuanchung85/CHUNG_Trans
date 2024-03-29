@@ -475,6 +475,20 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         //String tempUserChungPhoneFirstname = "tester1Firstname";
         //String tempUserChungPhoneLastname = "tester1Lastname";
         //String tempUserChungPhoneLanguage = "vi";
+
+        String lang = global.getCurrentLanguageinPhone();
+        if(lang.equals("Tiếng Hàn (Hàn Quốc)") ){
+            tempUserChungPhoneLanguage = "ko";
+        }
+        else{
+            if(lang.equals("Tiếng Việt (Việt Nam)") ){
+                tempUserChungPhoneLanguage = "vi";
+            }
+            else{
+
+                tempUserChungPhoneLanguage = "en";
+            }
+        }
         SendData_to_mSocket_FORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
 
 

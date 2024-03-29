@@ -262,6 +262,16 @@ public class Global extends Application {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         return sharedPreferences.getString("language","");
     }
+    public void setCurrentLanguageinPhone(String language) {
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("language", language);
+        editor.apply();
+    }
+
+
+
     public void setPeerWantTalkName(String peerWantTalkName) {
         this.peerWantTalkName = peerWantTalkName;
         Log.d("CHUNG-", "CHUNG- GLOBAL() -> setPeerWantTalkName - > +" + peerWantTalkName);

@@ -157,6 +157,9 @@ public class LanguagePreference extends Preference {
                                             CustomLocale item=(CustomLocale) listView.getItem(position);
                                             Log.e("CHUNG-", "CHUNG- LanguagePreference() -> save language onSuccess to global: -> " + item.getDisplayName());
                                             setSummary(item.getDisplayName());
+
+                                            //save tieng ma user chon vao local data cua Global, minh se doc len lai o class khac
+                                            global.setCurrentLanguageinPhone(item.getDisplayName());
                                         }
                                     }
 
