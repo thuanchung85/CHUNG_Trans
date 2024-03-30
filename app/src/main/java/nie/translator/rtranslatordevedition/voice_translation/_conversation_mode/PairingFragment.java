@@ -524,8 +524,33 @@ public class PairingFragment extends PairingToolbarFragment {
                                     global.setPeerWantTalkName(nameOfpeer);
                                     Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> listViewGui -> want to talk %s", nameOfpeer));
 
+                                    //bật ra dialog box hỏi request connect websocket
+                                    connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
+                                            "Do You want to connect" + peer.getName() + " ?",
+                                            15000, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
+                                            //chơi ăn gian===> đi thẳng vào luôn
+                                            voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                        }
+                                    }, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> reject"));
+                                        }
+                                    });
+                                    connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                        @Override
+                                        public void onCancel(DialogInterface dialog) {
+                                            connectionRequestDialog = null;
+                                        }
+                                    });
+                                    connectionRequestDialog.show();
+
+
                                     //chơi ăn gian===> đi thẳng vào luôn
-                                    voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                    //voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
 
                                     Toast.makeText(voiceTranslationActivity, "không thoải điều kiện là 1 RECENTPEER có recentPeer.isAvailable() = true", Toast.LENGTH_SHORT).show();
                                 }

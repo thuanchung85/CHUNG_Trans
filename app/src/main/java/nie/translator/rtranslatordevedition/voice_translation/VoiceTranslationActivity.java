@@ -115,6 +115,13 @@ public class VoiceTranslationActivity extends GeneralActivity {
     //variables
     private int connectionId = 1;
 
+    @Override
+    protected void onDestroy() {
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onDestroy");
+        //release micro hold, nếu không nó chiếm micro hoài không cho các app khác dùng
+        android.os.Process.killProcess(android.os.Process.myPid());
+        super.onDestroy();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
