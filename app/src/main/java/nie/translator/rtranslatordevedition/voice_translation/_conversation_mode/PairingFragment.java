@@ -197,52 +197,49 @@ public class PairingFragment extends PairingToolbarFragment {
             String argsReponse =  Arrays.toString(args);
             //covert json data từ server về data native android
             try {
-                String room = "";
                 JSONArray jsonArray = new JSONArray(argsReponse);
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     // Accessing data in the JSONObject
-                     room = jsonObject.getString("room");
+                    String room = jsonObject.getString("room");
                     System.out.println(room);
                     String data = jsonObject.getString("data");
                     System.out.println(data);
+
+                    //chuyen lên main thread ui
+                    voiceTranslationActivity.runOnUiThread(new Runnable() {
+
+                                               @Override
+                                               public void run() {
+                                                   //show dialogbox ok connect or not
+                                                   connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
+                                                           "SOME ONE ASK YOU JOIN ROOM: " + room + " ?",
+                                                           15000, new DialogInterface.OnClickListener() {
+                                                       @Override
+                                                       public void onClick(DialogInterface dialog, int which) {
+                                                           Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
+
+                                                           //chơi ăn gian===> đi thẳng vào luôn
+                                                           voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                                       }
+                                                   }, new DialogInterface.OnClickListener() {
+                                                       @Override
+                                                       public void onClick(DialogInterface dialog, int which) {
+                                                           Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> reject"));
+                                                       }
+                                                   });
+                                                   connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                                       @Override
+                                                       public void onCancel(DialogInterface dialog) {
+                                                           connectionRequestDialog = null;
+                                                       }
+                                                   });
+                                                   connectionRequestDialog.show();
+                                               }
+                                           });
+                    //============
                     break;
                 }
-
-                //chuyen lên main thread ui
-                String finalRoom = room;
-                voiceTranslationActivity.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        //show dialogbox ok connect or not
-                        connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
-                                "SOME ONE ASK YOU JOIN ROOM: " + finalRoom + " ?",
-                                15000, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
-                                Thread.currentThread().interrupt();
-                                //chơi ăn gian===> đi thẳng vào luôn
-                                voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
-                                connectionRequestDialog.cancel();
-                            }
-                        }, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> reject"));
-                            }
-                        });
-                        connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                            @Override
-                            public void onCancel(DialogInterface dialog) {
-                                connectionRequestDialog = null;
-                            }
-                        });
-                        connectionRequestDialog.show();
-                    }
-                });
-                //============
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }

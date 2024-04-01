@@ -706,14 +706,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                         //SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), "Usertest1", "johnpham");
 
                         mAdapter.setPreviewText(message.getMessage().getText());
-                        //smooth scroll
-                        int previewIndex = mAdapter.getPreviewIndex();
-                        if (previewIndex == -1) {
-                            smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
-                        } else {
-                            smoothScroller.setTargetPosition(mAdapter.getItemCount() - 2);  // because the message is added in the penultimate position, not in the last one, because there is a preview
-                        }
-                        mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
+
                     } else {
                         //add the component_message_preview
                         //==khi nói thì nó set text vào đây=//
