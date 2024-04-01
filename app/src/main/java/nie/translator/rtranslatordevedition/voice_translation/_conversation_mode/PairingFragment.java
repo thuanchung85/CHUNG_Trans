@@ -81,6 +81,7 @@ public class PairingFragment extends PairingToolbarFragment {
 
     List<RecentPeer> arr_recentPeersFormWebSocket = new ArrayList<RecentPeer>();
     //khởi tao websocket listener hứng data websocket trở về
+    //khi login vao websocket và lấy thông tin các user khác
     private Emitter.Listener onLoginCallBack = new Emitter.Listener() {
         @Override
         //hàm websocket server tra ra data về
@@ -126,6 +127,7 @@ public class PairingFragment extends PairingToolbarFragment {
 
                         //tao object RecentPeer để add vào arr recentPeersArrayFormWebSocket, để dùng sau này
                         RecentPeer recentPeer;
+                        //nếu user có online =1 thi bật setAvailableSocket()
                         if(userOnline != null && userOnline.equals("1")) {
                              recentPeer = new RecentPeer( userUsername, userUsername);
                             recentPeer.setAvailableSocket();
@@ -174,7 +176,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                                                            new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), callback);
 
                                                                    listViewGui.setAdapter(listView);
-                                                                   mSocket.disconnect();
+
                                                                };
                                                            });
 
@@ -185,6 +187,69 @@ public class PairingFragment extends PairingToolbarFragment {
 
         }
     };
+
+    //khi user đang ở màn hinh paring thi nhận được tính hiệu đòi connect từ user khác
+    private Emitter.Listener onReceive_call_CallBack = new Emitter.Listener() {
+        @Override
+        //hàm websocket server tra ra data về
+        public void call(final Object... args) {
+            Log.d("CHUNG-", String.format("CHUNG- PairingFragment - > mSocket() -> onReceive_call_CallBack -> %s ", args.toString()));
+            String argsReponse =  Arrays.toString(args);
+            //covert json data từ server về data native android
+            try {
+                String room = "";
+                JSONArray jsonArray = new JSONArray(argsReponse);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    // Accessing data in the JSONObject
+                     room = jsonObject.getString("room");
+                    System.out.println(room);
+                    String data = jsonObject.getString("data");
+                    System.out.println(data);
+                    break;
+                }
+
+                //chuyen lên main thread ui
+                String finalRoom = room;
+                voiceTranslationActivity.runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        //show dialogbox ok connect or not
+                        connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
+                                "SOME ONE ASK YOU JOIN ROOM: " + finalRoom + " ?",
+                                15000, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
+
+                                //chơi ăn gian===> đi thẳng vào luôn
+                                voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                            }
+                        }, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> reject"));
+                            }
+                        });
+                        connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                connectionRequestDialog = null;
+                            }
+                        });
+                        connectionRequestDialog.show();
+                    }
+                });
+                //============
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+    };
+
+
     //khởi tạo websocket object
     private Socket mSocket;
     {
@@ -202,7 +267,7 @@ public class PairingFragment extends PairingToolbarFragment {
         }
     }
 
-    public void SendData_to_mSocket(String usernamedata, String firstnamedata, String lastnamedata , String personal_languagedata) {
+    public void SendData_to_mSocketFORLOGIN(String usernamedata, String firstnamedata, String lastnamedata , String personal_languagedata) {
 
         String jsonString = String.format("{\"username\": \"%s\", \"firstname\": \"%s\", \"lastname\": \"%s\", \"personal_language\": \"%s\"}",usernamedata, firstnamedata, lastnamedata, personal_languagedata);
         //covert string to json
@@ -216,7 +281,18 @@ public class PairingFragment extends PairingToolbarFragment {
     }
 
 
+    public void SendData_to_mSocket_FORCONNECT2USER(String fromUser, String toUser) {
 
+        String jsonString = String.format("{\"from\": \"%s\", \"to\": \"%s\"}",fromUser, toUser);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("call", jsonObject);
+            Log.d("CHUNG-", "CHUNG- ConversationFragment() -> mSocket.emit(\"call\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     public static final int CONNECTION_TIMEOUT = 5000;
@@ -547,6 +623,9 @@ public class PairingFragment extends PairingToolbarFragment {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
+
+                                                SendData_to_mSocket_FORCONNECT2USER(global.getName(), peer.getName());
+
                                                 //chơi ăn gian===> đi thẳng vào luôn
                                                 voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
                                             }
@@ -625,6 +704,7 @@ public class PairingFragment extends PairingToolbarFragment {
         ///====KHỞi Tạo SOCKET CONNECTION========//
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
         mSocket.on("users", onLoginCallBack);
+        mSocket.on("receive_call", onReceive_call_CallBack);
         mSocket.connect();
 
         //bắn data vào websocket thông tin của user
@@ -648,7 +728,7 @@ public class PairingFragment extends PairingToolbarFragment {
             }
         }
 
-        SendData_to_mSocket(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
+        SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
     }
 
     @Override

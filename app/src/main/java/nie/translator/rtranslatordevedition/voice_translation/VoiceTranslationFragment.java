@@ -157,10 +157,11 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                                 //ghi ra câu dịch của text của chính mình
                             @Override
                             public void run() {
-                                Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() ->runOnUiThread update recyclerview ");
+                               // Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() ->runOnUiThread update recyclerview ");
                                 //Message mstypeFORGUI = new Message(activity, socketreturn_from, socketreturn_translated);
                                 //GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true);
                                // if (mAdapter != null) {mAdapter.addMessage(msFOR_recyclerview);}
+
                             };
                         });
                     }
@@ -175,6 +176,10 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                                 GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, false, true);
                                 if (mAdapter != null) {
                                     mAdapter.addMessage(msFOR_recyclerview);
+                                    //auto scroll
+                                    //smooth scroll
+                                    smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
+                                    mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
                                 }
 
 
@@ -701,7 +706,14 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                         //SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), "Usertest1", "johnpham");
 
                         mAdapter.setPreviewText(message.getMessage().getText());
-
+                        //smooth scroll
+                        int previewIndex = mAdapter.getPreviewIndex();
+                        if (previewIndex == -1) {
+                            smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
+                        } else {
+                            smoothScroller.setTargetPosition(mAdapter.getItemCount() - 2);  // because the message is added in the penultimate position, not in the last one, because there is a preview
+                        }
+                        mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
                     } else {
                         //add the component_message_preview
                         //==khi nói thì nó set text vào đây=//

@@ -18,6 +18,7 @@ package nie.translator.rtranslatordevedition.tools.gui.peers;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -29,6 +30,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import nie.translator.rtranslatordevedition.Global;
@@ -193,7 +195,12 @@ public class PeerListAdapter extends BaseAdapter {
 
                 //check thêm nếu ok socket thi chuyển qua available cho text dưới chân
                 if(recentPeer.isAvailableSocket()){
+                    ((ImageButton) view.findViewById(R.id.threeDotsButton)).setColorFilter(ContextCompat.getColor(activity, R.color.green), PorterDuff.Mode.SRC_IN);
                     ((TextView) view.findViewById(R.id.path)).setText(R.string.available);
+                    ((TextView) view.findViewById(R.id.path)).setTextColor(activity.getResources().getColor(R.color.green));
+                    ((ImageView) view.findViewById(R.id.user_image_recent)).setColorFilter(ContextCompat.getColor(activity, R.color.green), PorterDuff.Mode.SRC_IN);
+
+                    ((TextView) view.findViewById(R.id.textRowRecent)).setTextColor(activity.getResources().getColor(R.color.green));
                 }
             }
             ((TextView) view.findViewById(R.id.textRowRecent)).setText(peerName);
