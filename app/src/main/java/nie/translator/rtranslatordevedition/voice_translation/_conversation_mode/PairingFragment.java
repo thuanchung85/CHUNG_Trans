@@ -810,10 +810,10 @@ public class PairingFragment extends PairingToolbarFragment {
            public void onRecentPeersObtained(ArrayList<RecentPeer> recentPeers) {
                if (recentPeers.size() > 0) {
                    Log.d("CHUNG-", "CHUNG- PairingFragment() -> RecentPeersListener -> onRecentPeersObtained recentPeers.size() > 0");
-                   recentPeers.add(1, new RecentPeer("IDOFCHUNGTEST_1123", "CHUNGTEST1123"));
-                   recentPeers.add(2, new RecentPeer("IDOFCHUNGTEST_3423", "NguyenThinh"));
-                   recentPeers.add(3, new RecentPeer("IDOFCHUNGTEST_1563", "ThiTHi"));
-                   recentPeers.add(4, new RecentPeer("IDOFCHUNGTEST_9562", "TruongSon"));
+                   //recentPeers.add(1, new RecentPeer("IDOFCHUNGTEST_1123", "CHUNGTEST1123"));
+                   //recentPeers.add(2, new RecentPeer("IDOFCHUNGTEST_3423", "NguyenThinh"));
+                   //recentPeers.add(3, new RecentPeer("IDOFCHUNGTEST_1563", "ThiTHi"));
+                   //recentPeers.add(4, new RecentPeer("IDOFCHUNGTEST_9562", "TruongSon"));
                    //recentPeers.add(arr_recentPeersFormWebSocket.get(0));
                    //recentPeers.add(arr_recentPeersFormWebSocket.get(1));
                    listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity,recentPeers), callback);

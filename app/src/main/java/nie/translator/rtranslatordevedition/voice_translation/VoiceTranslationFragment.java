@@ -559,6 +559,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         voiceTranslationServiceCommunicator.stopMic(changeAspect);
     }
 
+    //gọi TTS nói ra âm thanh
     protected void startSound() {
         sound.setMute(false);
         voiceTranslationServiceCommunicator.startSound();
@@ -653,6 +654,10 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect);
 
                             mAdapter.setMessage(previewIndex, message);
+
+                            //smooth scroll
+                            smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
+                            mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
                         } else {
                             Message mm = message.getMessage();
                             String smm = mm.getText();
