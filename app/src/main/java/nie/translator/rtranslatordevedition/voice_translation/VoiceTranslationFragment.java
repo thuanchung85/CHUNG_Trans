@@ -474,26 +474,25 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         String tempUserChungPhone =  global.getName();
         String tempUserChungPhoneFirstname =  "f_" + global.getName();
         String tempUserChungPhoneLastname =  "l_" + global.getName();
-        String tempUserChungPhoneLanguage = activity.getResources().getConfiguration().locale.getLanguage();
-        //bắn login trước tiên sau đó luồng login sẽ auto bắn tiếp các request khác vao socket
-        //String tempUserChungPhone = "Usertest1";
-        //String tempUserChungPhoneFirstname = "tester1Firstname";
-        //String tempUserChungPhoneLastname = "tester1Lastname";
-        //String tempUserChungPhoneLanguage = "vi";
 
+        String tempUserChungPhoneLanguage = activity.getResources().getConfiguration().locale.getLanguage();
         String lang = global.getCurrentLanguageinPhone();
-        if(lang.equals("Tiếng Hàn (Hàn Quốc)") ){
-            tempUserChungPhoneLanguage = "ko";
+
+        if(lang != "") {
+            if (lang.equals("Tiếng Hàn (Hàn Quốc)") || lang.equals("Korean (South Korea)") || lang.equals("한국어 (대한민국)")  ) {
+                tempUserChungPhoneLanguage = "ko";
+            } else {
+                if (lang.equals("Tiếng Việt (Việt Nam)") || lang.equals("Vietnamese (Vietnam)")|| lang.equals("베트남어 (베트남)")  ) {
+                    tempUserChungPhoneLanguage = "vi";
+                } else {
+                    tempUserChungPhoneLanguage = "en";
+                }
+            }
         }
         else{
-            if(lang.equals("Tiếng Việt (Việt Nam)") ){
-                tempUserChungPhoneLanguage = "vi";
-            }
-            else{
-                tempUserChungPhoneLanguage = activity.getResources().getConfiguration().locale.getLanguage();
-                //tempUserChungPhoneLanguage = "en";
-            }
+            tempUserChungPhoneLanguage = activity.getResources().getConfiguration().locale.getLanguage();
         }
+        Toast.makeText(activity, lang + "->" + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
         SendData_to_mSocket_FORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
 
 

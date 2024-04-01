@@ -709,23 +709,24 @@ public class PairingFragment extends PairingToolbarFragment {
         String tempUserChungPhone =  global.getName();
         String tempUserChungPhoneFirstname =  "f_" + global.getName();
         String tempUserChungPhoneLastname =  "l_" + global.getName();
-
-
         String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
         String lang = global.getCurrentLanguageinPhone();
-        if(lang.equals("Tiếng Hàn (Hàn Quốc)") ){
-            tempUserChungPhoneLanguage = "ko";
+
+        if(lang != "") {
+            if (lang.equals("Tiếng Hàn (Hàn Quốc)") || lang.equals("Korean (South Korea)") || lang.equals("한국어 (대한민국)") ) {
+                tempUserChungPhoneLanguage = "ko";
+            } else {
+                if (lang.equals("Tiếng Việt (Việt Nam)") || lang.equals("Vietnamese (Vietnam)") || lang.equals("베트남어 (베트남)") ) {
+                    tempUserChungPhoneLanguage = "vi";
+                } else {
+                    tempUserChungPhoneLanguage = "en";
+                }
+            }
         }
         else{
-            if(lang.equals("Tiếng Việt (Việt Nam)") ){
-                tempUserChungPhoneLanguage = "vi";
-            }
-            else{
-                tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
-                    //tempUserChungPhoneLanguage = "en";
-            }
+            tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
         }
-
+        Toast.makeText(voiceTranslationActivity, lang + "->" + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
         SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
     }
 

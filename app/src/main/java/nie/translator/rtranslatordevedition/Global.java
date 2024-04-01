@@ -127,6 +127,7 @@ public class Global extends Application {
             @Override
             public void onSuccess(ArrayList<CustomLocale> languages) {
                 CustomLocale predefinedLanguage = CustomLocale.getDefault();
+                String ss = getCurrentLanguageinPhone();
                 CustomLocale language = null;
                 if (recycleResult && Global.this.language != null) {
                     language = Global.this.language;
@@ -142,6 +143,7 @@ public class Global extends Application {
                 if (index != -1) {
                     language = languages.get(index);
                 } else {
+
                     int index2 = CustomLocale.search(languages, predefinedLanguage);
                     if (index2 != -1) {
                         language = predefinedLanguage;
@@ -149,7 +151,18 @@ public class Global extends Application {
                         language = new CustomLocale("en", "US");
                     }
                 }
-
+                ///===ADD ON LAI QUA NGON NGU MICRO MA MINH CHINH TRONG SETTING==//
+                if(ss!="") {
+                    if (ss.equals("Tiếng Hàn (Hàn Quốc)") || ss.equals("Korean (South Korea)") || ss.equals("한국어 (대한민국)") ) {
+                        language = new CustomLocale("ko", "KR");
+                    } else {
+                        if (ss.equals("Tiếng Việt (Việt Nam)") || ss.equals("Vietnamese (Vietnam)") || ss.equals("베트남어 (베트남)")) {
+                            language = new CustomLocale("vi", "VN");
+                        } else {
+                            language = new CustomLocale("en", "US");
+                        }
+                    }
+                }
                 Global.this.language = language;
                 responseListener.onSuccess(language);
             }
