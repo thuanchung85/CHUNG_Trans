@@ -222,9 +222,10 @@ public class PairingFragment extends PairingToolbarFragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
-
+                                Thread.currentThread().interrupt();
                                 //chơi ăn gian===> đi thẳng vào luôn
                                 voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                connectionRequestDialog.cancel();
                             }
                         }, new DialogInterface.OnClickListener() {
                             @Override
