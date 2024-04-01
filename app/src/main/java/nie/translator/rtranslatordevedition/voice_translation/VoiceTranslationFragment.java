@@ -459,7 +459,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         // nhận về Event receive_call để nhận
 
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
-        mSocket.on("login", onReceive_loginCallBack);
+        mSocket.on("users", onReceive_loginCallBack);
         //mSocket.on("receive_call", onReceive_receive_callCallBack);
         mSocket.on("receive_message", onReceive_receive_messageCallBack);
         mSocket.connect();
@@ -544,10 +544,12 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     }
 
     @Override
+    //start micro phone khi vào fragment này bắt đầu noí chuyên, thu âm giọng nói và chuyển qua text.
     public void startMicrophone(boolean changeAspect) {
         if (changeAspect) {
             microphone.setMute(false);
         }
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> startMicrophone()");
         voiceTranslationServiceCommunicator.startMic();
     }
 
@@ -556,17 +558,20 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         if (changeAspect) {
             microphone.setMute(true);
         }
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> stopMicrophone()");
         voiceTranslationServiceCommunicator.stopMic(changeAspect);
     }
 
     //gọi TTS nói ra âm thanh
     protected void startSound() {
         sound.setMute(false);
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> startSound()");
         voiceTranslationServiceCommunicator.startSound();
     }
 
     protected void stopSound() {
         sound.setMute(true);
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> stopSound()");
         voiceTranslationServiceCommunicator.stopSound();
     }
 

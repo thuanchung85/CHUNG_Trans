@@ -18,6 +18,7 @@ package nie.translator.rtranslatordevedition.voice_translation._conversation_mod
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -113,6 +114,7 @@ public class PairingFragment extends PairingToolbarFragment {
                         String userFirstname = userObject.getString("firstname");
                         String userLastname = userObject.getString("lastname");
                         String userPersonal_language = userObject.getString("personal_language");
+                        String userOnline = userObject.getString("online");
                         boolean userSkip = userObject.getBoolean("skip");
 
                         double userCreatedTime = userObject.getDouble("__createdtime__");
@@ -123,8 +125,17 @@ public class PairingFragment extends PairingToolbarFragment {
                                 userUsername + " " + userFirstname + " " + userLastname + " " + userPersonal_language + " " + userSkip + " " + userCreatedTime + " " + userUpdatedtime + " " + userActive);
 
                         //tao object RecentPeer để add vào arr recentPeersArrayFormWebSocket, để dùng sau này
-                        RecentPeer recentPeer = new RecentPeer(userUsername,userUsername);
+                        RecentPeer recentPeer;
+                        if(userOnline != null && userOnline.equals("1")) {
+                             recentPeer = new RecentPeer( userUsername, userUsername);
+                            recentPeer.setAvailableSocket();
+                        }
+                        else{
+                             recentPeer = new RecentPeer(userUsername, userUsername);
+                        }
                         //add vao array
+                        boolean bis = recentPeer.isAvailableSocket();
+                        System.out.println(bis);
                         arr_recentPeersFormWebSocket.add(recentPeer);
 
                     }
@@ -159,8 +170,9 @@ public class PairingFragment extends PairingToolbarFragment {
 
                                                                @Override
                                                                public void run() {
-                                                                   listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity,
-                                                                           arr_recentPeersFormWebSocket), callback);
+                                                                   listView = new PeerListAdapter(voiceTranslationActivity,
+                                                                           new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), callback);
+
                                                                    listViewGui.setAdapter(listView);
                                                                    mSocket.disconnect();
                                                                };
@@ -488,7 +500,7 @@ public class PairingFragment extends PairingToolbarFragment {
         // setting of array adapter
         initializePeerList();
 
-        //tạo click event cho các item trong list view
+        //=========tạo click event cho các item trong list view============//
         listViewGui.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -513,9 +525,12 @@ public class PairingFragment extends PairingToolbarFragment {
 
                             if (item instanceof RecentPeer) {
                                 RecentPeer recentPeer = (RecentPeer) item;
+                                boolean isOnlineSocket = recentPeer.isAvailableSocket();
+                                //nêu bluetook ok isAvailable = true
                                 if (recentPeer.isAvailable()) {
                                     connect(recentPeer.getPeer());
                                 }
+                                //nếu không co bluetooth
                                 else{
                                     //cố lấy user name cua peer mà mình muốn ket nối khi click vào
                                     RecentPeer peer = (RecentPeer) item;
@@ -524,29 +539,31 @@ public class PairingFragment extends PairingToolbarFragment {
                                     global.setPeerWantTalkName(nameOfpeer);
                                     Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> listViewGui -> want to talk %s", nameOfpeer));
 
-                                    //bật ra dialog box hỏi request connect websocket
-                                    connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
-                                            "Do You want to connect" + peer.getName() + " ?",
-                                            15000, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
-                                            //chơi ăn gian===> đi thẳng vào luôn
-                                            voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
-                                        }
-                                    }, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> reject"));
-                                        }
-                                    });
-                                    connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                        @Override
-                                        public void onCancel(DialogInterface dialog) {
-                                            connectionRequestDialog = null;
-                                        }
-                                    });
-                                    connectionRequestDialog.show();
+                                    if(isOnlineSocket == true) {
+                                        //bật ra dialog box hỏi request connect websocket
+                                        connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
+                                                "Do You want to connect" + peer.getName() + " ?",
+                                                15000, new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
+                                                //chơi ăn gian===> đi thẳng vào luôn
+                                                voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                            }
+                                        }, new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> reject"));
+                                            }
+                                        });
+                                        connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                            @Override
+                                            public void onCancel(DialogInterface dialog) {
+                                                connectionRequestDialog = null;
+                                            }
+                                        });
+                                        connectionRequestDialog.show();
+                                    }
 
 
                                     //chơi ăn gian===> đi thẳng vào luôn
@@ -607,7 +624,7 @@ public class PairingFragment extends PairingToolbarFragment {
 
         ///====KHỞi Tạo SOCKET CONNECTION========//
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
-        mSocket.on("login", onLoginCallBack);
+        mSocket.on("users", onLoginCallBack);
         mSocket.connect();
 
         //bắn data vào websocket thông tin của user

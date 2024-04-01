@@ -111,6 +111,7 @@ public class PeerListAdapter extends BaseAdapter {
         return 5;
     }
 
+
     @Override
     public View getView(int position, View view, ViewGroup viewGroup) {
 
@@ -184,9 +185,16 @@ public class PeerListAdapter extends BaseAdapter {
                 }
             });
             if (recentPeer.isAvailable()) {
+                Log.d("CHUNG-", "CHUNG- PeerListAdapter() -> getView " + position + "--itemType->" + itemType + "");
                 ((TextView) view.findViewById(R.id.path)).setText(R.string.available);
             } else {
+                Log.d("CHUNG-", "CHUNG- PeerListAdapter() -> getView " + position + "--itemType->" + itemType + "");
                 ((TextView) view.findViewById(R.id.path)).setText(R.string.not_available);
+
+                //check thêm nếu ok socket thi chuyển qua available cho text dưới chân
+                if(recentPeer.isAvailableSocket()){
+                    ((TextView) view.findViewById(R.id.path)).setText(R.string.available);
+                }
             }
             ((TextView) view.findViewById(R.id.textRowRecent)).setText(peerName);
 
