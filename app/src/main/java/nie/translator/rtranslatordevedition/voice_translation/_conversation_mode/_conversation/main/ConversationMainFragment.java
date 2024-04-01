@@ -19,6 +19,7 @@ package nie.translator.rtranslatordevedition.voice_translation._conversation_mod
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +44,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.d("CHUNG-", "CHUNG- ConversationMainFragment() -> onCreate() " );
         super.onCreate(savedInstanceState);
         super.voiceTranslationServiceCommunicator = new ConversationService.ConversationServiceCommunicator(0);
         super.voiceTranslationServiceCallback = new VoiceTranslationServiceCallback() {

@@ -292,15 +292,18 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onCreate() "));
         super.onCreate(savedInstanceState);
-
-
+        voiceTranslationServiceCommunicator = null;
+        voiceTranslationServiceCallback = null;
+        microphone = null;
 
 
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onViewCreated() "));
         super.onViewCreated(view, savedInstanceState);
         mRecyclerView = view.findViewById(R.id.recycler_view);
         description = view.findViewById(R.id.description);
@@ -343,6 +346,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onActivityCreated() "));
         super.onActivityCreated(savedInstanceState);
         activity = (VoiceTranslationActivity) requireActivity();
         global = (Global) activity.getApplication();
@@ -391,6 +395,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 switch (microphone.getState()) {
                     case ButtonMic.STATE_NORMAL:
                         if (microphone.isMute()) {
+                            Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onClick() -> startMicrophone");
                             startMicrophone(true);
                         } else {
                             stopMicrophone(true);
@@ -504,6 +509,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
     @Override
     public void onStop() {
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onStop() "));
         super.onStop();
         deactivateInputs(DeactivableButton.DEACTIVATED);
         if (activity.getCurrentFragment() != VoiceTranslationActivity.DEFAULT_FRAGMENT) {
@@ -512,6 +518,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     }
 
     public void restoreAttributesFromService() {
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> restoreAttributesFromService() "));
         voiceTranslationServiceCommunicator.getAttributes(new VoiceTranslationService.AttributesListener() {
             @Override
             public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected) {
@@ -550,24 +557,27 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     @Override
     //start micro phone khi vào fragment này bắt đầu noí chuyên, thu âm giọng nói và chuyển qua text.
     public void startMicrophone(boolean changeAspect) {
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> startMicrophone() "));
         if (changeAspect) {
             microphone.setMute(false);
         }
-        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> startMicrophone()");
+
         voiceTranslationServiceCommunicator.startMic();
     }
 
     @Override
     public void stopMicrophone(boolean changeAspect) {
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> stopMicrophone() "));
         if (changeAspect) {
             microphone.setMute(true);
         }
-        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> stopMicrophone()");
+
         voiceTranslationServiceCommunicator.stopMic(changeAspect);
     }
 
     //gọi TTS nói ra âm thanh
     protected void startSound() {
+
         sound.setMute(false);
         Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> startSound()");
         voiceTranslationServiceCommunicator.startSound();
@@ -580,6 +590,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     }
 
     protected void deactivateInputs(int cause) {
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> deactivateInputs()");
         microphone.deactivate(cause);
         if (cause == DeactivableButton.DEACTIVATED) {
             sound.deactivate(DeactivableButton.DEACTIVATED);
@@ -589,6 +600,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     }
 
     protected void activateInputs(boolean start) {
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> activateInputs()");
         microphone.activate(start);
         sound.activate(start);
     }
@@ -633,6 +645,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
         // possible activation of the mic
         if (!microphone.isMute() && microphone.getActivationStatus() == DeactivableButton.ACTIVATED) {
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> microphone() -> startMicrophone");
             startMicrophone(false);
         }
     }
@@ -640,18 +653,21 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     public class VoiceTranslationServiceCallback extends VoiceTranslationService.VoiceTranslationServiceCallback {
         @Override
         public void onVoiceStarted() {
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> VoiceTranslationServiceCallback() -> onVoiceStarted" );
             super.onVoiceStarted();
             microphone.onVoiceStarted();
         }
 
         @Override
         public void onVoiceEnded() {
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> VoiceTranslationServiceCallback() -> onVoiceEnded" );
             super.onVoiceEnded();
             microphone.onVoiceEnded();
         }
 
         @Override
         public void onMessage(GuiMessage message) {
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> VoiceTranslationServiceCallback() -> onMessage" );
             super.onMessage(message);
             if (message != null) {
                 if (message.isFinal()) {
@@ -723,6 +739,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
         @Override
         public void onError(int[] reasons, long value) {
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> VoiceTranslationServiceCallback() -> onError" );
             for (int aReason : reasons) {
                 switch (aReason) {
                     case ErrorCodes.SAFETY_NET_EXCEPTION:
@@ -751,6 +768,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     }
 
     protected void onFailureConnectingWithService(int[] reasons, long value) {
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> VoiceTranslationServiceCallback() -> onFailureConnectingWithService" );
         for (int aReason : reasons) {
             switch (aReason) {
                 case ErrorCodes.MISSED_ARGUMENT:

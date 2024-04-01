@@ -17,6 +17,7 @@
 package nie.translator.rtranslatordevedition.settings;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toolbar;
 import androidx.appcompat.app.AlertDialog;
@@ -87,6 +88,7 @@ public class SettingsActivity extends GeneralActivity {
 
     @Override
     public void onBackPressed() {
+        Log.d("CHUNG-", String.format("CHUNG- SettingsActivity() -> onBackPressed() "));
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_settings_container);
         if (fragment != null) {
             if (fragment instanceof SettingsFragment) {
