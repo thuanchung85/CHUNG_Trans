@@ -485,8 +485,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 tempUserChungPhoneLanguage = "vi";
             }
             else{
-
-                tempUserChungPhoneLanguage = "en";
+                tempUserChungPhoneLanguage = activity.getResources().getConfiguration().locale.getLanguage();
+                //tempUserChungPhoneLanguage = "en";
             }
         }
         SendData_to_mSocket_FORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);

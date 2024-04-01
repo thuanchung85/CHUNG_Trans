@@ -626,8 +626,8 @@ public class PairingFragment extends PairingToolbarFragment {
                 tempUserChungPhoneLanguage = "vi";
             }
             else{
-
-                    tempUserChungPhoneLanguage = "en";
+                tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
+                    //tempUserChungPhoneLanguage = "en";
             }
         }
 
