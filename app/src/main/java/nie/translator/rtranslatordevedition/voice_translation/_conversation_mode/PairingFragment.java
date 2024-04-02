@@ -104,11 +104,13 @@ public class PairingFragment extends PairingToolbarFragment {
                         Log.d("CHUNG-", String.format("CHUNG- PairingFragment  mSocket() -> server reply CO VAN DE-> %b ", success));
                         return;
                     }
+
                     arr_recentPeersFormWebSocket.clear();
                     JSONArray usersArray = new JSONArray(jsonObject.getString("users"));
 
                     //duyet loop qua các user trong usersArray
                     for (int each =0 ; each < usersArray.length(); each++) {
+
 
                         JSONObject userObject = usersArray.getJSONObject(each); // Assuming there's only one user
                         String userUsername = userObject.getString("username");
@@ -116,10 +118,29 @@ public class PairingFragment extends PairingToolbarFragment {
                         if(currentNameOfuser.equals(userUsername) ){
                             continue;
                         }
+
+
+
                         String userFirstname = userObject.getString("firstname");
                         String userLastname = userObject.getString("lastname");
                         String userPersonal_language = userObject.getString("personal_language");
                         String userOnline = userObject.getString("online");
+
+                        if(userUsername.equals(global.getPeerWantTalkName())){
+                            if(!userOnline.equals("1")) {
+                                int currentFrag = voiceTranslationActivity.getCurrentFragment();
+                                if (currentFrag != VoiceTranslationActivity.PAIRING_FRAGMENT) {
+                                    //quy tro ve PAIRING_FRAGMENT run main thread show back dialog box
+                                    voiceTranslationActivity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            voiceTranslationActivity.onBackPressed();
+                                        }
+                                    });
+                                }
+                            }
+                        }
+
                         boolean userSkip = userObject.getBoolean("skip");
 
                         double userCreatedTime = userObject.getDouble("__createdtime__");

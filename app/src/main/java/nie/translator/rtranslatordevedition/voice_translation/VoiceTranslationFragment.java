@@ -340,7 +340,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         // nhận về Event receive_call để nhận
 
         Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onActivityCreated - > gọi mSocket.connect()");
-        //mSocket.on("users", onReceive_loginCallBack);
+        //global.mSocket.on("users", onReceive_UserStateCallBack);
 
         global.mSocket.on("receive_message", onReceive_receive_messageCallBack);
 

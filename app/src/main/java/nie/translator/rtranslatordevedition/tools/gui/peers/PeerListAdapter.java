@@ -195,12 +195,12 @@ public class PeerListAdapter extends BaseAdapter {
 
                 //check thêm nếu ok socket thi chuyển qua available cho text dưới chân
                 if(recentPeer.isAvailableSocket()){
-                    ((ImageButton) view.findViewById(R.id.threeDotsButton)).setColorFilter(ContextCompat.getColor(activity, R.color.green), PorterDuff.Mode.SRC_IN);
+                    ((ImageButton) view.findViewById(R.id.threeDotsButton)).setColorFilter(ContextCompat.getColor(activity, R.color.primary), PorterDuff.Mode.SRC_IN);
                     ((TextView) view.findViewById(R.id.path)).setText(R.string.available);
-                    ((TextView) view.findViewById(R.id.path)).setTextColor(activity.getResources().getColor(R.color.green));
-                    ((ImageView) view.findViewById(R.id.user_image_recent)).setColorFilter(ContextCompat.getColor(activity, R.color.green), PorterDuff.Mode.SRC_IN);
+                    ((TextView) view.findViewById(R.id.path)).setTextColor(activity.getResources().getColor(R.color.primary));
+                    ((ImageView) view.findViewById(R.id.user_image_recent)).setColorFilter(ContextCompat.getColor(activity, R.color.primary), PorterDuff.Mode.SRC_IN);
 
-                    ((TextView) view.findViewById(R.id.textRowRecent)).setTextColor(activity.getResources().getColor(R.color.green));
+                    ((TextView) view.findViewById(R.id.textRowRecent)).setTextColor(activity.getResources().getColor(R.color.primary));
                 }
             }
             ((TextView) view.findViewById(R.id.textRowRecent)).setText(peerName);
