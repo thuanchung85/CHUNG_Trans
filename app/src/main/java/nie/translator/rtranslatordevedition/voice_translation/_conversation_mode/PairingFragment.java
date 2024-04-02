@@ -115,6 +115,8 @@ public class PairingFragment extends PairingToolbarFragment {
                         JSONObject userObject = usersArray.getJSONObject(each); // Assuming there's only one user
                         String userUsername = userObject.getString("username");
                         String currentNameOfuser = global.getName();
+
+                        //nếu trong boardcast có tên của chính user hiện tại thì bỏ qua, không cho vào array list của arr_recentPeersFormWebSocket
                         if(currentNameOfuser.equals(userUsername) ){
                             continue;
                         }
@@ -126,6 +128,7 @@ public class PairingFragment extends PairingToolbarFragment {
                         String userPersonal_language = userObject.getString("personal_language");
                         String userOnline = userObject.getString("online");
 
+                        //nếu user kia mà bị offline với bất kỳ lí do gì thì thông báo user này off
                         if(userUsername.equals(global.getPeerWantTalkName())){
                             if(!userOnline.equals("1")) {
                                 int currentFrag = voiceTranslationActivity.getCurrentFragment();
@@ -134,6 +137,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                     voiceTranslationActivity.runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            //user còn online trong room chat sẽ bị auto đá ra bởi lệnh dưới, do user kia tắt app
                                             voiceTranslationActivity.onBackPressed();
                                         }
                                     });

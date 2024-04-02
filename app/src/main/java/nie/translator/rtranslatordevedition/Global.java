@@ -78,7 +78,7 @@ public class Global extends Application {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             mSocket.emit("login", jsonObject);
-            Log.d("CHUNG-", "CHUNG- PairingFragment() -> mSocket.emit(\"login\", jsonObject);");
+            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"login\", jsonObject);");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -92,11 +92,26 @@ public class Global extends Application {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             mSocket.emit("call", jsonObject);
-            Log.d("CHUNG-", "CHUNG- ConversationFragment() -> mSocket.emit(\"call\", jsonObject);");
+            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"call\", jsonObject);");
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
+    //emit end_call
+    public void SendData_to_mSocket_FOR_END_CONNECT2USER(String fromUser, String toUser) {
+
+        String jsonString = String.format("{\"from\": \"%s\", \"to\": \"%s\"}",fromUser, toUser);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("end_call", jsonObject);
+            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"end_call\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     //bắn vào socket thông tin event là send_message json là { message, username, to, createdtime }
     public void SendData_to_mSocket_FOR_SENDMESSAGE(String message, String fromUser, String toOtherUser ) {
@@ -106,7 +121,7 @@ public class Global extends Application {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             mSocket.emit("send_message", jsonObject);
-            Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> mSocket.emit(\"send_message\", jsonObject);");
+            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"send_message\", jsonObject);");
         } catch (JSONException e) {
             e.printStackTrace();
         }

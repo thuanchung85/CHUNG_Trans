@@ -35,7 +35,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.Fragment;
+
 import java.util.ArrayList;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
@@ -129,11 +129,11 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Toolbar toolbar = activity.findViewById(R.id.toolbarWalkieTalkie);
-        activity.setActionBar(toolbar);
+        Toolbar toolbar = voiceTranslationActivity.findViewById(R.id.toolbarWalkieTalkie);
+        voiceTranslationActivity.setActionBar(toolbar);
         // we give the constraint layout the information on the system measures (status bar etc.), which has the fragmentContainer,
         // because they are not passed to it if started with a Transaction and therefore it overlaps the status bar because it fitsSystemWindows does not work
-        WindowInsets windowInsets = activity.getFragmentContainer().getRootWindowInsets();
+        WindowInsets windowInsets = voiceTranslationActivity.getFragmentContainer().getRootWindowInsets();
         if (windowInsets != null) {
             constraintLayout.dispatchApplyWindowInsets(windowInsets.replaceSystemWindowInsets(windowInsets.getSystemWindowInsetLeft(),windowInsets.getSystemWindowInsetTop(),windowInsets.getSystemWindowInsetRight(),0));
         }
@@ -141,7 +141,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         exitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                activity.onBackPressed();
+                voiceTranslationActivity.onBackPressed();
             }
         });
     }
@@ -169,7 +169,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     @Override
     protected void connectToService() {
         super.connectToService();
-        activity.connectToWalkieTalkieService(voiceTranslationServiceCallback, new ServiceCommunicatorListener() {
+        voiceTranslationActivity.connectToWalkieTalkieService(voiceTranslationServiceCallback, new ServiceCommunicatorListener() {
             @Override
             public void onServiceCommunicator(ServiceCommunicator serviceCommunicator) {
                 voiceTranslationServiceCommunicator = (VoiceTranslationService.VoiceTranslationServiceCommunicator) serviceCommunicator;
@@ -225,14 +225,14 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
             }
         }
 
-        final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_languages, null);
+        final View editDialogLayout = voiceTranslationActivity.getLayoutInflater().inflate(R.layout.dialog_languages, null);
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(voiceTranslationActivity);
         builder.setCancelable(true);
         builder.setTitle(title);
 
         dialog = builder.create();
-        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 16), 0, 0);
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(voiceTranslationActivity, 16), 0, 0);
         dialog.show();
 
         listViewGui = editDialogLayout.findViewById(R.id.list_view_dialog);
@@ -280,7 +280,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 progressBar.setVisibility(View.GONE);
                 listViewGui.setVisibility(View.VISIBLE);
 
-                listView = new LanguageListAdapter(activity, languages, selectedLanguage);
+                listView = new LanguageListAdapter(voiceTranslationActivity, languages, selectedLanguage);
                 listViewGui.setAdapter(listView);
                 listViewGui.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -315,7 +315,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         mHandler.removeCallbacksAndMessages(null);
         firstLanguageSelector.setOnClickListener(null);
         secondLanguageSelector.setOnClickListener(null);
-        activity.disconnectFromWalkieTalkieService((WalkieTalkieService.WalkieTalkieServiceCommunicator) voiceTranslationServiceCommunicator);
+        voiceTranslationActivity.disconnectFromWalkieTalkieService((WalkieTalkieService.WalkieTalkieServiceCommunicator) voiceTranslationServiceCommunicator);
     }
 
     private void setFirstLanguage(CustomLocale language) {
@@ -344,10 +344,10 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 case ErrorCodes.MISSED_ARGUMENT:
                 case ErrorCodes.SAFETY_NET_EXCEPTION:
                 case ErrorCodes.MISSED_CONNECTION:
-                    Toast.makeText(activity, getResources().getString(R.string.error_internet_lack_loading_languages), Toast.LENGTH_LONG).show();
+                    Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_internet_lack_loading_languages), Toast.LENGTH_LONG).show();
                     break;
                 default:
-                    activity.onError(aReason, value);
+                    voiceTranslationActivity.onError(aReason, value);
                     break;
             }
         }

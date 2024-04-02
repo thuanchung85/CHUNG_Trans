@@ -424,6 +424,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
     }
 
     @Override
+    //khi user bấm nút back hình cái cửa trên góc trên tay phải của app
     public void onBackPressed() {
         DialogInterface.OnClickListener confirmExitListener = new DialogInterface.OnClickListener() {
             @Override
@@ -464,7 +465,52 @@ public class VoiceTranslationActivity extends GeneralActivity {
         } else {
             super.onBackPressed();
         }
+
+        //===bắn vô socket end_call ===//
+        global.SendData_to_mSocket_FOR_END_CONNECT2USER(global.getName(),global.getPeerWantTalkName());
     }
+    public void onBackPressed_NOTCALL_AGAIN() {
+        DialogInterface.OnClickListener confirmExitListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                exitFromVoiceTranslation();
+            }
+        };
+
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if (fragment != null) {
+            if (fragment instanceof ConversationFragment) {
+                Fragment currentChildFragment = ((ConversationFragment) fragment).getCurrentFragment();
+                if (currentChildFragment instanceof ConversationMainFragment) {
+                    ConversationMainFragment conversationMainFragment = (ConversationMainFragment) currentChildFragment;
+                    if (conversationMainFragment.isInputActive()) {
+                        if (conversationMainFragment.isEditTextOpen()) {
+                            conversationMainFragment.deleteEditText();
+                        } else {
+                            showConfirmExitDialog(confirmExitListener);
+                        }
+                    }
+                } else {
+                    showConfirmExitDialog(confirmExitListener);
+                }
+            } else if (fragment instanceof WalkieTalkieFragment) {
+                WalkieTalkieFragment walkieTalkieFragment = (WalkieTalkieFragment) fragment;
+                if (walkieTalkieFragment.isInputActive()) {
+                    if (walkieTalkieFragment.isEditTextOpen()) {
+                        walkieTalkieFragment.deleteEditText();
+                    } else {
+                        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment "+ currentFragment);
+                        setFragment(DEFAULT_FRAGMENT);
+                    }
+                }
+            } else {
+                super.onBackPressed();
+            }
+        } else {
+            super.onBackPressed();
+        }
+    }
+
 
     public void exitFromVoiceTranslation() {
         if (global.getBluetoothCommunicator().getConnectedPeersList().size() > 0) {

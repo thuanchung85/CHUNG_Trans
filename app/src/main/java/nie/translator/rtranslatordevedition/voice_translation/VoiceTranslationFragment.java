@@ -42,14 +42,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
-import io.socket.client.IO;
-import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
@@ -62,14 +57,34 @@ import nie.translator.rtranslatordevedition.tools.gui.DeactivableButton;
 import nie.translator.rtranslatordevedition.tools.gui.MicrophoneComunicable;
 import nie.translator.rtranslatordevedition.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslatordevedition.tools.gui.messages.MessagesAdapter;
-import nie.translator.rtranslatordevedition.tools.gui.peers.PeerListAdapter;
-import nie.translator.rtranslatordevedition.tools.gui.peers.array.PairingArray;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 
 //===QUAN TRONG==//
 public abstract class VoiceTranslationFragment extends Fragment implements MicrophoneComunicable {
 
-    //=================khi nhận được login từ server trả về================//
+    //=================khi nhận được endcall từ server trả về================//
+    private Emitter.Listener onReceive_UserEndCallCallBack = new Emitter.Listener(){
+        @Override
+        //hàm websocket server tra ra data về
+        public void call(final Object... args){
+            String argsReponse =  Arrays.toString(args);
+            try {
+                JSONArray jsonArray = new JSONArray(argsReponse);
+                //quay trơ về parring page
+                Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> ENd_CALL ->GET BACK");
+                voiceTranslationActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //user còn online trong room chat sẽ bị auto đá ra bởi lệnh dưới, do user kia tắt app
+                        voiceTranslationActivity.onBackPressed_NOTCALL_AGAIN();
+                    }
+                });
+
+            } catch (JSONException e) {
+                Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onReceive_UserEndCallCallBack ->JSONException  " + e.getMessage() );
+                throw new RuntimeException(e);
+            }
+        }
+    };
 
     //======khi nhận được receive_message từ server gọi về
     private Emitter.Listener onReceive_receive_messageCallBack = new Emitter.Listener(){
@@ -88,28 +103,14 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     String socketreturn_to = jsonObject.getString("to");
                     String socketreturn_translated = jsonObject.getString("translated");
 
-                    //gan text phan hoi vao recyclerview tren UI( neu la tu user khac)
-                    if(socketreturn_from.equals(global.getName())) {
-                        activity.runOnUiThread(new Runnable() {
-                                //ghi ra câu dịch của text của chính mình
-                            @Override
-                            public void run() {
-                               // Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() ->runOnUiThread update recyclerview ");
-                                //Message mstypeFORGUI = new Message(activity, socketreturn_from, socketreturn_translated);
-                                //GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true);
-                               // if (mAdapter != null) {mAdapter.addMessage(msFOR_recyclerview);}
-
-                            };
-                        });
-                    }
-                    //tu user khac reply (co the là johnpham)
-                    else{
-                        activity.runOnUiThread(new Runnable() {
-
+                    //gan text phan hoi vao recyclerview tren UI( neu la tu user khac)  //tu user khac reply (co the là johnpham)
+                    if(!socketreturn_from.equals(global.getName()))
+                    {
+                        voiceTranslationActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() ->runOnUiThread update recyclerview ");
-                                Message mstypeFORGUI = new Message(activity, socketreturn_from, socketreturn_translated + "\n(" + socketreturn_message +")");
+                                Message mstypeFORGUI = new Message(voiceTranslationActivity, socketreturn_from, socketreturn_translated + "\n(" + socketreturn_message +")");
                                 GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, false, true);
                                 if (mAdapter != null) {
                                     mAdapter.addMessage(msFOR_recyclerview);
@@ -118,8 +119,6 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                                     smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
                                     mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
                                 }
-
-
                             };
                         });
                     }
@@ -146,7 +145,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     //gui
     private boolean isEditTextOpen = false;
     private boolean isInputActive = true;
-    protected VoiceTranslationActivity activity;
+    protected VoiceTranslationActivity voiceTranslationActivity;
     protected Global global;
     private ButtonKeyboard keyboard;
     protected ButtonMic microphone;
@@ -219,12 +218,12 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onActivityCreated() "));
         super.onActivityCreated(savedInstanceState);
-        activity = (VoiceTranslationActivity) requireActivity();
-        global = (Global) activity.getApplication();
-        LinearLayoutManager layoutManager = new LinearLayoutManager(activity);
+        voiceTranslationActivity = (VoiceTranslationActivity) requireActivity();
+        global = (Global) voiceTranslationActivity.getApplication();
+        LinearLayoutManager layoutManager = new LinearLayoutManager(voiceTranslationActivity);
         layoutManager.setStackFromEnd(true);
         mRecyclerView.setLayoutManager(layoutManager);
-        smoothScroller = new LinearSmoothScroller(activity) {
+        smoothScroller = new LinearSmoothScroller(voiceTranslationActivity) {
             @Override
             protected int calculateTimeForScrolling(int dx) {
                 return 100;
@@ -234,7 +233,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         final View.OnClickListener deactivatedClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(activity, getResources().getString(R.string.error_wait_initialization), Toast.LENGTH_SHORT).show();
+                Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_wait_initialization), Toast.LENGTH_SHORT).show();
             }
         };
 
@@ -255,7 +254,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
             @Override
             public void onClick(View view) {
                 isEditTextOpen = true;
-                keyboard.generateEditText(activity, VoiceTranslationFragment.this, microphone, editText, true);
+                keyboard.generateEditText(voiceTranslationActivity, VoiceTranslationFragment.this, microphone, editText, true);
                 voiceTranslationServiceCommunicator.setEditTextOpen(true);
             }
         });
@@ -275,7 +274,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     case ButtonMic.STATE_RETURN:
                         isEditTextOpen = false;
                         voiceTranslationServiceCommunicator.setEditTextOpen(false);
-                        microphone.deleteEditText(activity, VoiceTranslationFragment.this, keyboard, editText);
+                        microphone.deleteEditText(voiceTranslationActivity, VoiceTranslationFragment.this, keyboard, editText);
                         break;
                     case ButtonMic.STATE_SEND:
                         // sending the message to be translated to the service
@@ -291,7 +290,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 if (microphone.getState() == ButtonMic.STATE_RETURN) {
                     isEditTextOpen = false;
                     voiceTranslationServiceCommunicator.setEditTextOpen(false);
-                    microphone.deleteEditText(activity, VoiceTranslationFragment.this, keyboard, editText);
+                    microphone.deleteEditText(voiceTranslationActivity, VoiceTranslationFragment.this, keyboard, editText);
                 }
             }
         });
@@ -301,9 +300,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 if (microphone.getState() == ButtonMic.STATE_RETURN) {
                     isEditTextOpen = false;
                     voiceTranslationServiceCommunicator.setEditTextOpen(false);
-                    microphone.deleteEditText(activity, VoiceTranslationFragment.this, keyboard, editText);
+                    microphone.deleteEditText(voiceTranslationActivity, VoiceTranslationFragment.this, keyboard, editText);
                 } else {
-                    Toast.makeText(activity, R.string.error_missing_mic_permissions, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(voiceTranslationActivity, R.string.error_missing_mic_permissions, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -313,7 +312,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 if (microphone.getState() == ButtonMic.STATE_RETURN) {
                     isEditTextOpen = false;
                     voiceTranslationServiceCommunicator.setEditTextOpen(false);
-                    microphone.deleteEditText(activity, VoiceTranslationFragment.this, keyboard, editText);
+                    microphone.deleteEditText(voiceTranslationActivity, VoiceTranslationFragment.this, keyboard, editText);
                 } else {
                     deactivatedClickListener.onClick(v);
                 }
@@ -325,9 +324,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 if (microphone.getState() == ButtonMic.STATE_RETURN) {
                     isEditTextOpen = false;
                     voiceTranslationServiceCommunicator.setEditTextOpen(false);
-                    microphone.deleteEditText(activity, VoiceTranslationFragment.this, keyboard, editText);
+                    microphone.deleteEditText(voiceTranslationActivity, VoiceTranslationFragment.this, keyboard, editText);
                 } else {
-                    Toast.makeText(activity, getResources().getString(R.string.error_invalid_key), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_invalid_key), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -340,13 +339,16 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         // nhận về Event receive_call để nhận
 
         Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onActivityCreated - > gọi mSocket.connect()");
-        //global.mSocket.on("users", onReceive_UserStateCallBack);
 
+        //đăng ký khi event socket tra ve là receive_end_call -> kiêu user thoát chat trở về parring page
+        global.mSocket.on("receive_end_call", onReceive_UserEndCallCallBack);
+
+        //đăng ký khi event socket tra ve là receive_message -> hiện message chat lên listview
         global.mSocket.on("receive_message", onReceive_receive_messageCallBack);
 
 
          nameOfpeerWantConnect = global.getPeerWantTalkName();
-        Toast.makeText(activity, "You will connect to " + nameOfpeerWantConnect, Toast.LENGTH_SHORT).show();
+        Toast.makeText(voiceTranslationActivity, "You will connect to " + nameOfpeerWantConnect, Toast.LENGTH_SHORT).show();
        // String tempUserChungPhone =  global.getName();
        // String tempUserChungPhoneFirstname =  "f_" + global.getName();
         //String tempUserChungPhoneLastname =  "l_" + global.getName();
@@ -396,8 +398,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onStop() "));
         super.onStop();
         deactivateInputs(DeactivableButton.DEACTIVATED);
-        if (activity.getCurrentFragment() != VoiceTranslationActivity.DEFAULT_FRAGMENT) {
-            Toast.makeText(activity, getResources().getString(R.string.toast_working_background), Toast.LENGTH_SHORT).show();
+        if (voiceTranslationActivity.getCurrentFragment() != VoiceTranslationActivity.DEFAULT_FRAGMENT) {
+            Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.toast_working_background), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -421,7 +423,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 // restore editText
                 VoiceTranslationFragment.this.isEditTextOpen = isEditTextOpen;
                 if (isEditTextOpen) {
-                    keyboard.generateEditText(activity, VoiceTranslationFragment.this, microphone, editText, false);
+                    keyboard.generateEditText(voiceTranslationActivity, VoiceTranslationFragment.this, microphone, editText, false);
                 }
                 if (isBluetoothHeadsetConnected) {
                     voiceTranslationServiceCallback.onBluetoothHeadsetConnected();
@@ -496,7 +498,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     public void deleteEditText() {
         isEditTextOpen = false;
         voiceTranslationServiceCommunicator.setEditTextOpen(false);
-        microphone.deleteEditText(activity, VoiceTranslationFragment.this, keyboard, editText);
+        microphone.deleteEditText(voiceTranslationActivity, VoiceTranslationFragment.this, keyboard, editText);
     }
 
     public boolean isInputActive() {
@@ -521,7 +523,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
         for (int grantResult : grantResults) {
             if (grantResult == PackageManager.PERMISSION_DENIED) {
-                Toast.makeText(activity, R.string.error_missing_mic_permissions, Toast.LENGTH_LONG).show();
+                Toast.makeText(voiceTranslationActivity, R.string.error_missing_mic_permissions, Toast.LENGTH_LONG).show();
                 deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
                 return;
             }
@@ -628,22 +630,22 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 switch (aReason) {
                     case ErrorCodes.SAFETY_NET_EXCEPTION:
                     case ErrorCodes.MISSED_CONNECTION:
-                        activity.showInternetLackDialog(R.string.error_internet_lack_services, null);
+                        voiceTranslationActivity.showInternetLackDialog(R.string.error_internet_lack_services, null);
                         break;
                     case ErrorCodes.MISSING_GOOGLE_TTS:
                         sound.setMute(true);
-                        activity.showMissingGoogleTTSDialog();
+                        voiceTranslationActivity.showMissingGoogleTTSDialog();
                         break;
                     case ErrorCodes.GOOGLE_TTS_ERROR:
                         sound.setMute(true);
-                        activity.showGoogleTTSErrorDialog();
+                        voiceTranslationActivity.showGoogleTTSErrorDialog();
                         break;
                     case VoiceTranslationService.MISSING_MIC_PERMISSION: {
                         requestPermissions(VoiceTranslationService.REQUIRED_PERMISSIONS, VoiceTranslationService.REQUEST_CODE_REQUIRED_PERMISSIONS);
                         break;
                     }
                     default: {
-                        activity.onError(aReason, value);
+                        voiceTranslationActivity.onError(aReason, value);
                         break;
                     }
                 }
@@ -659,12 +661,12 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 case ErrorCodes.SAFETY_NET_EXCEPTION:
                 case ErrorCodes.MISSED_CONNECTION:
                     //creation of the dialog.
-                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(voiceTranslationActivity);
                     builder.setMessage(R.string.error_internet_lack_accessing);
                     builder.setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            activity.exitFromVoiceTranslation();
+                            voiceTranslationActivity.exitFromVoiceTranslation();
                         }
                     });
                     builder.setPositiveButton(R.string.retry, new DialogInterface.OnClickListener() {
@@ -678,10 +680,10 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     dialog.show();
                     break;
                 case ErrorCodes.MISSING_GOOGLE_TTS:
-                    activity.showMissingGoogleTTSDialog();
+                    voiceTranslationActivity.showMissingGoogleTTSDialog();
                     break;
                 case ErrorCodes.GOOGLE_TTS_ERROR:
-                    activity.showGoogleTTSErrorDialog(new DialogInterface.OnClickListener() {
+                    voiceTranslationActivity.showGoogleTTSErrorDialog(new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             connectToService();
@@ -690,40 +692,40 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     break;
                 case ErrorCodes.MISSING_API_KEY: {
                     deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_OR_WRONG_KEYFILE);
-                    activity.showApiKeyFileErrorDialog(R.string.error_missing_api_key_file, new DialogInterface.OnClickListener() {
+                    voiceTranslationActivity.showApiKeyFileErrorDialog(R.string.error_missing_api_key_file, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(activity, ApiManagementActivity.class);
+                            Intent intent = new Intent(voiceTranslationActivity, ApiManagementActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
                         }
                     }, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            activity.exitFromVoiceTranslation();
+                            voiceTranslationActivity.exitFromVoiceTranslation();
                         }
                     });
                     break;
                 }
                 case ErrorCodes.WRONG_API_KEY: {
                     deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_OR_WRONG_KEYFILE);
-                    activity.showApiKeyFileErrorDialog(R.string.error_wrong_api_key_file, new DialogInterface.OnClickListener() {
+                    voiceTranslationActivity.showApiKeyFileErrorDialog(R.string.error_wrong_api_key_file, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(activity, ApiManagementActivity.class);
+                            Intent intent = new Intent(voiceTranslationActivity, ApiManagementActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
                         }
                     }, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            activity.exitFromVoiceTranslation();
+                            voiceTranslationActivity.exitFromVoiceTranslation();
                         }
                     });
                     break;
                 }
                 default:
-                    activity.onError(aReason, value);
+                    voiceTranslationActivity.onError(aReason, value);
                     break;
             }
         }

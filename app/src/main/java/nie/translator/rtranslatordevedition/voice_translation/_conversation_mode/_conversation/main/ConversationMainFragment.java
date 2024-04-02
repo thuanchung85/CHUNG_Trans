@@ -113,7 +113,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     @Override
     protected void connectToService() {
         super.connectToService();
-        activity.connectToConversationService(voiceTranslationServiceCallback, new ServiceCommunicatorListener() {
+        voiceTranslationActivity.connectToConversationService(voiceTranslationServiceCallback, new ServiceCommunicatorListener() {
             @Override
             public void onServiceCommunicator(ServiceCommunicator serviceCommunicator) {
                 voiceTranslationServiceCommunicator = (ConversationService.ConversationServiceCommunicator) serviceCommunicator;
@@ -131,7 +131,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     public void onStop() {
         super.onStop();
         mHandler.removeCallbacksAndMessages(null);
-        activity.disconnectFromConversationService((ConversationService.ConversationServiceCommunicator) voiceTranslationServiceCommunicator);
+        voiceTranslationActivity.disconnectFromConversationService((ConversationService.ConversationServiceCommunicator) voiceTranslationServiceCommunicator);
 
     }
 
