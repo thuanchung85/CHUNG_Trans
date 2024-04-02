@@ -106,7 +106,7 @@ public class Global extends Application {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             mSocket.emit("end_call", jsonObject);
-            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"end_call\", jsonObject);");
+            Log.d("CHUNG-", "CHUNG- global() -> END_CALL END_CALL END_CALL ");
         } catch (JSONException e) {
             e.printStackTrace();
         }

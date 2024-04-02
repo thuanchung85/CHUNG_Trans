@@ -430,6 +430,9 @@ public class VoiceTranslationActivity extends GeneralActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 exitFromVoiceTranslation();
+
+                //===bắn vô socket end_call ===//
+                global.SendData_to_mSocket_FOR_END_CONNECT2USER(global.getName(),global.getPeerWantTalkName());
             }
         };
 
@@ -466,8 +469,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
             super.onBackPressed();
         }
 
-        //===bắn vô socket end_call ===//
-        global.SendData_to_mSocket_FOR_END_CONNECT2USER(global.getName(),global.getPeerWantTalkName());
+
     }
     public void onBackPressed_NOTCALL_AGAIN() {
         DialogInterface.OnClickListener confirmExitListener = new DialogInterface.OnClickListener() {

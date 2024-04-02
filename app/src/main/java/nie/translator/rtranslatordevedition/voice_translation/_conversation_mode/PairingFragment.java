@@ -242,7 +242,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                                public void run() {
                                                    //show dialogbox ok connect or not
                                                    connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
-                                                           "SOME ONE ASK YOU JOIN ROOM: " + room + " ?",
+                                                            room.split(":")[0] + " want connect with you ?",
                                                            15000, new DialogInterface.OnClickListener() {
                                                        @Override
                                                        public void onClick(DialogInterface dialog, int which) {
@@ -613,7 +613,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                     if(isOnlineSocket == true) {
                                         //bật ra dialog box hỏi request connect websocket
                                         connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
-                                                "Do You want to connect" + peer.getName() + " ?",
+                                                "Do you want to connect to " + peer.getName() + " ?",
                                                 15000, new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
