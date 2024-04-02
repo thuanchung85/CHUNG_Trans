@@ -93,7 +93,7 @@
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_credit">APIs management</string>
 
-    <string name="header_recents_peers">recents peer user</string>
+    <string name="header_recents_peers">Socket users</string>
     <string name="header_found_peers">found</string>
     <string name="header_connected_peers">connected</string>
     <string name="header_key">APIs key</string>

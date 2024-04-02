@@ -386,6 +386,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         //khi qua trang khac thi bỏ connect socket củ
         //global.mSocket.off("receive_call");
         Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onDestroy - > gọi mSocket.disconnect()");
+        global.mSocket.off("receive_end_call");
 
     }
 

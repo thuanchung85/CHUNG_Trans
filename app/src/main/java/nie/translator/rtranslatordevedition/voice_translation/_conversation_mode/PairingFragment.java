@@ -590,7 +590,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                 connect(peer);
                             }
                             else{
-                                Toast.makeText(voiceTranslationActivity, "không thoải điều kiện là 1 PEER", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(voiceTranslationActivity, "This is not PEER", Toast.LENGTH_SHORT).show();
 
                             }
 
@@ -646,11 +646,11 @@ public class PairingFragment extends PairingToolbarFragment {
                                     //chơi ăn gian===> đi thẳng vào luôn
                                     //voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
 
-                                    Toast.makeText(voiceTranslationActivity, "không thoải điều kiện là 1 RECENTPEER có recentPeer.isAvailable() = true", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(voiceTranslationActivity, "user is not available", Toast.LENGTH_SHORT).show();
                                 }
                             }
                             else{
-                                Toast.makeText(voiceTranslationActivity, "không thoải điều kiện là 1 RECENTPEER", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(voiceTranslationActivity, "This is not RECENT PEER", Toast.LENGTH_SHORT).show();
                             }
 
                         } else {
