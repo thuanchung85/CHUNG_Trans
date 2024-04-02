@@ -39,7 +39,7 @@ public class SeekBarPreference extends Preference {
     public static final int SPEECH_TIMEOUT_MODE = 1;
     public static final int PREV_VOICE_DURATION_MODE = 2;
     private int mode;
-    private int defaultValue = 50;
+    private int defaultValue = 100;
     private SeekBar seekBar;
     private TextView value;
     private TextView title;

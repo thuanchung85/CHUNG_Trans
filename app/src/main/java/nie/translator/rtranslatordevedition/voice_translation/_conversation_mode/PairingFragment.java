@@ -37,6 +37,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
+import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -65,11 +66,14 @@ import nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationAc
 import com.bluetooth.communicator.BluetoothCommunicator;
 import com.bluetooth.communicator.Peer;
 import com.bluetooth.communicator.tools.Timer;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.User;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
 
@@ -86,7 +90,7 @@ public class PairingFragment extends PairingToolbarFragment {
         @Override
         //hàm websocket server tra ra data về
         public void call(final Object... args) {
-            Log.d("CHUNG-", String.format("CHUNG- PairingFragment - > mSocket() -> server reply -> %s ", args.toString()));
+            Log.d("CHUNG-", String.format("CHUNG- PairingFragment - > mSocket() ->onLoginCallBack server reply -> %s ", args.toString()));
             String argsReponse =  Arrays.toString(args);
             //covert json data từ server về data native android
             try {
@@ -97,14 +101,10 @@ public class PairingFragment extends PairingToolbarFragment {
                     boolean success = jsonObject.getBoolean("success");
                     System.out.println(success);
                     if(success != true){
-                        Log.d("CHUNG-", String.format("CHUNG- mSocket() -> server reply CO VAN DE-> %b ", success));
+                        Log.d("CHUNG-", String.format("CHUNG- PairingFragment  mSocket() -> server reply CO VAN DE-> %b ", success));
                         return;
                     }
-                    String username = jsonObject.getString("username");
-                    System.out.println(username);
-                    long createdTime = jsonObject.getLong("__createdtime__");
-                    System.out.println(createdTime);
-
+                    arr_recentPeersFormWebSocket.clear();
                     JSONArray usersArray = new JSONArray(jsonObject.getString("users"));
 
                     //duyet loop qua các user trong usersArray
@@ -112,6 +112,10 @@ public class PairingFragment extends PairingToolbarFragment {
 
                         JSONObject userObject = usersArray.getJSONObject(each); // Assuming there's only one user
                         String userUsername = userObject.getString("username");
+                        String currentNameOfuser = global.getName();
+                        if(currentNameOfuser.equals(userUsername) ){
+                            continue;
+                        }
                         String userFirstname = userObject.getString("firstname");
                         String userLastname = userObject.getString("lastname");
                         String userPersonal_language = userObject.getString("personal_language");
@@ -219,8 +223,13 @@ public class PairingFragment extends PairingToolbarFragment {
                                                        public void onClick(DialogInterface dialog, int which) {
                                                            Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
 
+                                                           //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
+                                                           global.mSocket.off("receive_call");
+
+
                                                            //chơi ăn gian===> đi thẳng vào luôn
                                                            voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+
                                                        }
                                                    }, new DialogInterface.OnClickListener() {
                                                        @Override
@@ -248,49 +257,12 @@ public class PairingFragment extends PairingToolbarFragment {
     };
 
 
-    //khởi tạo websocket object
-    private Socket mSocket;
-    {
-        try {
-            String urlS = "http://27.74.249.34:8017";
-
-            mSocket = IO.socket(urlS);
-            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() PairingFragment -> DA TAO SUCCESSES!!"+ mSocket);
 
 
 
-        } catch (URISyntaxException e) {
-            Log.d("CHUNG-", "CHUNG- PairingFragment()  -> mSocket() PairingFragment -> FAIL ->  "+ e.getMessage());
-
-        }
-    }
-
-    public void SendData_to_mSocketFORLOGIN(String usernamedata, String firstnamedata, String lastnamedata , String personal_languagedata) {
-
-        String jsonString = String.format("{\"username\": \"%s\", \"firstname\": \"%s\", \"lastname\": \"%s\", \"personal_language\": \"%s\"}",usernamedata, firstnamedata, lastnamedata, personal_languagedata);
-        //covert string to json
-        try {
-            JSONObject jsonObject = new JSONObject(jsonString);
-            mSocket.emit("login", jsonObject);
-            Log.d("CHUNG-", "CHUNG- PairingFragment() -> mSocket.emit(\"login\", jsonObject);");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
 
-    public void SendData_to_mSocket_FORCONNECT2USER(String fromUser, String toUser) {
 
-        String jsonString = String.format("{\"from\": \"%s\", \"to\": \"%s\"}",fromUser, toUser);
-        //covert string to json
-        try {
-            JSONObject jsonObject = new JSONObject(jsonString);
-            mSocket.emit("call", jsonObject);
-            Log.d("CHUNG-", "CHUNG- ConversationFragment() -> mSocket.emit(\"call\", jsonObject);");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
 
     public static final int CONNECTION_TIMEOUT = 5000;
@@ -622,7 +594,10 @@ public class PairingFragment extends PairingToolbarFragment {
                                             public void onClick(DialogInterface dialog, int which) {
                                                 Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
 
-                                                SendData_to_mSocket_FORCONNECT2USER(global.getName(), peer.getName());
+                                                //emit call len serversocket
+                                                global.SendData_to_mSocket_FORCONNECT2USER(global.getName(), peer.getName());
+                                                //khi qua trang khac thi bỏ ghe event receive_call socket của chính mình
+                                                global.mSocket.off("receive_call");
 
                                                 //chơi ăn gian===> đi thẳng vào luôn
                                                 voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
@@ -701,15 +676,16 @@ public class PairingFragment extends PairingToolbarFragment {
 
         ///====KHỞi Tạo SOCKET CONNECTION========//
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
-        mSocket.on("users", onLoginCallBack);
-        mSocket.on("receive_call", onReceive_call_CallBack);
-        mSocket.connect();
+        global.mSocket.on("users", onLoginCallBack);
+        global.mSocket.on("receive_call", onReceive_call_CallBack);
+        global.mSocket.connect();
 
         //bắn data vào websocket thông tin của user
         String tempUserChungPhone =  global.getName();
         String tempUserChungPhoneFirstname =  "f_" + global.getName();
         String tempUserChungPhoneLastname =  "l_" + global.getName();
         String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
+        /*
         String lang = global.getCurrentLanguageinPhone();
 
         if(lang != "") {
@@ -725,9 +701,9 @@ public class PairingFragment extends PairingToolbarFragment {
         }
         else{
             tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
-        }
-        Toast.makeText(voiceTranslationActivity, lang + "->" + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
-        SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
+        }*/
+        Toast.makeText(voiceTranslationActivity, "lang" + "->" + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
+        global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
     }
 
     @Override
@@ -781,6 +757,17 @@ public class PairingFragment extends PairingToolbarFragment {
             voiceTranslationActivity.disconnect(connectingPeer);
             connectingPeer = null;
         }
+
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //khi qua trang khac thi bỏ connect socket củ
+        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onDestroy - > gọi mSocket.disconnect()");
+       // mSocket.off("receive_call");
+       // mSocket.disconnect();
     }
 
     private void connect(final Peer peer) {

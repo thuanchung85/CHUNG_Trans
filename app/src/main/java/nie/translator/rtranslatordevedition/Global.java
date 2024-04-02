@@ -31,23 +31,89 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import io.socket.client.IO;
+import io.socket.client.Socket;
 import nie.translator.rtranslatordevedition.api_management.ConsumptionsDataManager;
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.ErrorCodes;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
 import com.bluetooth.communicator.BluetoothCommunicator;
 import com.bluetooth.communicator.Peer;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.translation.Translator;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.voice.Recorder;
 
 
 public class Global extends Application {
+    ////////////////////////////===============================START SOCKET ZONE=================//////
+    //khởi tạo websocket object
+    public Socket mSocket;
+    {
+        try {
+            String urlS = "http://27.74.249.34:8017";
+            mSocket = IO.socket(urlS);
+            Log.d("CHUNG-", "CHUNG- Global()  -> mSocket() Global -> DA TAO SUCCESSES!!"+ mSocket);
+
+        } catch (URISyntaxException e) {
+            Log.d("CHUNG-", "CHUNG- Global()  -> mSocket() Global -> FAIL ->  "+ e.getMessage());
+
+        }
+    }
+    //emit login
+    public void SendData_to_mSocketFORLOGIN(String usernamedata, String firstnamedata, String lastnamedata , String personal_languagedata) {
+
+        String jsonString = String.format("{\"username\": \"%s\", \"firstname\": \"%s\", \"lastname\": \"%s\", \"personal_language\": \"%s\"}",usernamedata, firstnamedata, lastnamedata, personal_languagedata);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("login", jsonObject);
+            Log.d("CHUNG-", "CHUNG- PairingFragment() -> mSocket.emit(\"login\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //emit call
+    public void SendData_to_mSocket_FORCONNECT2USER(String fromUser, String toUser) {
+
+        String jsonString = String.format("{\"from\": \"%s\", \"to\": \"%s\"}",fromUser, toUser);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("call", jsonObject);
+            Log.d("CHUNG-", "CHUNG- ConversationFragment() -> mSocket.emit(\"call\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //bắn vào socket thông tin event là send_message json là { message, username, to, createdtime }
+    public void SendData_to_mSocket_FOR_SENDMESSAGE(String message, String fromUser, String toOtherUser ) {
+
+        String jsonString = String.format("{\"message\": \"%s\", \"from\": \"%s\", \"to\": \"%s\"}",message, fromUser, toOtherUser);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("send_message", jsonObject);
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> mSocket.emit(\"send_message\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    ////////////////////////////===============================END SOCKET ZONE=================//////
     public static final List<String> SCOPE = Collections.singletonList("https://www.googleapis.com/auth/cloud-platform");
     private static final int TOKEN_FETCH_MARGIN = 60 * 1000; // one minute
     private ArrayList<CustomLocale> languages = new ArrayList<>();
@@ -152,6 +218,7 @@ public class Global extends Application {
                     }
                 }
                 ///===ADD ON LAI QUA NGON NGU MICRO MA MINH CHINH TRONG SETTING==//
+                /*
                 if(ss!="") {
                     if (ss.equals("Tiếng Hàn (Hàn Quốc)") || ss.equals("Korean (South Korea)") || ss.equals("한국어 (대한민국)") ) {
                         language = new CustomLocale("ko", "KR");
@@ -162,7 +229,7 @@ public class Global extends Application {
                             language = new CustomLocale("en", "US");
                         }
                     }
-                }
+                }*/
                 Global.this.language = language;
                 responseListener.onSuccess(language);
             }

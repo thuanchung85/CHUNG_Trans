@@ -39,8 +39,10 @@ import android.view.View;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.TaskStackBuilder;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -187,6 +189,14 @@ public class VoiceTranslationActivity extends GeneralActivity {
         setFragment(0);
 
 
+        ///XIN QUYEN MICRO//nếu micro ok quyền rôi thi hỏi tiep vi tri nguoi dung
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION}, 1);
+
+        }
 
 
 
@@ -226,6 +236,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
         switch (fragmentName) {
             //0 là đi tới PAIRING_FRAGMENT
             case PAIRING_FRAGMENT: {
+
                 // possible stop of the Conversation and WalkieTalkie Service
                 stopConversationService();
                 stopWalkieTalkieService();
@@ -240,7 +251,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     transaction.replace(R.id.fragment_container, paringFragment);
                     transaction.commit();
                     currentFragment = PAIRING_FRAGMENT;
-                    saveFragment();
+                    //saveFragment();
                     //fragment=paringFragment;
                 }
                 break;
@@ -262,7 +273,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     transaction.replace(R.id.fragment_container, conversationFragment);
                     transaction.commit();
                     currentFragment = CONVERSATION_FRAGMENT;
-                    saveFragment();
+                    //saveFragment();
                     //fragment= conversationFragment;
                 }
                 break;
@@ -285,7 +296,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     transaction.replace(R.id.fragment_container, walkieTalkieFragment);
                     transaction.commit();
                     currentFragment = WALKIE_TALKIE_FRAGMENT;
-                    saveFragment();
+                    //saveFragment();
                     //fragment=walkieTalkieFragment;
                 }
                 break;
@@ -407,6 +418,9 @@ public class VoiceTranslationActivity extends GeneralActivity {
         }
         notifySearchPermissionGranted();
         //recreate();   // was called only if the grantResults were of length 0 or were neither PERMISSIONS_GRANTED nor PERMISSION_DENIED (I don't know what it is for anyway)
+
+
+
     }
 
     @Override

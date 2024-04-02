@@ -16,15 +16,22 @@
 
 package nie.translator.rtranslatordevedition;
 
+import static android.app.PendingIntent.getActivity;
+
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import java.util.ArrayList;
 import nie.translator.rtranslatordevedition.access.AccessActivity;
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
@@ -51,11 +58,16 @@ public class LoadingActivity extends GeneralActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
         mainHandler = new Handler(Looper.getMainLooper());
+
+
     }
 
     public void onResume() {
         Log.d("CHUNG-", "CHUNG- LoadingActivity() -> onResume");
         super.onResume();
+
+
+
         isVisible = true;
         global = (Global) getApplication();
         if (global.isFirstStart()) {
@@ -80,6 +92,7 @@ public class LoadingActivity extends GeneralActivity
 
     private void initializeApp() {
         Log.d("CHUNG-", "CHUNG- LoadingActivity() -> initializeApp");
+
         global.getLanguages(false, new Global.GetLocalesListListener() {
             @Override
             public void onSuccess(ArrayList<CustomLocale> result) {
