@@ -20,6 +20,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -44,6 +46,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 
 import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.Global;
@@ -86,7 +89,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         }
     };
 
-    //======khi nhận được receive_message từ server gọi về
+    //======khi nhận được receive_message từ server gọi về===///
+    private TextToSpeech textToSpeech;
     private Emitter.Listener onReceive_receive_messageCallBack = new Emitter.Listener(){
         @Override
         //hàm websocket server tra ra data về
@@ -118,6 +122,11 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                                     //smooth scroll
                                     smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
                                     mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
+
+                                    //speak here if cant
+                                    stopMicrophone(true);
+                                    textToSpeech.speak(socketreturn_translated, TextToSpeech.QUEUE_FLUSH, null, "ID");
+
                                 }
                             };
                         });
@@ -206,7 +215,6 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 }
             }
         });
-
 
 
 
@@ -376,6 +384,44 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
 
 
+
+        //init TTS by CHUNG==//
+        // Initialize TextToSpeech
+        textToSpeech = new TextToSpeech(this.getContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status != TextToSpeech.ERROR) {
+                    // Set the language (Optional, you can skip this if you want to use the default language)
+                    Locale current = getResources().getConfiguration().locale;
+
+                    textToSpeech.setLanguage(current);
+                } else {
+                    Toast.makeText(voiceTranslationActivity, "Initialization TextToSpeech failed", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        // Set an UtteranceProgressListener to monitor the speech process
+        textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+            @Override
+            public void onStart(String utteranceId) {
+                // Called when the TTS engine starts speaking
+                Log.d("CHUNG-", String.format("CHUNG- TTS() -> onStart() "));
+                stopMicrophone(true);
+            }
+
+            @Override
+            public void onDone(String utteranceId) {
+                Log.d("CHUNG-", String.format("CHUNG- TTS() -> onDone() "));
+                startMicrophone(true);
+            }
+
+            @Override
+            public void onError(String utteranceId) {
+                Log.d("CHUNG-", String.format("CHUNG- TTS() -> onError() "));
+            }
+        });
+
+
     }//end onActivityCreated
 
 
@@ -388,6 +434,13 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onDestroy - > gọi mSocket.disconnect()");
         global.mSocket.off("receive_end_call");
 
+
+        // Shutdown TextToSpeech when activity is destroyed
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+            //textToSpeech = null;
+        }
     }
 
 

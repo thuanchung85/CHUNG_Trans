@@ -118,6 +118,7 @@ public abstract class VoiceTranslationService extends GeneralService {
     }
 
     private void initializeTTS() {
+
         tts = new TTS(this, new TTS.InitListener() {  // tts initialization (to be improved, automatic package installation)
             @Override
             public void onInit() {
@@ -130,6 +131,7 @@ public abstract class VoiceTranslationService extends GeneralService {
                 isAudioMute = true;
             }
         });
+       // tts.shutdown();
     }
 
     @Override

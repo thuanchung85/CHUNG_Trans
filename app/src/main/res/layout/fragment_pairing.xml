@@ -213,7 +213,7 @@
 
     <nie.translator.rtranslatordevedition.tools.gui.WalkieTalkieButton
 
-        android:id="@+id/buttonStart"
+        android:id="@+id/buttonStart3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -234,4 +234,57 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1" />
+
+    <nie.translator.rtranslatordevedition.tools.gui.WalkieTalkieButton
+
+        android:id="@+id/buttonStart2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:elevation="16dp"
+        android:focusable="true"
+        android:src="@drawable/google_cloud_logo"
+        android:tint="@color/primary"
+        app:backgroundTint="@color/accent_white"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStart3"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1"
+        app:maxImageSize="40dp"
+        app:rippleColor="@color/light_gray" />
+
+
+    <nie.translator.rtranslatordevedition.tools.gui.WalkieTalkieButton
+
+        android:id="@+id/buttonStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:elevation="16dp"
+        android:focusable="true"
+        android:src="@drawable/walkie_talkie_white_icon"
+        android:tint="@color/primary"
+        app:backgroundTint="@color/accent_white"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStart2"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1"
+        app:maxImageSize="40dp"
+        app:rippleColor="@color/light_gray" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

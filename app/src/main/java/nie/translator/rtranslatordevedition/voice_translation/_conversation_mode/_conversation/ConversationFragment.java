@@ -285,28 +285,6 @@ public class ConversationFragment extends PairingToolbarFragment {
         };
 
 
-
-        /*
-        ///====KHỞi Tạo SOCKET CONNECTION========//
-        ///STEP 3:
-        // nhận về Event receive_call để nhận
-
-        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
-        mSocket.on("login", onReceive_loginCallBack);
-        mSocket.on("receive_call", onReceive_receive_callCallBack);
-        mSocket.on("receive_message", onReceive_receive_messageCallBack);
-        mSocket.connect();
-
-        //bắn login trước tiên sau đó luồng login sẽ auto bắn tiếp các request khác vao socket
-        String tempUserChungPhone = "Usertest1";
-        String tempUserChungPhoneFirstname = "tester1Firstname";
-        String tempUserChungPhoneLastname = "tester1Lastname";
-        String tempUserChungPhoneLanguage = "vi";
-        SendData_to_mSocket_FORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
-*/
-
-
-
     }// on create
 
 

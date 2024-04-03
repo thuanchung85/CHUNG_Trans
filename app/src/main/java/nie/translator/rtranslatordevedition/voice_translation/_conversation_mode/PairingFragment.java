@@ -52,6 +52,7 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
+import nie.translator.rtranslatordevedition.api_management.ApiManagementActivity;
 import nie.translator.rtranslatordevedition.settings.LanguagePreference;
 import nie.translator.rtranslatordevedition.settings.SettingsActivity;
 import nie.translator.rtranslatordevedition.settings.UserNamePreference;
@@ -305,6 +306,8 @@ public class PairingFragment extends PairingToolbarFragment {
     private ConstraintLayout constraintLayout;
     private Peer confirmConnectionPeer;
     private WalkieTalkieButton walkieTalkieButton;
+    private WalkieTalkieButton apiKeyFileButton;
+    private WalkieTalkieButton settingButton;
     private ListView listViewGui;
     private Timer connectionTimer;
     @Nullable
@@ -541,6 +544,8 @@ public class PairingFragment extends PairingToolbarFragment {
         constraintLayout = view.findViewById(R.id.container);
         walkieTalkieButton = view.findViewById(R.id.buttonStart);
 
+        apiKeyFileButton = view.findViewById(R.id.buttonStart2);
+        settingButton = view.findViewById(R.id.buttonStart3);
         listViewGui = view.findViewById(R.id.list_view);
         discoveryDescription = view.findViewById(R.id.discoveryDescription);
         noDevices = view.findViewById(R.id.noDevices);
@@ -567,20 +572,48 @@ public class PairingFragment extends PairingToolbarFragment {
             constraintLayout.dispatchApplyWindowInsets(windowInsets.replaceSystemWindowInsets(windowInsets.getSystemWindowInsetLeft(),windowInsets.getSystemWindowInsetTop(),windowInsets.getSystemWindowInsetRight(),0));
         }
 
+
         // setting of listeners
         //tma thời thay chức năng nút WalkieTalkieButton thành bật settting view
         walkieTalkieButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (walkieTalkieButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
+                    if(!global.getApiKeyFileName().equals("")) {
+                        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> SettingsActivity ");
+                        voiceTranslationActivity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
+                    }
+                    //chưa có api key file
+                    else{
+                        Intent intent = new Intent(voiceTranslationActivity, ApiManagementActivity.class);
+                        startActivity(intent);
+                    }
+                }
+            }
+        });
+        apiKeyFileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (apiKeyFileButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
                     Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
-                   // voiceTranslationActivity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
-                    Intent intent = new Intent(voiceTranslationActivity, SettingsActivity.class);
-                    //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    //bật ApiManagementActivity để user điền api key
+                    Intent intent = new Intent(voiceTranslationActivity, ApiManagementActivity.class);
                     startActivity(intent);
                 }
             }
         });
+        settingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (settingButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
+                    Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
+                    //tạm thơi dùng nút walki_talkie làm nut bat setting
+                    Intent intent = new Intent(voiceTranslationActivity, SettingsActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
+
 
         // setting of array adapter
         initializePeerList();
@@ -635,7 +668,15 @@ public class PairingFragment extends PairingToolbarFragment {
                                                 global.mSocket.off("receive_call");
 
                                                 //chơi ăn gian===> đi thẳng vào luôn
-                                                voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                                //check có file APIKEY chưa đã
+                                                if(!global.getApiKeyFileName().equals("")) {
+                                                    voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                                }
+                                               else{
+                                                    Intent intent = new Intent(voiceTranslationActivity, ApiManagementActivity.class);
+                                                    startActivity(intent);
+
+                                                }
                                             }
                                         }, new DialogInterface.OnClickListener() {
                                             @Override
