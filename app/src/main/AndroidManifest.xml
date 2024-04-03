@@ -34,6 +34,7 @@
         android:theme="@style/Theme.Speech"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
+            android:keepScreenOn="true"
             android:name="nie.translator.rtranslatordevedition.LoadingActivity"
             android:launchMode="singleTask"
             android:noHistory="true"
@@ -48,19 +49,23 @@
         <!--configChanges serve a evitare il riavvio dell' activity quando ruota e quindi per evitare che alla rotazione si notifichi con un Toast l' avvio del
         service in background, inoltre così la rotazione sarà più fluida e per ora non abbiamo problemi ne per la rotazione ne per il ridimensionamento quando in finestra-->
         <activity
+            android:keepScreenOn="true"
             android:name="nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationActivity"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.Speech" />
         <activity
+            android:keepScreenOn="true"
             android:name="nie.translator.rtranslatordevedition.settings.SettingsActivity"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Speech" />
         <activity
+            android:keepScreenOn="true"
             android:name="nie.translator.rtranslatordevedition.access.AccessActivity"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Speech" />
         <activity
+            android:keepScreenOn="true"
             android:name="nie.translator.rtranslatordevedition.api_management.ApiManagementActivity"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Speech" />

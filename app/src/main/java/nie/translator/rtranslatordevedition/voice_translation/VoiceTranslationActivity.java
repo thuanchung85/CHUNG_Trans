@@ -36,6 +36,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
+
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -128,7 +130,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
-
+        // Keep the screen on for this activity
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onCreate");
         super.onCreate(savedInstanceState);
@@ -207,13 +210,13 @@ public class VoiceTranslationActivity extends GeneralActivity {
         switch (item.getItemId()) {
             case R.id.settings: {
                 Intent intent = new Intent(this, SettingsActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 break;
             }
             case R.id.apiManagement: {
-                Intent intent = new Intent(this, ApiManagementActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+               Intent intent = new Intent(this, ApiManagementActivity.class);
+                //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 break;
             }
