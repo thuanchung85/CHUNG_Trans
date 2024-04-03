@@ -348,7 +348,8 @@ public class ConversationFragment extends PairingToolbarFragment {
         //page chính là ConversationMainFragment xử lý âm thanh, nó được bỏ vào adapter để chuyển qua lại
         pagerAdapter = new CustomFragmentPagerAdapter(voiceTranslationActivity,
                 getChildFragmentManager(), titles,
-                new Fragment[]{new ConversationMainFragment(), new PeersInfoFragment()});
+                new Fragment[]{new ConversationMainFragment()});
+                //new Fragment[]{new ConversationMainFragment(), new PeersInfoFragment()});
 
         pager.setAdapter(pagerAdapter);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {

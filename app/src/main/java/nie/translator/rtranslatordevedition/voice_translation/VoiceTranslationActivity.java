@@ -226,7 +226,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        //tạo tool bar menu _ chính la cái menu ba chấm đi vao setting và api key view. nó nằm ở toàn cục app không trong các fragment con hay activity con
+        //getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         return true;
     }
 
@@ -254,6 +255,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     transaction.replace(R.id.fragment_container, paringFragment);
                     transaction.commit();
                     currentFragment = PAIRING_FRAGMENT;
+
                     //saveFragment();
                     //fragment=paringFragment;
                 }
@@ -342,6 +344,9 @@ public class VoiceTranslationActivity extends GeneralActivity {
     }
 
     public int startSearch() {
+        //tạm thời bỏ tính năng search các thiết bị bluetooth xung quanh, vi đang dung socket
+        return BluetoothCommunicator.BLUETOOTH_LE_NOT_SUPPORTED;
+        /*
         if (global.getBluetoothCommunicator().isBluetoothLeSupported()) {
             if (Tools.hasPermissions(this, REQUIRED_PERMISSIONS)) {
                 return global.getBluetoothCommunicator().startSearch();
@@ -352,6 +357,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
         } else {
             return BluetoothCommunicator.BLUETOOTH_LE_NOT_SUPPORTED;
         }
+
+        */
     }
 
     public int stopSearch(boolean tryRestoreBluetoothStatus) {

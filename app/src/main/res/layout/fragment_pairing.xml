@@ -211,6 +211,7 @@
     </androidx.cardview.widget.CardView>
 
     <nie.translator.rtranslatordevedition.tools.gui.WalkieTalkieButton
+
         android:id="@+id/buttonStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -221,7 +222,7 @@
         android:clickable="true"
         android:elevation="16dp"
         android:focusable="true"
-        android:src="@drawable/walkie_talkie_white_icon"
+        android:src="@drawable/three_dot_icon"
         android:tint="@color/primary"
         app:maxImageSize="40dp"
         app:rippleColor="@color/light_gray"

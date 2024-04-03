@@ -21,6 +21,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -51,6 +53,7 @@ import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.settings.LanguagePreference;
+import nie.translator.rtranslatordevedition.settings.SettingsActivity;
 import nie.translator.rtranslatordevedition.settings.UserNamePreference;
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.FileLog;
@@ -164,6 +167,12 @@ public class PairingFragment extends PairingToolbarFragment {
                         else{
                              recentPeer = new RecentPeer(userUsername, userUsername);
                         }
+                        //trường hơp user không co username va unique name thì lấy deviceid đấp vào
+                        //if(Objects.equals(recentPeer.getUniqueName(), "") ||
+                                //(Objects.equals(recentPeer.getName(), ""))
+                        //){
+                           // recentPeer = new RecentPeer(userUsername, userUsername);
+                        //}
                         //add vao array
                         boolean bis = recentPeer.isAvailableSocket();
                         System.out.println(bis);
@@ -531,6 +540,7 @@ public class PairingFragment extends PairingToolbarFragment {
         super.onViewCreated(view, savedInstanceState);
         constraintLayout = view.findViewById(R.id.container);
         walkieTalkieButton = view.findViewById(R.id.buttonStart);
+
         listViewGui = view.findViewById(R.id.list_view);
         discoveryDescription = view.findViewById(R.id.discoveryDescription);
         noDevices = view.findViewById(R.id.noDevices);
@@ -558,12 +568,16 @@ public class PairingFragment extends PairingToolbarFragment {
         }
 
         // setting of listeners
+        //tma thời thay chức năng nút WalkieTalkieButton thành bật settting view
         walkieTalkieButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (walkieTalkieButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
                     Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
-                    voiceTranslationActivity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
+                   // voiceTranslationActivity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
+                    Intent intent = new Intent(voiceTranslationActivity, SettingsActivity.class);
+                    //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                 }
             }
         });
@@ -584,13 +598,11 @@ public class PairingFragment extends PairingToolbarFragment {
                             //kiểm tra nếu item bi click đó thoải điều kiện là 1 PEER thì mới cho vào
                             if (item instanceof Peer) {
                                 Peer peer = (Peer) item;
-
-
                                 //thực hiện connect tới peer user
                                 connect(peer);
                             }
                             else{
-                                Toast.makeText(voiceTranslationActivity, "This is not PEER", Toast.LENGTH_SHORT).show();
+
 
                             }
 
@@ -612,9 +624,7 @@ public class PairingFragment extends PairingToolbarFragment {
 
                                     if(isOnlineSocket == true) {
                                         //bật ra dialog box hỏi request connect websocket
-                                        connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
-                                                "Do you want to connect to " + peer.getName() + " ?",
-                                                15000, new DialogInterface.OnClickListener() {
+                                        connectionRequestDialog = new RequestDialog(voiceTranslationActivity, "Do you want to connect to " + peer.getName() + " ?", 15000, new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
@@ -642,15 +652,13 @@ public class PairingFragment extends PairingToolbarFragment {
                                         connectionRequestDialog.show();
                                     }
 
-
-                                    //chơi ăn gian===> đi thẳng vào luôn
-                                    //voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
-
-                                    Toast.makeText(voiceTranslationActivity, "user is not available", Toast.LENGTH_SHORT).show();
+                                    else {
+                                        Toast.makeText(voiceTranslationActivity, "user is not available", Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             }
                             else{
-                                Toast.makeText(voiceTranslationActivity, "This is not RECENT PEER", Toast.LENGTH_SHORT).show();
+
                             }
 
                         } else {
@@ -661,43 +669,7 @@ public class PairingFragment extends PairingToolbarFragment {
             }
         });
 
-        //===thữ lấy user name của user đang cai app=====//
-        //String usernameCurrent = global.getName();
 
-        //====TEST THU LIST VIEW CO HOLoAT DONG KHONG====//
-        /*
-        //tao object RecentPeer để add vào arr recentPeersArrayFormWebSocket, để dùng sau này
-        RecentPeer recentPeer = new RecentPeer("TESTLISTVIEW",usernameCurrent);
-        //add vao array
-        arr_recentPeersFormWebSocket.add(recentPeer);
-        final PeerListAdapter.Callback callback = new PeerListAdapter.Callback() {
-            @Override
-            public void onFirstItemAdded() {
-                super.onFirstItemAdded();
-                discoveryDescription.setVisibility(View.GONE);
-                noDevices.setVisibility(View.GONE);
-                listViewGui.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onLastItemRemoved() {
-                super.onLastItemRemoved();
-                //listViewGui.setVisibility(View.GONE);
-                if (noPermissions.getVisibility() != View.VISIBLE) {
-                    discoveryDescription.setVisibility(View.VISIBLE);
-                    //noDevices.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onClickNotAllowed(boolean showToast) {
-                super.onClickNotAllowed(showToast);
-                Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_cannot_interact_connection), Toast.LENGTH_SHORT).show();
-            }
-        };
-        listView = new PeerListAdapter(voiceTranslationActivity, new PairingArray(voiceTranslationActivity,
-                arr_recentPeersFormWebSocket), callback);
-        listViewGui.setAdapter(listView);*/
 
         ///====KHỞi Tạo SOCKET CONNECTION========//
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
@@ -710,24 +682,8 @@ public class PairingFragment extends PairingToolbarFragment {
         String tempUserChungPhoneFirstname =  "f_" + global.getName();
         String tempUserChungPhoneLastname =  "l_" + global.getName();
         String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
-        /*
-        String lang = global.getCurrentLanguageinPhone();
 
-        if(lang != "") {
-            if (lang.equals("Tiếng Hàn (Hàn Quốc)") || lang.equals("Korean (South Korea)") || lang.equals("한국어 (대한민국)") ) {
-                tempUserChungPhoneLanguage = "ko";
-            } else {
-                if (lang.equals("Tiếng Việt (Việt Nam)") || lang.equals("Vietnamese (Vietnam)") || lang.equals("베트남어 (베트남)") ) {
-                    tempUserChungPhoneLanguage = "vi";
-                } else {
-                    tempUserChungPhoneLanguage = "en";
-                }
-            }
-        }
-        else{
-            tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
-        }*/
-        Toast.makeText(voiceTranslationActivity, "lang" + "->" + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
+        Toast.makeText(voiceTranslationActivity, "Current language: "  + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
         global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
     }
 
@@ -826,6 +782,7 @@ public class PairingFragment extends PairingToolbarFragment {
     @Override
     protected void startSearch() {
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> startSearch() -> startSearch peer!!! ");
+        /*
         int result = voiceTranslationActivity.startSearch();
 
         if (result != BluetoothCommunicator.SUCCESS) {
@@ -839,6 +796,8 @@ public class PairingFragment extends PairingToolbarFragment {
                 Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_starting_search), Toast.LENGTH_SHORT).show();
             }
         }
+
+         */
     }
 
     //=======================================================//

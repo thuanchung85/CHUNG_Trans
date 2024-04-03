@@ -92,7 +92,7 @@ public class UserDataFragment extends Fragment {
                 inputNameLayout.setErrorEnabled(true);
                 boolean error = false;
                 String name = inputName.getText().toString();
-                if (name.length() == 0) {
+                if (name.length() < 3) {
                     error = true;
                     inputNameLayout.setError(getResources().getString(R.string.error_missing_username));
                 } else {
