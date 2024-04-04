@@ -911,6 +911,9 @@ public class PairingFragment extends PairingToolbarFragment {
 
         ///====KHỞi Tạo SOCKET CONNECTION========//
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
+        global.mSocket.off("users");
+        global.mSocket.off("receive_call");
+        global.mSocket.off("receive_accept_call");
         global.mSocket.on("users", onLoginCallBack);
         global.mSocket.on("receive_call", onReceive_call_CallBack);
         global.mSocket.on("receive_accept_call", onReceive_accept_call_CallBack);
