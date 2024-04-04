@@ -356,7 +356,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
 
          nameOfpeerWantConnect = global.getPeerWantTalkName();
-        Toast.makeText(voiceTranslationActivity, "You will connect to " + nameOfpeerWantConnect, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(voiceTranslationActivity, "You will connect to " + nameOfpeerWantConnect, Toast.LENGTH_SHORT).show();
        // String tempUserChungPhone =  global.getName();
        // String tempUserChungPhoneFirstname =  "f_" + global.getName();
         //String tempUserChungPhoneLastname =  "l_" + global.getName();

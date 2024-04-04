@@ -22,6 +22,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -250,6 +251,12 @@ public class PairingFragment extends PairingToolbarFragment {
 
                                                @Override
                                                public void run() {
+                                                   //chơi ringring thông báo cho người khác biết đang đươc gọi bởi ai đó
+                                                   //load ringring wav file
+                                                   mediaPlayer = MediaPlayer.create(voiceTranslationActivity, R.raw.ringring);
+                                                   mediaPlayer.setVolume(0.2f,0.2f);
+                                                   mediaPlayer.setLooping(true); // Enable looping
+                                                   mediaPlayer.start(); // Start playback
                                                    //show dialogbox ok connect or not
                                                    connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
                                                             room.split(":")[0] + " want connect with you ?",
@@ -258,11 +265,18 @@ public class PairingFragment extends PairingToolbarFragment {
                                                        public void onClick(DialogInterface dialog, int which) {
                                                            Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
 
+                                                           //sound ring ring stop
+                                                           if(mediaPlayer !=null) {
+                                                               mediaPlayer.stop();
+                                                               mediaPlayer.release();
+                                                               mediaPlayer = null;
+                                                           }
+
                                                            //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
                                                            global.mSocket.off("receive_call");
 
 
-                                                           //chơi ăn gian===> đi thẳng vào luôn
+                                                           //======QUAN TRONG: chơi ăn gian===> đi thẳng vào luôn DI VAO TRANG CHAT VOICE ===//
                                                            voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
 
                                                        }
@@ -270,6 +284,12 @@ public class PairingFragment extends PairingToolbarFragment {
                                                        @Override
                                                        public void onClick(DialogInterface dialog, int which) {
                                                            Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> reject"));
+                                                           if(mediaPlayer !=null) {
+                                                               mediaPlayer.stop();
+                                                               mediaPlayer.release();
+                                                               mediaPlayer = null;
+                                                           }
+
                                                        }
                                                    });
                                                    connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -308,6 +328,13 @@ public class PairingFragment extends PairingToolbarFragment {
     private WalkieTalkieButton walkieTalkieButton;
     private WalkieTalkieButton apiKeyFileButton;
     private WalkieTalkieButton settingButton;
+    private WalkieTalkieButton socketModeButton;
+
+    private WalkieTalkieButton bluetoothModeButton;
+
+    //true is Socket, false is BlueTooth
+    private boolean currentMode_BlueOrSoc = true;
+
     private ListView listViewGui;
     private Timer connectionTimer;
     @Nullable
@@ -323,6 +350,8 @@ public class PairingFragment extends PairingToolbarFragment {
     private RecentPeersDataManager recentPeersDataManager;
     private CustomAnimator animator = new CustomAnimator();
     private Peer connectingPeer;
+
+    private MediaPlayer mediaPlayer;
 
     public PairingFragment() {
         // Required empty public constructor
@@ -542,10 +571,17 @@ public class PairingFragment extends PairingToolbarFragment {
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onViewCreated ->fragment onViewCreated completed ");
         super.onViewCreated(view, savedInstanceState);
         constraintLayout = view.findViewById(R.id.container);
+
         walkieTalkieButton = view.findViewById(R.id.buttonStart);
 
         apiKeyFileButton = view.findViewById(R.id.buttonStart2);
+
         settingButton = view.findViewById(R.id.buttonStart3);
+
+        bluetoothModeButton = view.findViewById(R.id.buttonStart4);
+
+        socketModeButton = view.findViewById(R.id.buttonStart5);
+
         listViewGui = view.findViewById(R.id.list_view);
         discoveryDescription = view.findViewById(R.id.discoveryDescription);
         noDevices = view.findViewById(R.id.noDevices);
@@ -571,6 +607,7 @@ public class PairingFragment extends PairingToolbarFragment {
         if (windowInsets != null) {
             constraintLayout.dispatchApplyWindowInsets(windowInsets.replaceSystemWindowInsets(windowInsets.getSystemWindowInsetLeft(),windowInsets.getSystemWindowInsetTop(),windowInsets.getSystemWindowInsetRight(),0));
         }
+
 
 
         // setting of listeners
@@ -614,6 +651,62 @@ public class PairingFragment extends PairingToolbarFragment {
             }
         });
 
+        bluetoothModeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (settingButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
+                    currentMode_BlueOrSoc = false;
+                    String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
+                    Toast.makeText(voiceTranslationActivity, "BLUETOOTH MODE Current language: "  + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
+                    //clear socket and diaconnect
+                    global.mSocket.disconnect();
+                    arr_recentPeersFormWebSocket.clear();
+                    listView = new PeerListAdapter(voiceTranslationActivity,
+                            new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), null);
+
+                    listViewGui.setAdapter(listView);
+                    //======
+                    //an nut di sau khi bam
+                    socketModeButton.setVisibility(view.VISIBLE);
+                    bluetoothModeButton.setVisibility(view.GONE);
+
+                    //==kich hoat bluetooth dò tìm user khac
+                    startSearch();
+
+                }
+            }
+        });
+
+        socketModeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (settingButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
+                    currentMode_BlueOrSoc = true;
+                    //clear socket and disconnect
+                    global.mSocket.disconnect();
+                    arr_recentPeersFormWebSocket.clear();
+                    listView = new PeerListAdapter(voiceTranslationActivity,
+                            new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), null);
+
+                    listViewGui.setAdapter(listView);
+                   //reconnect again
+                    global.mSocket.connect();
+                    //bắn data vào websocket thông tin của user
+                    String tempUserChungPhone =  global.getName();
+                    String tempUserChungPhoneFirstname =  "f_" + global.getName();
+                    String tempUserChungPhoneLastname =  "l_" + global.getName();
+                    String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
+
+                    Toast.makeText(voiceTranslationActivity, "SOCKET MODE Current language: "  + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
+                    global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
+
+                    //an nut di sau khi bam
+                    socketModeButton.setVisibility(view.GONE);
+                    bluetoothModeButton.setVisibility(view.VISIBLE);
+                    noBluetoothLe.setVisibility(View.GONE);
+                }
+            }
+        });
 
         // setting of array adapter
         initializePeerList();
@@ -726,6 +819,8 @@ public class PairingFragment extends PairingToolbarFragment {
 
         Toast.makeText(voiceTranslationActivity, "Current language: "  + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
         global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
+        //an nut di sau khi bam
+        socketModeButton.setVisibility(View.GONE);
     }
 
     @Override
@@ -738,7 +833,7 @@ public class PairingFragment extends PairingToolbarFragment {
         disappearLoading(true, null);
         // if you don't have permission to search, activate from here
         if (!Tools.hasPermissions(voiceTranslationActivity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
-            startSearch();
+            //startSearch();
         }
     }
 
@@ -764,7 +859,7 @@ public class PairingFragment extends PairingToolbarFragment {
         // if you have permission to search it is activated from here
         if (Tools.hasPermissions(voiceTranslationActivity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
             //gọi starSearch cac user xung quanh
-            startSearch();
+            //startSearch();
         }
     }
 
@@ -790,6 +885,13 @@ public class PairingFragment extends PairingToolbarFragment {
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onDestroy - > gọi mSocket.disconnect()");
        // mSocket.off("receive_call");
        // mSocket.disconnect();
+
+
+        //thoat app thi giải phóng bộ nhớ file wav
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
     }
 
     private void connect(final Peer peer) {
@@ -823,7 +925,7 @@ public class PairingFragment extends PairingToolbarFragment {
     @Override
     protected void startSearch() {
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> startSearch() -> startSearch peer!!! ");
-        /*
+
         int result = voiceTranslationActivity.startSearch();
 
         if (result != BluetoothCommunicator.SUCCESS) {
@@ -838,7 +940,7 @@ public class PairingFragment extends PairingToolbarFragment {
             }
         }
 
-         */
+
     }
 
     //=======================================================//
@@ -948,4 +1050,7 @@ public class PairingFragment extends PairingToolbarFragment {
             listView.setClickable(isClickable, showToast);
         }
     }
+
+
+
 }
