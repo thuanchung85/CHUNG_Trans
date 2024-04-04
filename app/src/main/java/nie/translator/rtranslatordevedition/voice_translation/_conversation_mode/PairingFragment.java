@@ -268,8 +268,8 @@ public class PairingFragment extends PairingToolbarFragment {
                                                    //chơi ringring thông báo cho người khác biết đang đươc gọi bởi ai đó
                                                    //load ringring wav file
                                                    mediaPlayer = MediaPlayer.create(voiceTranslationActivity, R.raw.ringring);
-                                                   mediaPlayer.setVolume(0.02f,0.02f);
-                                                   //mediaPlayer.setLooping(true); // Enable looping
+                                                   mediaPlayer.setVolume(0.5f,0.5f);
+                                                   mediaPlayer.setLooping(true); // Enable looping
                                                    mediaPlayer.start(); // Start playback
                                                    //show dialogbox ok connect or not
                                                    connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
@@ -290,7 +290,7 @@ public class PairingFragment extends PairingToolbarFragment {
 
                                                            //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
                                                            global.mSocket.off("receive_call");
-
+                                                           global.mSocket.off("users");
 
                                                            //======QUAN TRONG: chơi ăn gian===> đi thẳng vào luôn DI VAO TRANG CHAT VOICE ===//
                                                            voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
@@ -364,6 +364,7 @@ public class PairingFragment extends PairingToolbarFragment {
 
                                     //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
                                     global.mSocket.off("receive_call");
+                                    global.mSocket.off("users");
 
                                     //===QUAN TRONG == di vào page chat voice====//
                                      voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
