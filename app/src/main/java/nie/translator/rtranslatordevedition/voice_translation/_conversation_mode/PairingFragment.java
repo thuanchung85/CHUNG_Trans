@@ -335,6 +335,7 @@ public class PairingFragment extends PairingToolbarFragment {
         @Override
         //hàm websocket server tra ra data về
         public void call(final Object... args) {
+            dialogWait.dismiss();
             Log.d("CHUNG-", String.format("CHUNG- PairingFragment - > mSocket() -> onReceive_accept_call_CallBack -> %s ", args.toString()));
             String argsReponse =  Arrays.toString(args);
 
@@ -448,6 +449,8 @@ public class PairingFragment extends PairingToolbarFragment {
     private Peer connectingPeer;
 
     private MediaPlayer mediaPlayer;
+
+    AlertDialog dialogWait;
 
     public PairingFragment() {
         // Required empty public constructor
@@ -868,6 +871,24 @@ public class PairingFragment extends PairingToolbarFragment {
                                                     global.SendData_to_mSocket_FORCONNECT2USER(global.getName(), peer.getName());
                                                     //khi qua trang khac thi bỏ ghe event receive_call socket của chính mình
                                                     //global.mSocket.off("receive_call");
+
+                                                    //show diaglog box wait for your friend accept
+                                                    //===SHOW DIALOG BOX WAIT NHAN CALL====//
+                                                    DialogInterface.OnClickListener confirmExitListenerWait = new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            dialog.dismiss();
+                                                        }
+                                                    };
+                                                    //creazione del dialog.
+                                                    AlertDialog.Builder builder = new AlertDialog.Builder(voiceTranslationActivity);
+                                                    builder.setCancelable(true);
+                                                    builder.setMessage("Please wait for you friend accept!");
+                                                    builder.setPositiveButton(android.R.string.cancel, confirmExitListenerWait);
+
+
+                                                     dialogWait = builder.create();
+                                                    dialogWait.show();
                                                 }
                                                else{
                                                     Intent intent = new Intent(voiceTranslationActivity, ApiManagementActivity.class);
