@@ -100,13 +100,26 @@ public abstract class GeneralActivity extends FragmentActivity {
         //creazione del dialog.
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setCancelable(true);
-        builder.setMessage(R.string.dialog_confirm_exit);
+        builder.setMessage("Do you want to exit this room?");
         builder.setPositiveButton(android.R.string.ok, confirmListener);
         builder.setNegativeButton(android.R.string.cancel, null);
 
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+    protected void showConfirmExitDialogNOCANCEL(DialogInterface.OnClickListener confirmListener) {
+        //creazione del dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+        builder.setMessage("Your friend exited this room!");
+        builder.setPositiveButton(android.R.string.ok, confirmListener);
+
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
 
     public void onError(int reason, long value) {
         switch (reason) {

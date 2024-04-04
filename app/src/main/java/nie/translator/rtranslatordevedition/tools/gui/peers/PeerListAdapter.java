@@ -195,12 +195,24 @@ public class PeerListAdapter extends BaseAdapter {
 
                 //check thêm nếu ok socket thi chuyển qua available cho text dưới chân
                 if(recentPeer.isAvailableSocket()){
+                    //nếu user bình thường khong busy thì hiện màu xanh dương
                     ((ImageButton) view.findViewById(R.id.threeDotsButton)).setColorFilter(ContextCompat.getColor(activity, R.color.primary), PorterDuff.Mode.SRC_IN);
                     ((TextView) view.findViewById(R.id.path)).setText(R.string.available);
                     ((TextView) view.findViewById(R.id.path)).setTextColor(activity.getResources().getColor(R.color.primary));
                     ((ImageView) view.findViewById(R.id.user_image_recent)).setColorFilter(ContextCompat.getColor(activity, R.color.primary), PorterDuff.Mode.SRC_IN);
 
                     ((TextView) view.findViewById(R.id.textRowRecent)).setTextColor(activity.getResources().getColor(R.color.primary));
+
+                    //nếu user online tuy nhiên trong tình trang busy thì hiện màu đỏ
+                    if(recentPeer.isBusy()){
+                        ((ImageButton) view.findViewById(R.id.threeDotsButton)).setColorFilter(ContextCompat.getColor(activity, R.color.red), PorterDuff.Mode.SRC_IN);
+                        ((TextView) view.findViewById(R.id.path)).setText("busy");
+                        ((TextView) view.findViewById(R.id.path)).setTextColor(activity.getResources().getColor(R.color.red));
+                        ((ImageView) view.findViewById(R.id.user_image_recent)).setColorFilter(ContextCompat.getColor(activity, R.color.red), PorterDuff.Mode.SRC_IN);
+
+                        ((TextView) view.findViewById(R.id.textRowRecent)).setTextColor(activity.getResources().getColor(R.color.red));
+
+                    }
                 }
             }
             ((TextView) view.findViewById(R.id.textRowRecent)).setText(peerName);

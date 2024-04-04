@@ -34,6 +34,7 @@ public class RecentPeer implements Parcelable, Listable {
     private GuiPeer peer;
 
     public boolean isAvailableSocket = false;
+    public boolean isBusy = false;
 
     public RecentPeer( String deviceID, String uniqueName, @Nullable Bitmap userImage) {
         this.deviceID = deviceID;
@@ -112,10 +113,16 @@ public class RecentPeer implements Parcelable, Listable {
     public boolean isAvailableSocket() {
         return isAvailableSocket;
     }
+    public boolean isBusy() {
+        return isBusy;
+    }
+
     public void setAvailableSocket() {
          isAvailableSocket = true;
     }
-
+    public void setBusy() {
+        isBusy = true;
+    }
     @NonNull
     public Peer getPeer(){
         return peer;

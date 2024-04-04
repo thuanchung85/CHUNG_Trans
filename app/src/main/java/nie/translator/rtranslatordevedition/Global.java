@@ -128,6 +128,18 @@ public class Global extends Application {
     }
 
 
+    public void SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER(String fromUser, String toUser, Boolean accept){
+        String jsonString = String.format("{\"from\": \"%s\", \"to\": \"%s\", \"accept\": %b}",fromUser, toUser, accept);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            mSocket.emit("accept_call", jsonObject);
+            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"accept_call\", jsonObject);");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     ////////////////////////////===============================END SOCKET ZONE=================//////
     public static final List<String> SCOPE = Collections.singletonList("https://www.googleapis.com/auth/cloud-platform");
     private static final int TOKEN_FETCH_MARGIN = 60 * 1000; // one minute

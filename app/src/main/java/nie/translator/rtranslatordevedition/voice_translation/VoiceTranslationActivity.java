@@ -499,7 +499,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                         if (conversationMainFragment.isEditTextOpen()) {
                             conversationMainFragment.deleteEditText();
                         } else {
-                            showConfirmExitDialog(confirmExitListener);
+                            showConfirmExitDialogNOCANCEL(confirmExitListener);
                         }
                     }
                 } else {
