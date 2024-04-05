@@ -374,27 +374,34 @@ public class PairingFragment extends PairingToolbarFragment {
                         }
                         //nếu nhận đươc từ chối từ phia bên kia thì show dialog box từ chối
                         else{
-                            voiceTranslationActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    //===SHOW DIALOG BOX TU CHOI REJECT NHAN CALL====//
-                                    DialogInterface.OnClickListener confirmExitListener = new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                        }
-                                    };
-                                    //creazione del dialog.
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(voiceTranslationActivity);
-                                    builder.setCancelable(true);
-                                    builder.setMessage("You call have been rejected!");
-                                    builder.setPositiveButton(android.R.string.ok, confirmExitListener);
+                            //phải check coi có phải hàng của mình không, có tên mình trong message boardcast server trả về không
+                            String myname= global.getName();
+                            String fromname = data.getString("from");
+                            String toname = data.getString("to");
+                            if(myname.equals(fromname) || myname.equals(toname)){
+                                voiceTranslationActivity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //===SHOW DIALOG BOX TU CHOI REJECT NHAN CALL====//
+                                        DialogInterface.OnClickListener confirmExitListener = new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                            }
+                                        };
+                                        //creazione del dialog.
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(voiceTranslationActivity);
+                                        builder.setCancelable(true);
+                                        builder.setMessage("You call have been rejected!");
+                                        builder.setPositiveButton(android.R.string.ok, confirmExitListener);
 
 
-                                    AlertDialog dialog = builder.create();
-                                    dialog.show();
-                                }
-                            });
+                                        AlertDialog dialog = builder.create();
+                                        dialog.show();
+                                    }
+                                });
+                            }
+
                         }
 
                     }

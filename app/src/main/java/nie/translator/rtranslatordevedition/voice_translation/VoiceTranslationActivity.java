@@ -122,9 +122,19 @@ public class VoiceTranslationActivity extends GeneralActivity {
     @Override
     protected void onDestroy() {
         Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onDestroy");
+
+
         //release micro hold, nếu không nó chiếm micro hoài không cho các app khác dùng
         android.os.Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //thông báo user kia app đã kill nên thoat đi
+        //===bắn vô socket end_call ===//
+        global.SendData_to_mSocket_FOR_END_CONNECT2USER(global.getName(),global.getPeerWantTalkName());
     }
 
     @Override
