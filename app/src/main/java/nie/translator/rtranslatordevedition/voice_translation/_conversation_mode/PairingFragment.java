@@ -259,6 +259,10 @@ public class PairingFragment extends PairingToolbarFragment {
                     System.out.println(room);
                     String data = jsonObject.getString("data");
                     System.out.println(data);
+                    //ta phải save lại ai là người đang call ta
+                    JSONObject dataJS = jsonObject.getJSONObject("data");
+                    String from = dataJS.getString("from");
+                    global.setPeerWantTalkName(from);
 
                     //chuyen lên main thread ui
                     voiceTranslationActivity.runOnUiThread(new Runnable() {
@@ -285,7 +289,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                                                mediaPlayer.release();
                                                                mediaPlayer = null;
                                                            }
-                                                           //thông báo socket tôi ok connect "accept_call"
+                                                           //thông báo socket tôi OK connect "accept_call"
                                                            global.SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER( global.getPeerWantTalkName(),global.getName(),true);
 
                                                            //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
@@ -306,7 +310,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                                                mediaPlayer.release();
                                                                mediaPlayer = null;
                                                            }
-                                                           //thông báo socket tôi ok connect "REJECT accept_call"
+                                                           //thông báo socket tôi REJECT connect "REJECT accept_call"
                                                            global.SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER( global .getPeerWantTalkName(),global.getName(),false);
                                                        }
                                                    });
@@ -335,7 +339,7 @@ public class PairingFragment extends PairingToolbarFragment {
         @Override
         //hàm websocket server tra ra data về
         public void call(final Object... args) {
-            dialogWait.dismiss();
+
             Log.d("CHUNG-", String.format("CHUNG- PairingFragment - > mSocket() -> onReceive_accept_call_CallBack -> %s ", args.toString()));
             String argsReponse =  Arrays.toString(args);
 
@@ -353,24 +357,33 @@ public class PairingFragment extends PairingToolbarFragment {
                         System.out.println(OkIAMaccept);
                         //khi nhận đươc tin OK từ user phia bên kia thi ta show dialog box
                         if(OkIAMaccept.equals("true")){
-                            voiceTranslationActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    //sound ring ring stop
-                                    if(mediaPlayer !=null) {
-                                        mediaPlayer.stop();
-                                        mediaPlayer.release();
-                                        mediaPlayer = null;
-                                    }
-
-                                    //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
-                                    global.mSocket.off("receive_call");
-                                    global.mSocket.off("users");
-
-                                    //===QUAN TRONG == di vào page chat voice====//
-                                     voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                            //phải check coi có phải hàng của mình không, có tên mình trong message boardcast server trả về không
+                            String myname= global.getName();
+                            String fromname = data.getString("from");
+                            String toname = data.getString("to");
+                            if( myname.equals(toname) || myname.equals(fromname)) {
+                                if (dialogWait != null) {
+                                    dialogWait.dismiss();
                                 }
-                            });
+                                voiceTranslationActivity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //sound ring ring stop
+                                        if (mediaPlayer != null) {
+                                            mediaPlayer.stop();
+                                            mediaPlayer.release();
+                                            mediaPlayer = null;
+                                        }
+
+                                        //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
+                                        global.mSocket.off("receive_call");
+                                        global.mSocket.off("users");
+
+                                        //===QUAN TRONG == di vào page chat voice====//
+                                        voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                    }
+                                });
+                            }
                         }
                         //nếu nhận đươc từ chối từ phia bên kia thì show dialog box từ chối
                         else{
@@ -378,7 +391,10 @@ public class PairingFragment extends PairingToolbarFragment {
                             String myname= global.getName();
                             String fromname = data.getString("from");
                             String toname = data.getString("to");
-                            if(myname.equals(fromname) || myname.equals(toname)){
+                            if( myname.equals(toname) || myname.equals(fromname)){
+                                if(dialogWait != null) {
+                                    dialogWait.dismiss();
+                                }
                                 voiceTranslationActivity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -855,7 +871,10 @@ public class PairingFragment extends PairingToolbarFragment {
                                     RecentPeer peer = (RecentPeer) item;
 
                                     String nameOfpeer = peer.getName();
+
+                                    //khi tap vào user nào đó thì save lai tên user đó vào máy local
                                     global.setPeerWantTalkName(nameOfpeer);
+
                                     Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> listViewGui -> want to talk %s", nameOfpeer));
 
                                     if(isOnlineSocket == true) {

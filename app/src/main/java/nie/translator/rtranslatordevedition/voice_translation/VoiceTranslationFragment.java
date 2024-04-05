@@ -80,7 +80,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     String ToName = dataJSON.getString("to");
                     //vì socket board cast cho all user nên ta phải check coi có tên của mình không
                     //nếu trong from hay to có chứa tên của chính mình thì là đúng rồi, thoát chat
-                    if(myName.equals(FormName) || myName.equals(ToName)){
+                    if( myName.equals(FormName) || myName.equals(ToName)){
                         //quay trơ về parring page
                         Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> ENd_CALL ->GET BACK");
 
