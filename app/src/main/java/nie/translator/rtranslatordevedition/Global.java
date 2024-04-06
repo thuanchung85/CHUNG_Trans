@@ -109,6 +109,10 @@ public class Global extends Application {
             JSONObject jsonObject = new JSONObject(jsonString);
             mSocket.emit("end_call", jsonObject);
             Log.d("CHUNG-", "CHUNG- global() -> END_CALL END_CALL END_CALL ");
+
+            //clear tên người dã liên lac
+            this.setPeerWantTalkName("");
+
         } catch (JSONException e) {
             e.printStackTrace();
         }

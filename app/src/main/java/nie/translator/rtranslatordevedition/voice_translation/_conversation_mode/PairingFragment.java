@@ -97,7 +97,7 @@ public class PairingFragment extends PairingToolbarFragment {
         @Override
         //hàm websocket server tra ra data về
         public void call(final Object... args) {
-            //global.setPeerWantTalkName("");
+
             Log.d("CHUNG-", String.format("CHUNG- PairingFragment - > mSocket() ->onLoginCallBack server reply -> %s ", args.toString()));
             String argsReponse =  Arrays.toString(args);
             //covert json data từ server về data native android
@@ -114,6 +114,9 @@ public class PairingFragment extends PairingToolbarFragment {
                     }
 
                     arr_recentPeersFormWebSocket.clear();
+
+
+
                     JSONArray usersArray = new JSONArray(jsonObject.getString("users"));
 
                     //duyet loop qua các user trong usersArray

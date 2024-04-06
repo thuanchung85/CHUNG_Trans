@@ -150,6 +150,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
             Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onStop -> SendData_to_mSocket_FOR_END_CONNECT2USER");
             global.SendData_to_mSocket_FOR_END_CONNECT2USER(global.getName(), global.getPeerWantTalkName());
         }
+        //VẪN CÒN 1 BUGG CHỔ NÀY KHI CHÍNH USER NÀY THOAT APP NGANG THÌ NÓ VẪN VÀO onlyVoiceTranslationActivityAllow == TRUE
+        //TUY LUC ĐÓ 2 USER KHAC ĐANG NÓI CHUYÊN, KHÔNG PHẢI USER NÀY.
     }
 
     @Override
