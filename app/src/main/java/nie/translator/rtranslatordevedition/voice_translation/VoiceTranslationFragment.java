@@ -89,6 +89,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             public void run() {
                                 //user còn online trong room chat sẽ bị auto đá ra bởi lệnh dưới, do user kia tắt app
                                 voiceTranslationActivity.onBackPressed_NOTCALL_AGAIN();
+
+
                             }
                         });
                     }

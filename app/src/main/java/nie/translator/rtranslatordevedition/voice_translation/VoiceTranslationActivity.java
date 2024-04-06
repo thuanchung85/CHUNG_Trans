@@ -29,6 +29,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
@@ -49,6 +50,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +61,7 @@ import nie.translator.rtranslatordevedition.GeneralActivity;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.api_management.ApiManagementActivity;
+import nie.translator.rtranslatordevedition.api_management.KeyFileContainer;
 import nie.translator.rtranslatordevedition.settings.SettingsActivity;
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.CustomServiceConnection;
@@ -132,9 +135,21 @@ public class VoiceTranslationActivity extends GeneralActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        //thông báo user kia app đã kill nên thoat đi
-        //===bắn vô socket end_call ===//
-        global.SendData_to_mSocket_FOR_END_CONNECT2USER(global.getName(),global.getPeerWantTalkName());
+
+    }
+
+    //biến dùng để check khi nào activity này stop bởi chính nó, không phải bởi activity khác
+    public boolean onlyVoiceTranslationActivityAllow = false;
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if(onlyVoiceTranslationActivityAllow == true) {
+            //===bắn vô socket end_call ===//
+            //bị BUG chổ này current Fragement = -1 khi user mở api va setting activity
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onStop -> SendData_to_mSocket_FOR_END_CONNECT2USER");
+            global.SendData_to_mSocket_FOR_END_CONNECT2USER(global.getName(), global.getPeerWantTalkName());
+        }
     }
 
     @Override
@@ -189,7 +204,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
     @Override
     protected void onStart() {
-
+        onlyVoiceTranslationActivityAllow = true;
 
         Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onStart");
         super.onStart();
@@ -202,17 +217,55 @@ public class VoiceTranslationActivity extends GeneralActivity {
         setFragment(0);
 
 
-        ///XIN QUYEN MICRO//nếu micro ok quyền rôi thi hỏi tiep vi tri nguoi dung
+        ///XIN QUYEN MICRO//nếu micro ok quyền rôi thi hỏi tiep vi tri nguoi dung. và quyền đọc ghi file
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION}, 1);
+                    Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
 
         }
 
+        /*
+        //xin quyền WRITE_EXTERNAL_STORAGE nếu chưa có
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            //xin quyền đọc ghi file để load file json key api
+            String[] REQUIRED_PERMISSIONS = new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            };
+            requestPermissions(REQUIRED_PERMISSIONS, 5);
+        }
+        //nếu đã có sẳn quyền
+        else{
+
+            //test chay tìm file json trong máy
+            findJsonFiles_BYCHUNG(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()),
+                    (KeyFileContainer.FilesListListener) new KeyFileContainer.FilesListListener(){
+                        public void onSuccess(ArrayList<File> filesList) {
+                            System.out.println(filesList);
+                            if(!filesList.isEmpty()) {
+                                String filenameKeyAPI = filesList.get(0).getName();
+                                Log.d("CHUNG-", "CHUNG- LoadingActivity() -> GET JSON KEY FILE SUCCESS DONE!" + filenameKeyAPI);
+                                saveAPIKEYFILE_BYCHUNG((File) filesList.get(0), new KeyFileContainer.FileOperationListener() {
+                                    public void onSuccess() {
+                                        Log.d("CHUNG-", "CHUNG- LoadingActivity() -> SAVE KEY FILE SUCCESS DONE!" + filenameKeyAPI);
+                                    }
+
+                                    public void onFailure() {
+                                        Log.d("CHUNG-", "CHUNG- LoadingActivity() -> SAVE KEY FILE FAIL !" + filenameKeyAPI);
+                                    }
+                                });
+                            }
+                            else{
+                                Log.d("CHUNG-", "CHUNG- LoadingActivity() -> GET JSON KEY FILE FAIL !");
+                            }
+                        }
+                    }
 
 
+            );
+        }
+*/
     }
 
     @Override
@@ -426,7 +479,39 @@ public class VoiceTranslationActivity extends GeneralActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
+
+
+
+
         if (requestCode != REQUEST_CODE_REQUIRED_PERMISSIONS) {
+
+            //test chay tìm file json trong máy
+            findJsonFiles_BYCHUNG(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()),
+                    (KeyFileContainer.FilesListListener) new KeyFileContainer.FilesListListener(){
+                        public void onSuccess(ArrayList<File> filesList) {
+                            System.out.println(filesList);
+                            if(!filesList.isEmpty()) {
+                                String filenameKeyAPI = filesList.get(0).getName();
+                                Log.d("CHUNG-", "CHUNG- LoadingActivity() -> GET JSON KEY FILE SUCCESS DONE!" + filenameKeyAPI);
+                                saveAPIKEYFILE_BYCHUNG((File) filesList.get(0), new KeyFileContainer.FileOperationListener() {
+                                    public void onSuccess() {
+                                        Log.d("CHUNG-", "CHUNG- LoadingActivity() -> SAVE KEY FILE SUCCESS DONE!" + filenameKeyAPI);
+                                    }
+
+                                    public void onFailure() {
+                                        Log.d("CHUNG-", "CHUNG- LoadingActivity() -> SAVE KEY FILE FAIL !" + filenameKeyAPI);
+                                    }
+                                });
+                            }
+                            else{
+                                Log.d("CHUNG-", "CHUNG- LoadingActivity() -> GET JSON KEY FILE FAIL !");
+                            }
+                        }
+                    }
+
+
+            );
+
             return;
         }
 
@@ -446,6 +531,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
     @Override
     //khi user bấm nút back hình cái cửa trên góc trên tay phải của app
     public void onBackPressed() {
+
         DialogInterface.OnClickListener confirmExitListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -453,6 +539,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
                 //===bắn vô socket end_call ===//
                 global.SendData_to_mSocket_FOR_END_CONNECT2USER(global.getName(),global.getPeerWantTalkName());
+
+
             }
         };
 
@@ -753,6 +841,66 @@ public class VoiceTranslationActivity extends GeneralActivity {
         public void onSearchPermissionGranted() {
         }
     }
+
+
+    public void findJsonFiles_BYCHUNG(final File dir,final KeyFileContainer.FilesListListener filesListListener) {
+        new Thread() {
+            public void run() {
+                super.run();
+                final ArrayList<File> list = new ArrayList<>();
+                findJsonFiles_BYCHung(dir,list);
+                System.out.println(list);
+                mainHandler.post(new Runnable() {
+                    public void run() {
+                        filesListListener.onSuccess(list);
+                    }
+                });
+            }
+        }.start();
+    }
+
+    public void findJsonFiles_BYCHung(File dir, ArrayList<File> matchingSAFFiles) {
+        String safPattern = ".json";
+        File[] listFile = dir.listFiles();
+        if (listFile != null) {
+            for (int i = 0; i < listFile.length; i++) {
+                String filename = listFile[i].getName();
+                if (listFile[i].isDirectory()) {
+                    findJsonFiles_BYCHung(listFile[i], matchingSAFFiles);
+                } else if (filename.endsWith(safPattern)) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(dir.toString());
+                    sb.append(File.separator);
+                    sb.append(listFile[i].getName());
+                    matchingSAFFiles.add(new File(sb.toString()));
+                }
+            }
+        }
+    }
+
+    public void saveAPIKEYFILE_BYCHUNG(final File file, final KeyFileContainer.FileOperationListener responseListener) {
+        new Thread() {
+            public void run() {
+                super.run();
+                if (Tools.copyFile(file, new File(getFilesDir(), file.getName()))) {
+                    global.setApiKeyFileName(file.getName());
+                    global.resetApiToken();
+                    mainHandler.post(new Runnable() {
+                        public void run() {
+                            responseListener.onSuccess();
+                        }
+                    });
+                    return;
+                }
+                mainHandler.post(new Runnable() {
+                    public void run() {
+                        responseListener.onFailure();
+                    }
+                });
+            }
+        }.start();
+    }
+
 }
 
 

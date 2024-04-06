@@ -19,6 +19,7 @@ package nie.translator.rtranslatordevedition.api_management;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -154,8 +155,12 @@ public class ApiManagementFragment extends Fragment {
         noDataMessage = view.findViewById(R.id.noDataMessage);
         pager = view.findViewById(R.id.viewPager);
         keyFileName = view.findViewById(R.id.keyText);
+        keyFileName.setText("your file key here");
         deleteButton = view.findViewById(R.id.deleteKeyButton);
+
         selectFileButton = view.findViewById(R.id.editKeyButton);
+        //selectFileButton.setBackgroundColor(Color.RED);
+
         costsDescription = view.findViewById(R.id.costsDescription);
         costsDescription.setMovementMethod(LinkMovementMethod.getInstance());
         keyFileDescription = view.findViewById(R.id.keyFileDescription);

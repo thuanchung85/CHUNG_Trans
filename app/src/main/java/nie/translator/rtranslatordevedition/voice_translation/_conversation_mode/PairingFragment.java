@@ -93,9 +93,11 @@ public class PairingFragment extends PairingToolbarFragment {
     //khởi tao websocket listener hứng data websocket trở về
     //khi login vao websocket và lấy thông tin các user khác
     private Emitter.Listener onLoginCallBack = new Emitter.Listener() {
+
         @Override
         //hàm websocket server tra ra data về
         public void call(final Object... args) {
+            //global.setPeerWantTalkName("");
             Log.d("CHUNG-", String.format("CHUNG- PairingFragment - > mSocket() ->onLoginCallBack server reply -> %s ", args.toString()));
             String argsReponse =  Arrays.toString(args);
             //covert json data từ server về data native android
@@ -755,6 +757,8 @@ public class PairingFragment extends PairingToolbarFragment {
             public void onClick(View view) {
                 if (apiKeyFileButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
                     Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
+                    //bật biến này lên để ngăn không cho nó kick hoạt onstop của voiceTranslationActivity, nếu không ai đang chat sẽ bị đá ra
+                    voiceTranslationActivity.onlyVoiceTranslationActivityAllow = false;
                     //bật ApiManagementActivity để user điền api key
                     Intent intent = new Intent(voiceTranslationActivity, ApiManagementActivity.class);
                     startActivity(intent);
@@ -766,6 +770,8 @@ public class PairingFragment extends PairingToolbarFragment {
             public void onClick(View view) {
                 if (settingButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
                     Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> setFragment ");
+                    //bật biến này lên để ngăn không cho nó kick hoạt onstop của voiceTranslationActivity, nếu không ai đang chat sẽ bị đá ra
+                    voiceTranslationActivity.onlyVoiceTranslationActivityAllow = false;
                     //tạm thơi dùng nút walki_talkie làm nut bat setting
                     Intent intent = new Intent(voiceTranslationActivity, SettingsActivity.class);
                     startActivity(intent);
@@ -976,6 +982,8 @@ public class PairingFragment extends PairingToolbarFragment {
         global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
         //an nut di sau khi bam
         socketModeButton.setVisibility(View.GONE);
+
+
     }
 
     @Override
@@ -990,6 +998,8 @@ public class PairingFragment extends PairingToolbarFragment {
         if (!Tools.hasPermissions(voiceTranslationActivity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
             //startSearch();
         }
+
+
     }
 
     @Override
@@ -1016,6 +1026,8 @@ public class PairingFragment extends PairingToolbarFragment {
             //gọi starSearch cac user xung quanh
             //startSearch();
         }
+
+
     }
 
     @Override

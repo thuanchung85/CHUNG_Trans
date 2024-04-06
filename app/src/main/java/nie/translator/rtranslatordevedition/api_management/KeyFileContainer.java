@@ -75,6 +75,8 @@ public class KeyFileContainer {
                 });
             }
         });
+
+        //====khi bấm nut duyêt tìm file key====//
         this.selectFileButton.setOnClickListenerForActivated(new View.OnClickListener() {
             public void onClick(View v) {
                 View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_key_files, null);
@@ -100,6 +102,7 @@ public class KeyFileContainer {
                         listViewGui.setAdapter(adapter);
                         listViewGui.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                                //khi thấy file thì save vào máy local bằng hàm save
                                 save((File) adapter.getItem(position), new FileOperationListener() {
                                     public void onSuccess() {
                                         KeyFileContainer.this.textView.setText(global.getApiKeyFileName());
@@ -119,7 +122,7 @@ public class KeyFileContainer {
         });
     }
 
-    private void findJsonFiles(final File dir, final FilesListListener filesListListener) {
+    public void findJsonFiles(final File dir, final FilesListListener filesListListener) {
         new Thread() {
             public void run() {
                 super.run();
@@ -134,7 +137,7 @@ public class KeyFileContainer {
         }.start();
     }
 
-    private void findJsonFiles(File dir, ArrayList<File> matchingSAFFiles) {
+    public void findJsonFiles(File dir, ArrayList<File> matchingSAFFiles) {
         String safPattern = ".json";
         File[] listFile = dir.listFiles();
         if (listFile != null) {
@@ -153,15 +156,15 @@ public class KeyFileContainer {
         }
     }
 
-    private static abstract class FilesListListener {
-        private FilesListListener() {
+    public static abstract class FilesListListener {
+        protected FilesListListener() {
         }
 
         public void onSuccess(ArrayList<File> arrayList) {
         }
     }
 
-    private void save(final File file, final FileOperationListener responseListener) {
+    public void save(final File file, final FileOperationListener responseListener) {
         new Thread() {
             public void run() {
                 super.run();
@@ -184,7 +187,7 @@ public class KeyFileContainer {
         }.start();
     }
 
-    private void delete(final File file, final FileOperationListener responseListener) {
+    public void delete(final File file, final FileOperationListener responseListener) {
         new Thread() {
             public void run() {
                 super.run();
