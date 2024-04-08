@@ -97,6 +97,43 @@
         app:layout_constraintStart_toStartOf="@+id/toolbarPairing"
         app:layout_constraintTop_toTopOf="@+id/toolbarPairing" />
 
+
+    <TextView
+        android:id="@+id/userNameText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/nunito_sans_light"
+        android:text="USER name"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@color/green"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
+        app:layout_constraintEnd_toEndOf="@+id/toolbarPairing"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@+id/title"
+        app:layout_constraintTop_toTopOf="@+id/toolbarPairing" />
+
+    <ImageView
+        android:id="@+id/current_user_image"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:scaleType="fitXY"
+
+        android:src="@drawable/user_icon"
+        android:tint="#5F5F5F"
+        app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
+        app:layout_constraintEnd_toEndOf="@+id/toolbarPairing"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@+id/userNameText"
+        app:layout_constraintTop_toTopOf="@+id/toolbarPairing"/>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView4"
         android:layout_width="match_parent"

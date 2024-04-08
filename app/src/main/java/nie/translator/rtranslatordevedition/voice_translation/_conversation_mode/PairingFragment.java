@@ -16,6 +16,7 @@
 
 package nie.translator.rtranslatordevedition.voice_translation._conversation_mode;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import android.bluetooth.BluetoothAdapter;
@@ -23,6 +24,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,6 +33,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -455,6 +459,8 @@ public class PairingFragment extends PairingToolbarFragment {
     private WalkieTalkieButton settingButton;
     private WalkieTalkieButton socketModeButton;
 
+    private TextView userNameTextView;
+    private ImageView current_user_image;
     private WalkieTalkieButton bluetoothModeButton;
 
     //true is Socket, false is BlueTooth
@@ -699,6 +705,9 @@ public class PairingFragment extends PairingToolbarFragment {
         super.onViewCreated(view, savedInstanceState);
         constraintLayout = view.findViewById(R.id.container);
 
+        userNameTextView = view.findViewById(R.id.userNameText);
+        current_user_image = view.findViewById(R.id.current_user_image);
+
         walkieTalkieButton = view.findViewById(R.id.buttonStart);
 
         apiKeyFileButton = view.findViewById(R.id.buttonStart2);
@@ -735,7 +744,9 @@ public class PairingFragment extends PairingToolbarFragment {
             constraintLayout.dispatchApplyWindowInsets(windowInsets.replaceSystemWindowInsets(windowInsets.getSystemWindowInsetLeft(),windowInsets.getSystemWindowInsetTop(),windowInsets.getSystemWindowInsetRight(),0));
         }
 
-
+        //setup username od this current user
+        userNameTextView.setText(global.getName());
+        current_user_image.setColorFilter(ContextCompat.getColor(voiceTranslationActivity, R.color.green), PorterDuff.Mode.SRC_IN);
 
         // setting of listeners
         //tma thời thay chức năng nút WalkieTalkieButton thành bật settting view
