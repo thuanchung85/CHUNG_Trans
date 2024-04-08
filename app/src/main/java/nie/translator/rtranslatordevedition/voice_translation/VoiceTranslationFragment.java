@@ -20,6 +20,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.Editable;
@@ -44,6 +45,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
@@ -60,9 +63,13 @@ import nie.translator.rtranslatordevedition.tools.gui.DeactivableButton;
 import nie.translator.rtranslatordevedition.tools.gui.MicrophoneComunicable;
 import nie.translator.rtranslatordevedition.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslatordevedition.tools.gui.messages.MessagesAdapter;
+import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.ChungWhipper.AsyncTaskListener;
+import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.ChungWhipper.AudioRecorder;
+
+import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.ChungWhipper.OpenAIWhisperSTT;
 
 //===QUAN TRONG==//
-public abstract class VoiceTranslationFragment extends Fragment implements MicrophoneComunicable {
+public abstract class VoiceTranslationFragment extends Fragment implements MicrophoneComunicable, AsyncTaskListener {
 
     //=================khi nhận được endcall từ server trả về================//
     private Emitter.Listener onReceive_UserEndCallCallBack = new Emitter.Listener(){
@@ -187,6 +194,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     protected VoiceTranslationService.VoiceTranslationServiceCommunicator voiceTranslationServiceCommunicator;
     protected VoiceTranslationService.VoiceTranslationServiceCallback voiceTranslationServiceCallback;
 
+    AudioRecorder audioRecorder;
+    File recordedAudioFile;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onCreate() "));
@@ -259,7 +269,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         final View.OnClickListener deactivatedClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_wait_initialization), Toast.LENGTH_SHORT).show();
+                //stopRecordWhipper();
+               // Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_wait_initialization), Toast.LENGTH_SHORT).show();
             }
         };
 
@@ -268,6 +279,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         sound.setOnClickListenerForActivated(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //starRecordWhipper();
+
+
                 if (sound.isMute()) {
                     startSound();
                 } else {
@@ -310,6 +324,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 }
             }
         });
+
         microphone.setOnClickListenerForDeactivatedForCreditExhausted(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -440,6 +455,16 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         });
 
 
+        //cố xoá file luc trước khi chay app lai
+        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
+        if(directory.exists()){
+            File[] files = directory.listFiles();
+            for (File file : files) {
+                file.delete();
+            }
+        }
+
+
     }//end onActivityCreated
 
 
@@ -472,6 +497,10 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         deactivateInputs(DeactivableButton.DEACTIVATED);
         if (voiceTranslationActivity.getCurrentFragment() != VoiceTranslationActivity.DEFAULT_FRAGMENT) {
             Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.toast_working_background), Toast.LENGTH_SHORT).show();
+        }
+
+        if(audioRecorder!=null) {
+            audioRecorder.stopRecording();
         }
     }
 
@@ -515,36 +544,137 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     @Override
     //start micro phone khi vào fragment này bắt đầu noí chuyên, thu âm giọng nói và chuyển qua text.
     public void startMicrophone(boolean changeAspect) {
+        /*
+         //tam off su dung stt cua rtranlate
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> startMicrophone() "));
         if (changeAspect) {
             microphone.setMute(false);
         }
 
         voiceTranslationServiceCommunicator.startMic();
+*/
+
+
+
+
+
+    }
+
+    public void starRecordWhipper(){
+        //stopMicrophone(true);
+        //dùng stt openai, khi bấm nút thì mới record
+        //ghi file data voice
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> startMicrophone(WHIPPER) "));
+        audioRecorder = null;
+        audioRecorder = new AudioRecorder();
+        audioRecorder.startRecording();
+    }
+
+    public void stopRecordWhipper(){
+        // When recording is done (e.g., when user presses a button to stop recording):
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> stopMicrophone() "));
+        audioRecorder.stopRecording();
+        recordedAudioFile = audioRecorder.getRecordedAudioFile();
+        System.out.println("Recorded audio file: " + recordedAudioFile.getAbsolutePath());
+        Log.d("CHUNG-", String.format("CHUNG- VOICE FILE SAVED() -> file at() " + recordedAudioFile.getAbsolutePath() ));
+        //ghi lai vao global
+        global.setFileVoiceRecordStringPath(recordedAudioFile.getAbsolutePath());
+
+        if(recordedAudioFile.exists()) {
+            Log.d("CHUNG-", String.format("CHUNG- truyền cho OPENAI() -> OpenAIWhisperSTT() "));
+            //truyền cho OPENAI
+            OpenAIWhisperSTT openAIWhipper = new OpenAIWhisperSTT(this);
+
+            openAIWhipper.execute(recordedAudioFile);
+        }
+
     }
 
     @Override
     public void stopMicrophone(boolean changeAspect) {
+        /*
+          //tam off su dung stt cua rtranlate
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> stopMicrophone() "));
         if (changeAspect) {
             microphone.setMute(true);
         }
 
         voiceTranslationServiceCommunicator.stopMic(changeAspect);
+
+*/
+
+
+
+
+    }
+    //=======WHIPPER RETURN DATA=====///
+    @Override
+    public void onTaskComplete(String result) {
+        // Handle the result here
+        Log.d("CHUNG-", "CHUNG- WHIPPER onTaskComplete result() -> " + result);
+        //show on screen
+
+
+
+
+        try {
+            // Parse the JSON string
+            JSONObject jsonObject = new JSONObject(result);
+
+            // Extract the value associated with the key "text"
+            String value = jsonObject.getString("text");
+
+            recordedAudioFile.delete();
+
+
+            // Print the extracted value
+            System.out.println("Extracted value: " + value);
+
+            Message mstypeFORGUI = new Message(voiceTranslationActivity, value);
+            GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true);
+            if (mAdapter != null) {
+                mAdapter.addMessage(msFOR_recyclerview);
+                //auto scroll
+                //smooth scroll
+                smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
+                mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
+
+                //retrat lai micro cho nguoi dung noi tiep
+                startMicrophone(true);
+
+                //bắn text qua socket cho user ben kia chổ này mình dung whipper nên vậy
+                //======ban data text cho socket========//
+                global.SendData_to_mSocket_FOR_SENDMESSAGE(value, global.getName(), nameOfpeerWantConnect);
+
+
+
+            }
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 
     //gọi TTS nói ra âm thanh
     protected void startSound() {
-
+        stopRecordWhipper();
+        //starRecordWhipper();
         sound.setMute(false);
-        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> startSound()");
-        voiceTranslationServiceCommunicator.startSound();
+        //Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> startSound()");
+        //voiceTranslationServiceCommunicator.startSound();
     }
 
     protected void stopSound() {
+        starRecordWhipper();
+        //stopRecordWhipper();
         sound.setMute(true);
-        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> stopSound()");
-        voiceTranslationServiceCommunicator.stopSound();
+        //Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> stopSound()");
+        //voiceTranslationServiceCommunicator.stopSound();
     }
 
     protected void deactivateInputs(int cause) {

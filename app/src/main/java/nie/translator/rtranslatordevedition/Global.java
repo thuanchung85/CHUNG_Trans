@@ -171,6 +171,16 @@ public class Global extends Application {
     private final Object lock = new Object();
     private String peerWantTalkName = "";
 
+    private String FileVoiceRecordStringPath = "";
+
+    public String getFileVoiceRecordStringPath() {
+        return FileVoiceRecordStringPath;
+    }
+    public void setFileVoiceRecordStringPath(String path) {
+        FileVoiceRecordStringPath = path;
+
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

@@ -19,6 +19,8 @@ package nie.translator.rtranslatordevedition.voice_translation.cloud_apis.voice;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import java.util.ArrayDeque;
 import nie.translator.rtranslatordevedition.Global;
@@ -302,6 +304,7 @@ public class Recorder {
         public void onVoiceEnd() {
             if (recorder != null) {
                 recorder.isRecording = false;
+                Log.d("CHUNG-", String.format("CHUNG- VOICE END -> onVoiceEnd " ));
             }
         }
 
