@@ -149,8 +149,15 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                                     mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
 
                                     //speak here if cant
-                                    stopMicrophone(true);
-                                    textToSpeech.speak(socketreturn_translated, TextToSpeech.QUEUE_FLUSH, null, "ID");
+
+                                     if(sound.isMute() == true){
+                                         textToSpeech.stop();
+                                     }
+                                     else {
+                                         stopMicrophone(true);
+
+                                         textToSpeech.speak(socketreturn_translated, TextToSpeech.QUEUE_FLUSH, null, "ID");
+                                     }
 
                                 }
                             };
@@ -238,8 +245,11 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
                 if ((text == null || text.length() == 0) && microphone.getState() == ButtonMic.STATE_SEND) {
                     microphone.setState(ButtonMic.STATE_RETURN);
+
                 } else if (microphone.getState() == ButtonMic.STATE_RETURN) {
                     microphone.setState(ButtonMic.STATE_SEND);
+
+
                 }
             }
         });
@@ -454,13 +464,14 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
 
         //cố xoá file luc trước khi chay app lai
+        /*
         File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
         if(directory.exists()){
             File[] files = directory.listFiles();
             for (File file : files) {
                 file.delete();
             }
-        }
+        }*/
 
 
     }//end onActivityCreated
@@ -551,11 +562,6 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
         voiceTranslationServiceCommunicator.startMic();
 
-
-
-
-
-
     }
 
     public void starRecordWhipper(){
@@ -571,6 +577,24 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     public void stopRecordWhipper(){
         // When recording is done (e.g., when user presses a button to stop recording):
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> stopMicrophone() "));
+
+        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
+        if (directory.exists()) {
+            String OUTPUT_FILE = "CHUNGrecorded_audio.mp3";
+            File outputFile = new File(directory, OUTPUT_FILE);
+            System.out.println(outputFile);
+
+            if(outputFile.exists()) {
+                Log.d("CHUNG-", String.format("CHUNG- truyền cho OPENAI() -> OpenAIWhisperSTT() "));
+                //truyền cho OPENAI
+                OpenAIWhisperSTT openAIWhipper = new OpenAIWhisperSTT(this);
+
+                openAIWhipper.execute(outputFile);
+            }
+        }
+
+
+        /*
         audioRecorder.stopRecording();
         recordedAudioFile = audioRecorder.getRecordedAudioFile();
         System.out.println("Recorded audio file: " + recordedAudioFile.getAbsolutePath());
@@ -585,6 +609,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
             openAIWhipper.execute(recordedAudioFile);
         }
+        */
 
     }
 
@@ -660,16 +685,12 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
     //gọi TTS nói ra âm thanh
     protected void startSound() {
-        //stopRecordWhipper();
-
         sound.setMute(false);
         Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> startSound()");
         voiceTranslationServiceCommunicator.startSound();
     }
 
     protected void stopSound() {
-        //starRecordWhipper();
-
         sound.setMute(true);
         Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> stopSound()");
         voiceTranslationServiceCommunicator.stopSound();
@@ -777,6 +798,10 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             //smooth scroll
                             smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
                             mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
+
+                            //======ban data text cho socket========//
+                            global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect);
+
                         }
                     }
                     else

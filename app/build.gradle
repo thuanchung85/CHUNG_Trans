@@ -125,6 +125,7 @@ dependencies {
     implementation "io.grpc:grpc-stub:$grpcVersion"
     implementation 'javax.annotation:javax.annotation-api:1.2'
     implementation "androidx.legacy:legacy-support-v4:$supportLibraryVersion"
+    implementation files('libs/libs/jave-1.0.2.jar')
     protobuf 'com.google.protobuf:protobuf-java:3.6.1'
     // OAuth2 for Google API
     implementation('com.google.auth:google-auth-library-oauth2-http:0.8.0') {
