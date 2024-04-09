@@ -328,7 +328,7 @@
         app:layout_constraintVertical_bias="1" />
 
     <nie.translator.rtranslatordevedition.tools.gui.WalkieTalkieButton
-
+        android:visibility="gone"
         android:id="@+id/buttonStart2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

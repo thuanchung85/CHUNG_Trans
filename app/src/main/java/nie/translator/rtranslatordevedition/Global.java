@@ -66,8 +66,8 @@ public class Global extends Application {
     public Socket mSocket;
     {
         try {
-            String urlS = "http://27.74.249.34:8017";
-            //String urlS = "http://42.112.59.88:4000";
+            //String urlS = "http://27.74.249.34:8017";
+            String urlS = "http://42.112.59.88:4000";
 
             mSocket = IO.socket(urlS);
             Log.d("CHUNG-", "CHUNG- Global()  -> mSocket() Global -> DA TAO SUCCESSES!!"+ mSocket);
@@ -629,7 +629,8 @@ public class Global extends Application {
             final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             apiKeyFileName = sharedPreferences.getString("apiKeyFileName", "");
         }
-        return apiKeyFileName;
+        return "chat-demo-cfb06-8f95921614d9.json";
+       // return apiKeyFileName;
     }
 
     public void setApiKeyFileName(String apiKeyFileName) {
@@ -711,7 +712,13 @@ public class Global extends Application {
                     Log.d("token", "token fetched");
                     final InputStream stream;
                     try {
-                        stream = new FileInputStream(new File(getFilesDir(), getApiKeyFileName()));
+                        //hardcode luôn file json vào đây
+
+
+                        stream =  getAssets().open("chat-demo-cfb06-8f95921614d9.json");
+
+                        //hang zin nguyen ban là dùng getApiKeyFileName()
+                        //stream = new FileInputStream(new File(getFilesDir(), getApiKeyFileName()));
                         try {
                             final GoogleCredentials credentials = GoogleCredentials.fromStream(stream).createScoped(SCOPE);
                             apiToken = credentials.refreshAccessToken();
@@ -760,6 +767,8 @@ public class Global extends Application {
                                 }
                             }
                         });
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }.start();
