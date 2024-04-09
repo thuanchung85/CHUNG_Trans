@@ -152,6 +152,9 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     public String getDisplayName() {
         return locale.getDisplayName();
     }
+    public String getDisplayNameSHORT() {
+        return locale.getDisplayLanguage();
+    }
 
     public String getDisplayName(Locale locale) {
         return locale.getDisplayName(locale);

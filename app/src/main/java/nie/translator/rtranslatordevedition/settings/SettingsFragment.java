@@ -16,8 +16,12 @@
 
 package nie.translator.rtranslatordevedition.settings;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -27,6 +31,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
@@ -40,10 +45,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gallery.imageselector.GalleryImageSelector;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Objects;
+
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.tools.ErrorCodes;
-
+import android.util.Base64;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     public static final String DEFAULT_NAME = "user";
@@ -63,6 +71,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private UserNamePreference userNamePreference;
     private SupportTtsQualityPreference supportTtsQualityPreference;
     private LanguagePreference languagePreference;
+
+    private SharedPreferences sharedPreferences;
+    // Define keys for preferences
+    private static final String PREF_NAME = "MyPrefs";
+    private static final String KEY_USERNAME = "ChungusernameThumbImg";
 
     private Handler selfHandler = new Handler(new Handler.Callback() {
         @Override
@@ -108,12 +121,20 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         super.onCreate(savedInstanceState);
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences);
+
+
+
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        // Initialize SharedPreferences
+        sharedPreferences = Objects.requireNonNull(this.getContext()).getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_settings, container, false);
+
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -126,6 +147,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         // to scroll the scrollview up
         /*recyclerView.setFocusable(false);
         image.requestFocus();*/
+
+
     }
 
     @Override
@@ -142,12 +165,32 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             @Override
             public void onBindViewHolder() {
                 userImageContainer = new GalleryImageSelector(userImagePreference.getImage(), activity, SettingsFragment.this, R.drawable.user_icon, "com.gallery.RTranslator.provider");
+
+                /*
+                // Get the Bitmap from the ImageView (if it was set as Bitmap)
+                ImageView ii = userImageContainer.;
+                Bitmap bitmap = ((BitmapDrawable) ii.getDrawable()).getBitmap();
+                // Convert Bitmap to byte array
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 50, byteArrayOutputStream);
+                byte[] byteArray = byteArrayOutputStream.toByteArray();
+                // Encode byte array to Base64 string
+                String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(KEY_USERNAME, encodedImage);
+                editor.apply();*/
+
             }
         });
+
+
+
 
         //inizializzazione user name
         userNamePreference = (UserNamePreference) findPreference("changeName");
         userNamePreference.setActivity(activity);
+
         /*userNamePreference.getEditTextHeight(new UserNamePreference.DateCallback() {
             @Override
             public void onViewHeightMeasured(int height) {

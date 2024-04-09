@@ -24,9 +24,20 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,6 +55,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
+import java.io.File;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
@@ -61,6 +73,7 @@ import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.api_management.ApiManagementActivity;
 import nie.translator.rtranslatordevedition.settings.LanguagePreference;
 import nie.translator.rtranslatordevedition.settings.SettingsActivity;
+import nie.translator.rtranslatordevedition.settings.UserImagePreference;
 import nie.translator.rtranslatordevedition.settings.UserNamePreference;
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.FileLog;
@@ -688,6 +701,8 @@ public class PairingFragment extends PairingToolbarFragment {
 
     }
 
+
+
     //======================================================//
     //=================VUNG UI của FRAGMENT================//
     @Override
@@ -746,7 +761,11 @@ public class PairingFragment extends PairingToolbarFragment {
 
         //setup username od this current user
         userNameTextView.setText(global.getName());
-        current_user_image.setColorFilter(ContextCompat.getColor(voiceTranslationActivity, R.color.green), PorterDuff.Mode.SRC_IN);
+
+
+
+
+       //
 
         // setting of listeners
         //tma thời thay chức năng nút WalkieTalkieButton thành bật settting view
@@ -930,7 +949,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                                     AlertDialog.Builder builder = new AlertDialog.Builder(voiceTranslationActivity);
                                                     builder.setCancelable(true);
                                                     builder.setMessage("Please wait for you friend accept!");
-                                                    builder.setPositiveButton(android.R.string.cancel, confirmExitListenerWait);
+                                                    builder.setPositiveButton(android.R.string.ok, confirmExitListenerWait);
 
 
                                                      dialogWait = builder.create();
@@ -958,7 +977,12 @@ public class PairingFragment extends PairingToolbarFragment {
                                     }
 
                                     else {
-                                        Toast.makeText(voiceTranslationActivity, "user is not available", Toast.LENGTH_SHORT).show();
+                                        if(peer.isBusy){
+                                            Toast.makeText(voiceTranslationActivity, "user is busy", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else {
+                                            Toast.makeText(voiceTranslationActivity, "user is not available", Toast.LENGTH_SHORT).show();
+                                        }
                                     }
                                 }
                             }
@@ -1021,6 +1045,26 @@ public class PairingFragment extends PairingToolbarFragment {
     public void onResume() {
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onResume -> resume PairingFragment ");
         super.onResume();
+        //thay hinh user
+        File file = new File(this.voiceTranslationActivity.getFilesDir(), "user_image");
+        if (file.exists()) {
+            // Load the image file into a Bitmap
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+
+            if (bitmap != null) {
+                // Set the Bitmap to the ImageView
+                current_user_image.setImageBitmap(bitmap);
+                current_user_image.setImageTintList(null);
+                current_user_image.setClipToOutline(true);
+            } else {
+                // Handle case where bitmap is null (failed to decode bitmap)
+                current_user_image.setColorFilter(ContextCompat.getColor(voiceTranslationActivity, R.color.green), PorterDuff.Mode.SRC_IN);
+            }
+        } else {
+            // Handle case where file does not exist
+            current_user_image.setColorFilter(ContextCompat.getColor(voiceTranslationActivity, R.color.green), PorterDuff.Mode.SRC_IN);
+        }
+
         //restore status
         /*if (activity.getConnectingPeersList().size() > 0) {
             deactivateInputs();

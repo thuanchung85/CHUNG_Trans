@@ -324,7 +324,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save firstLanguage selected
         global.setFirstLanguage(language);
         // change language displayed
-        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.firstLanguageName)).setText(language.getDisplayName(), true);
+        //((AnimatedTextView) firstLanguageSelector.findViewById(R.id.firstLanguageName)).setText(language.getDisplayName(), true);
+        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.firstLanguageName)).setText(language.getDisplayNameSHORT(), true);
     }
 
     private void setSecondLanguage(CustomLocale language) {
@@ -333,7 +334,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save secondLanguage selected
         global.setSecondLanguage(language);
         // change language displayed
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.secondLanguageName)).setText(language.getDisplayName(), true);
+        //((AnimatedTextView) secondLanguageSelector.findViewById(R.id.secondLanguageName)).setText(language.getDisplayName(), true);
+        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.secondLanguageName)).setText(language.getDisplayNameSHORT(), true);
     }
 
     private void onFailureShowingList(int[] reasons, long value) {

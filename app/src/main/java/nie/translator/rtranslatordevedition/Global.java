@@ -18,11 +18,15 @@ package nie.translator.rtranslatordevedition;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.ImageView;
+
 import androidx.annotation.Nullable;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -41,6 +45,7 @@ import java.util.List;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import nie.translator.rtranslatordevedition.api_management.ConsumptionsDataManager;
+import nie.translator.rtranslatordevedition.settings.UserImagePreference;
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.ErrorCodes;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
@@ -170,6 +175,15 @@ public class Global extends Application {
     private static Handler mHandler = new Handler();
     private final Object lock = new Object();
     private String peerWantTalkName = "";
+
+    private Bitmap imageViewOfuserBitmap ;
+    public void setImageViewOfuserBitmap(Bitmap d) {
+        imageViewOfuserBitmap = d;
+    }
+    public Bitmap getImageViewOfuserBitmap(){
+
+        return imageViewOfuserBitmap;
+    }
 
     private String FileVoiceRecordStringPath = "";
 

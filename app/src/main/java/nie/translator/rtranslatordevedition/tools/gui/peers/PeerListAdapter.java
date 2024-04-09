@@ -302,7 +302,9 @@ public class PeerListAdapter extends BaseAdapter {
         array.clear();
         notifyDataSetChanged();
         if (array.size() == 0) {
-            callback.onLastItemRemoved();
+            if(callback != null) {
+                callback.onLastItemRemoved();
+            }
         }
     }
 
