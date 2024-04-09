@@ -18,7 +18,7 @@
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.protobuf'
-
+apply plugin: 'com.google.gms.google-services'
 ext {
     supportLibraryVersion = '1.0.0'
     grpcVersion = '1.11.0'
@@ -26,7 +26,6 @@ ext {
 
 android {
     compileSdkVersion 29
-    buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "nie.translator.rtranslatordevedition"
         targetSdkVersion 29
