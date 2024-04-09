@@ -269,7 +269,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         final View.OnClickListener deactivatedClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //stopRecordWhipper();
+
                // Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_wait_initialization), Toast.LENGTH_SHORT).show();
             }
         };
@@ -279,8 +279,6 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         sound.setOnClickListenerForActivated(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //starRecordWhipper();
-
 
                 if (sound.isMute()) {
                     startSound();
@@ -544,7 +542,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     @Override
     //start micro phone khi vào fragment này bắt đầu noí chuyên, thu âm giọng nói và chuyển qua text.
     public void startMicrophone(boolean changeAspect) {
-        /*
+
          //tam off su dung stt cua rtranlate
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> startMicrophone() "));
         if (changeAspect) {
@@ -552,7 +550,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         }
 
         voiceTranslationServiceCommunicator.startMic();
-*/
+
 
 
 
@@ -592,7 +590,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
     @Override
     public void stopMicrophone(boolean changeAspect) {
-        /*
+
           //tam off su dung stt cua rtranlate
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> stopMicrophone() "));
         if (changeAspect) {
@@ -601,7 +599,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
         voiceTranslationServiceCommunicator.stopMic(changeAspect);
 
-*/
+
 
 
 
@@ -662,19 +660,19 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
     //gọi TTS nói ra âm thanh
     protected void startSound() {
-        stopRecordWhipper();
-        //starRecordWhipper();
+        //stopRecordWhipper();
+
         sound.setMute(false);
-        //Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> startSound()");
-        //voiceTranslationServiceCommunicator.startSound();
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> startSound()");
+        voiceTranslationServiceCommunicator.startSound();
     }
 
     protected void stopSound() {
-        starRecordWhipper();
-        //stopRecordWhipper();
+        //starRecordWhipper();
+
         sound.setMute(true);
-        //Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> stopSound()");
-        //voiceTranslationServiceCommunicator.stopSound();
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> stopSound()");
+        voiceTranslationServiceCommunicator.stopSound();
     }
 
     protected void deactivateInputs(int cause) {

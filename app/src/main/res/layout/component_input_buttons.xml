@@ -60,8 +60,8 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="12dp"
             android:background="@null"
-            android:src="@drawable/mic"
-            android:tint="@color/red"
+            android:src="@drawable/sound_icon"
+            android:tint="@color/gray"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.926"
@@ -112,7 +112,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="12dp"
                 android:background="@null"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:scaleType="fitCenter"
                 android:src="@drawable/mic" />
 
@@ -130,7 +130,7 @@
                 android:textAlignment="center"
                 android:textColor="@color/very_dark_gray"
                 android:textSize="9sp"
-                android:visibility="gone" />
+                android:visibility="visible" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
