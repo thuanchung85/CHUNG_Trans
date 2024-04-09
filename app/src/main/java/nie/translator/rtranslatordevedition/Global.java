@@ -176,6 +176,8 @@ public class Global extends Application {
     private final Object lock = new Object();
     private String peerWantTalkName = "";
 
+    public String FMCToken = "";
+
     private Bitmap imageViewOfuserBitmap ;
     public void setImageViewOfuserBitmap(Bitmap d) {
         imageViewOfuserBitmap = d;

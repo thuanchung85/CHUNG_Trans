@@ -125,6 +125,7 @@ dependencies {
     implementation 'javax.annotation:javax.annotation-api:1.2'
     implementation "androidx.legacy:legacy-support-v4:$supportLibraryVersion"
     implementation files('libs/libs/jave-1.0.2.jar')
+    implementation 'com.google.firebase:firebase-messaging:23.4.1'
     protobuf 'com.google.protobuf:protobuf-java:3.6.1'
     // OAuth2 for Google API
     implementation('com.google.auth:google-auth-library-oauth2-http:0.8.0') {
@@ -154,5 +155,8 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+
+
+
 
 }

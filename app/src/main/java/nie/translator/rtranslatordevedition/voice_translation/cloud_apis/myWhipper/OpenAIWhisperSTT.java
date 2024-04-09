@@ -1,4 +1,4 @@
-package nie.translator.rtranslatordevedition.voice_translation.cloud_apis.ChungWhipper;
+package nie.translator.rtranslatordevedition.voice_translation.cloud_apis.myWhipper;
 
 import android.os.AsyncTask;
 import android.util.Log;

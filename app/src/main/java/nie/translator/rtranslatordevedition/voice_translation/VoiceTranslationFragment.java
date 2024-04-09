@@ -46,7 +46,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
@@ -63,10 +62,10 @@ import nie.translator.rtranslatordevedition.tools.gui.DeactivableButton;
 import nie.translator.rtranslatordevedition.tools.gui.MicrophoneComunicable;
 import nie.translator.rtranslatordevedition.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslatordevedition.tools.gui.messages.MessagesAdapter;
-import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.ChungWhipper.AsyncTaskListener;
-import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.ChungWhipper.AudioRecorder;
+import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.myWhipper.AsyncTaskListener;
+import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.myWhipper.AudioRecorder;
 
-import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.ChungWhipper.OpenAIWhisperSTT;
+import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.myWhipper.OpenAIWhisperSTT;
 
 //===QUAN TRONG==//
 public abstract class VoiceTranslationFragment extends Fragment implements MicrophoneComunicable, AsyncTaskListener {

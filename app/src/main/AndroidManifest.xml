@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="nie.translator.rtranslatordevedition">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" tools:node="remove"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -76,6 +77,15 @@
         <service android:name="nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode.recognizer_services.FirstLanguageRecognizerService" />
         <service android:name="nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode.recognizer_services.SecondLanguageRecognizerService" />
         <service android:name="nie.translator.rtranslatordevedition.GeneralService" />
+
+
+        <service
+            android:name=".voice_translation.cloud_apis.myFireBase.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
 
         <provider
             android:name="androidx.core.content.FileProvider"
