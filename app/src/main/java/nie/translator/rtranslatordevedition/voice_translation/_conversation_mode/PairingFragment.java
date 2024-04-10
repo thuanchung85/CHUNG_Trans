@@ -838,6 +838,7 @@ public class PairingFragment extends PairingToolbarFragment {
             }
         });
 
+        //KHI user tap on socket mode button
         socketModeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -859,7 +860,7 @@ public class PairingFragment extends PairingToolbarFragment {
                     String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
 
                     Toast.makeText(voiceTranslationActivity, "SOCKET MODE Current language: "  + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
-                    global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
+                    global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage, global.FMCToken);
 
                     //an nut di sau khi bam
                     socketModeButton.setVisibility(view.GONE);
@@ -1002,6 +1003,7 @@ public class PairingFragment extends PairingToolbarFragment {
 
         ///====KHỞi Tạo SOCKET CONNECTION========//
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
+        global.mSocket.disconnect();
         global.mSocket.off("users");
         global.mSocket.off("receive_call");
         global.mSocket.off("receive_accept_call");
@@ -1015,9 +1017,11 @@ public class PairingFragment extends PairingToolbarFragment {
         String tempUserChungPhoneFirstname =  "f_" + global.getName();
         String tempUserChungPhoneLastname =  "l_" + global.getName();
         String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
+        String FMC_token = global.FMCToken;
 
+        //LOGIN NOW! without FMC_token
         Toast.makeText(voiceTranslationActivity, "Current language: "  + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
-        global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage);
+        global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage, FMC_token);
         //an nut di sau khi bam
         socketModeButton.setVisibility(View.GONE);
 

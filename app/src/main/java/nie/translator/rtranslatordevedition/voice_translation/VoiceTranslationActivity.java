@@ -227,7 +227,16 @@ public class VoiceTranslationActivity extends GeneralActivity {
                         String msg = "FMC TOKEN: -> \n" + token;
                         global.FMCToken = token;
                         Log.w("CHUNG", " FCM  token:" +  global.FMCToken);
-                        //Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
+
+
+                        //RE LOGIN NOW! with FMC_token
+                        String tempUserChungPhone =  global.getName();
+                        String tempUserChungPhoneFirstname =  "f_" + global.getName();
+                        String tempUserChungPhoneLastname =  "l_" + global.getName();
+                        String tempUserChungPhoneLanguage = getResources().getConfiguration().locale.getLanguage();
+                        String FMC_token = global.FMCToken;
+                        global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage, FMC_token);
+                        Toast.makeText(getBaseContext(), "RELOGIN with FCM  token:" +  global.FMCToken, Toast.LENGTH_SHORT).show();
                     }
                 });
 

@@ -87,19 +87,24 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     //vì socket board cast cho all user nên ta phải check coi có tên của mình không
                     //nếu trong from hay to có chứa tên của chính mình thì là đúng rồi, thoát chat
                     if(  myName.equals(ToName)){
+                        //cần check luôn co tên của người kia đung năm trong jSON hay không, có trường hơp có tên mình, nhưng tên người kia thì lại khác với người mình đang nói chuyên
+                        if(FormName.equals(global.getPeerWantTalkName())){
+                            Log.d("CHUNG-", "CHUNG- OK I QUIT() -> FormName.equals(global.getPeerWantTalkName()");
+
+                            voiceTranslationActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //user còn online trong room chat sẽ bị auto đá ra bởi lệnh dưới, do user kia tắt app
+                                    voiceTranslationActivity.onBackPressed_NOTCALL_AGAIN();
+
+                                    //clear tên người dã liên lac
+                                    global.setPeerWantTalkName("");
+                                }
+                            });
+                        }
                         //quay trơ về parring page
                         Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> ENd_CALL ->GET BACK");
 
-                        voiceTranslationActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //user còn online trong room chat sẽ bị auto đá ra bởi lệnh dưới, do user kia tắt app
-                                voiceTranslationActivity.onBackPressed_NOTCALL_AGAIN();
-
-                                //clear tên người dã liên lac
-                                global.setPeerWantTalkName("");
-                            }
-                        });
                     }
                 }
 

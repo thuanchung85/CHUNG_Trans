@@ -78,9 +78,9 @@ public class Global extends Application {
         }
     }
     //emit login
-    public void SendData_to_mSocketFORLOGIN(String usernamedata, String firstnamedata, String lastnamedata , String personal_languagedata) {
+    public void SendData_to_mSocketFORLOGIN(String usernamedata, String firstnamedata, String lastnamedata , String personal_languagedata, String fcm_token) {
 
-        String jsonString = String.format("{\"username\": \"%s\", \"firstname\": \"%s\", \"lastname\": \"%s\", \"personal_language\": \"%s\"}",usernamedata, firstnamedata, lastnamedata, personal_languagedata);
+        String jsonString = String.format("{\"username\": \"%s\", \"firstname\": \"%s\", \"lastname\": \"%s\", \"personal_language\": \"%s\" , \"fcm_token\": \"%s\"}",usernamedata, firstnamedata, lastnamedata, personal_languagedata, fcm_token);
         //covert string to json
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
