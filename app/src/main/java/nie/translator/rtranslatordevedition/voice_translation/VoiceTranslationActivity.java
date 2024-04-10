@@ -68,6 +68,7 @@ import nie.translator.rtranslatordevedition.settings.SettingsActivity;
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.CustomServiceConnection;
 import nie.translator.rtranslatordevedition.tools.Tools;
+import nie.translator.rtranslatordevedition.tools.gui.RequestDialog;
 import nie.translator.rtranslatordevedition.tools.gui.animations.CustomAnimator;
 import nie.translator.rtranslatordevedition.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslatordevedition.tools.services_communication.ServiceCommunicatorListener;
@@ -240,6 +241,79 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     }
                 });
 
+
+        //===GET BACK DATA WHEN OPEN BY NOTIFICATION TAP======///
+        Intent intent = getIntent();
+        if (intent != null) {
+
+            String actionNotificationCall = intent.getStringExtra("action");
+            String toNotificationCall = intent.getStringExtra("_to");
+            String fromNotificationCall = intent.getStringExtra("_from");
+            Log.d("CHUNG-", "CHUNG- =====WAKEUP========onNewIntent(1)====================" + actionNotificationCall);
+            Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> GET BACK DATA WHEN OPEN BY NOTIFICATION TAP: " + actionNotificationCall);
+            if (actionNotificationCall != null) {
+                // Use the action data here
+                Toast.makeText(getBaseContext(), "Notification Call DATA: " +  actionNotificationCall + " " + toNotificationCall + " " + fromNotificationCall, Toast.LENGTH_SHORT).show();
+               //show dialobox ok cuoc goi
+                //show dialogbox ok connect or not
+                RequestDialog connectionRequestDialog = new RequestDialog(this,
+                        fromNotificationCall + " want connect with you ?", new DialogInterface.OnClickListener() {
+                    @Override
+                    //==> OK USER XAC NHAN BAM NUT OK ACCEPT CONNECT
+                    public void onClick(DialogInterface dialog, int which) {
+                        //thông báo socket tôi OK connect "accept_call"
+                        global.SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER( fromNotificationCall,toNotificationCall,true);
+
+                        //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
+                        global.mSocket.off("receive_call");
+                        global.mSocket.off("users");
+
+                        //======QUAN TRONG: chơi ăn gian===> đi thẳng vào luôn DI VAO TRANG CHAT VOICE ===//
+                        setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+
+                    }
+                }, new DialogInterface.OnClickListener() {
+                    @Override
+                    //==> OK USER KHONG CHIU BAM NUT HUY CANCEL-> reject CONNECT
+                    public void onClick(DialogInterface dialog, int which) {
+                        //thông báo socket tôi REJECT connect "REJECT accept_call"
+                        global.SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER(fromNotificationCall,toNotificationCall,false);
+                    }
+                });
+                connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+
+                    }
+                });
+                connectionRequestDialog.show();
+
+            } else {
+                // Handle case where action data is null
+            }
+        } else {
+            // Handle case where intent is null
+        }
+
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String actionNotificationCall = intent.getStringExtra("action");
+        String toNotificationCall = intent.getStringExtra("_to");
+        String fromNotificationCall = intent.getStringExtra("_from");
+        Log.d("CHUNG-", "CHUNG- =====WAKEUP========onNewIntent(2)====================" + actionNotificationCall);
+
+        // Check if the activity was started by a new intent
+        if (intent != null && intent.hasExtra("action")) {
+            // Retrieve the data from the new intent
+            String action = intent.getStringExtra("action");
+            if (action != null) {
+                // Handle the data
+                // For example, update UI based on the action
+            }
+        }
     }
 
     @Override

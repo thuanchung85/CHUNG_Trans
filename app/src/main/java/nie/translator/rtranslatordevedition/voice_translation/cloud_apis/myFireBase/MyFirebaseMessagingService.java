@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Map;
@@ -48,59 +49,86 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String tempUserChungPhoneLanguage = getResources().getConfiguration().locale.getLanguage();
         String FMC_token = global.FMCToken;
         global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage, FMC_token);
-        Toast.makeText(getBaseContext(), "RELOGIN with FCM  token by onNewToken:" +  global.FMCToken, Toast.LENGTH_SHORT).show();
+       if(global.FMCToken != null) {
+           try {
+               Toast.makeText(getBaseContext(), "REFESH  FCM  token by onNewToken:" + global.FMCToken, Toast.LENGTH_SHORT).show();
+           }
+           catch (RuntimeException e){
+
+           }
+       }
     }
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        Log.w("CHUNG", " FCM  onMessageReceived REFESH:" +  global.getName());
+        System.out.println(remoteMessage);
+        global = (Global) getApplication();
+        Log.w("CHUNG", "CHUNG FCM  onMessageReceived REFESH:" +  global.getName());
+
+        Toast.makeText(getBaseContext(), "<<<<<<onMessageReceived: " , Toast.LENGTH_SHORT).show();
+
         Map<String, String> params = remoteMessage.getData();
         JSONObject object = new JSONObject(params);
-        Log.w("CHUNG-", String.format("CHUNG- MyFirebaseMessagingService() -> onMessageReceived" + object));
+        try {
+            String action = object.getString("action");
+            String to = object.getString("_to");
+            String from = object.getString("_from");
 
-        String NOTIFICATION_CHANNEL_ID = "rTranslator_channel";
 
-        long pattern[] = {0, 1000, 500, 1000};
+            Log.w("CHUNG-", String.format("CHUNG- MyFirebaseMessagingService() -> onMessageReceived" + object));
 
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            String NOTIFICATION_CHANNEL_ID = "rTranslator_channel";
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "rTranslator Notifications",
-                    NotificationManager.IMPORTANCE_HIGH);
+            long pattern[] = {0, 1000, 500, 1000};
 
-            notificationChannel.setDescription("");
-            notificationChannel.enableLights(true);
-            notificationChannel.setLightColor(Color.RED);
-            notificationChannel.setVibrationPattern(pattern);
-            notificationChannel.enableVibration(true);
-            mNotificationManager.createNotificationChannel(notificationChannel);
+            NotificationManager mNotificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "rTranslator Notifications",
+                        NotificationManager.IMPORTANCE_HIGH);
+
+                notificationChannel.setDescription("");
+                notificationChannel.enableLights(true);
+                notificationChannel.setLightColor(Color.RED);
+                notificationChannel.setVibrationPattern(pattern);
+                notificationChannel.enableVibration(true);
+                mNotificationManager.createNotificationChannel(notificationChannel);
+            }
+
+            // to diaplay notification in DND Mode
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = mNotificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
+                channel.canBypassDnd();
+            }
+
+            Intent rTranlateActivity =  new Intent(this.getApplicationContext(), VoiceTranslationActivity.class);
+            rTranlateActivity.putExtra("action", action);
+            rTranlateActivity.putExtra("_to", to);
+            rTranlateActivity.putExtra("_from", from);
+            rTranlateActivity.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, rTranlateActivity, PendingIntent.FLAG_UPDATE_CURRENT );
+
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+
+            notificationBuilder.setAutoCancel(true)
+                    .setColor(ContextCompat.getColor(this, R.color.primary))
+                    .setContentTitle(getString(R.string.app_name))
+                    //remoteMessage.getNotification().getBody()
+                    .setContentText( "data: "+ "\n" + " | " + action + " | "+ to + " | " + from)
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .setWhen(System.currentTimeMillis())
+                    .setSmallIcon(R.drawable.app_icon)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true);
+
+
+
+            mNotificationManager.notify(1000, notificationBuilder.build());
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
 
-        // to diaplay notification in DND Mode
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = mNotificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
-            channel.canBypassDnd();
-        }
-
-        Intent rTranlateActivity =  new Intent(this.getApplicationContext(), VoiceTranslationActivity.class);
-        rTranlateActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, rTranlateActivity, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-
-        notificationBuilder.setAutoCancel(true)
-                .setColor(ContextCompat.getColor(this, R.color.primary))
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText(remoteMessage.getNotification().getBody())
-                .setDefaults(Notification.DEFAULT_ALL)
-                .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.drawable.app_icon)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
-
-
-
-        mNotificationManager.notify(1000, notificationBuilder.build());
     }
 }

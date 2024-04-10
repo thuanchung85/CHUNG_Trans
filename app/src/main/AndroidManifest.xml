@@ -49,12 +49,22 @@
         </activity>
         <!--configChanges serve a evitare il riavvio dell' activity quando ruota e quindi per evitare che alla rotazione si notifichi con un Toast l' avvio del
         service in background, inoltre così la rotazione sarà più fluida e per ora non abbiamo problemi ne per la rotazione ne per il ridimensionamento quando in finestra-->
+
+
         <activity
             android:keepScreenOn="true"
             android:name="nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationActivity"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Speech" />
+            android:theme="@style/Theme.Speech" >
+            <intent-filter>
+                <action android:name="OPEN_ACTIVITY" />
+                <!-- Add this OPEN_ACTIVITY string into your data payload while sending the notification from server side. -->
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+
         <activity
             android:keepScreenOn="true"
             android:name="nie.translator.rtranslatordevedition.settings.SettingsActivity"
@@ -81,6 +91,7 @@
 
         <service
             android:name=".voice_translation.cloud_apis.myFireBase.MyFirebaseMessagingService"
+            android:directBootAware="true"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
@@ -99,5 +110,8 @@
         <uses-library
             android:name="com.sec.android.app.multiwindow"
             android:required="false" />
+
+
+
     </application>
 </manifest>
