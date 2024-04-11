@@ -138,8 +138,11 @@ public class VoiceTranslationActivity extends GeneralActivity {
     @Override
     protected void onDestroy() {
         Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onDestroy");
-
-
+        if(global != null) {
+            if(global.mSocket != null) {
+                global.mSocket.disconnect();
+            }
+        }
         //release micro hold, nếu không nó chiếm micro hoài không cho các app khác dùng
         //android.os.Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
@@ -148,7 +151,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
     @Override
     protected void onPause() {
         super.onPause();
-
+        stopConversationService();
+        stopWalkieTalkieService();
     }
 
     //biến dùng để check khi nào activity này stop bởi chính nó, không phải bởi activity khác
@@ -165,6 +169,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
         }
         //VẪN CÒN 1 BUGG CHỔ NÀY KHI CHÍNH USER NÀY THOAT APP NGANG THÌ NÓ VẪN VÀO onlyVoiceTranslationActivityAllow == TRUE
         //TUY LUC ĐÓ 2 USER KHAC ĐANG NÓI CHUYÊN, KHÔNG PHẢI USER NÀY.
+
     }
 
     // Method to request notification permissions

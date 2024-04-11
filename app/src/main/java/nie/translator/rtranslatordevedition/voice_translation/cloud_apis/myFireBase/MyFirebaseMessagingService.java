@@ -62,20 +62,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.w("CHUNG", " FCM  token REFESH:" +  global.FMCToken);
 
         //RE LOGIN NOW! with FMC_token
-        String tempUserChungPhone =  global.getName();
-        String tempUserChungPhoneFirstname =  "f_" + global.getName();
-        String tempUserChungPhoneLastname =  "l_" + global.getName();
-        String tempUserChungPhoneLanguage = getResources().getConfiguration().locale.getLanguage();
-        String FMC_token = global.FMCToken;
-        global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage, FMC_token);
-       if(global.FMCToken != null) {
-           try {
-               Toast.makeText(getBaseContext(), "REFESH  FCM  token by onNewToken:" + global.FMCToken, Toast.LENGTH_SHORT).show();
-           }
-           catch (RuntimeException e){
 
-           }
-       }
+        String tempUserChungPhone =  global.getName();
+        if(!global.getName().equals("user")) {
+            String tempUserChungPhoneFirstname = "f_" + global.getName();
+            String tempUserChungPhoneLastname = "l_" + global.getName();
+            String tempUserChungPhoneLanguage = getResources().getConfiguration().locale.getLanguage();
+            String FMC_token = global.FMCToken;
+            global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage, FMC_token);
+            if (global.FMCToken != null) {
+                try {
+                    Toast.makeText(getBaseContext(), "REFESH  FCM  token by onNewToken:" + global.FMCToken, Toast.LENGTH_SHORT).show();
+                } catch (RuntimeException e) {
+
+                }
+            }
+        }
     }
 
     @Override

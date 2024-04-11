@@ -982,11 +982,69 @@ public class PairingFragment extends PairingToolbarFragment {
                                             Toast.makeText(voiceTranslationActivity, "user is busy", Toast.LENGTH_SHORT).show();
                                         }
                                         else {
-                                            Toast.makeText(voiceTranslationActivity, "user is not available, so send notification to call", Toast.LENGTH_SHORT).show();
+                                            //Toast.makeText(voiceTranslationActivity, "user is not available, so send notification to call", Toast.LENGTH_SHORT).show();
                                             //when user offline mode, we send notification for that user
                                             String me = global.getName();
                                             String friend = global.getPeerWantTalkName();
-                                            global.SendData_to_mSocket_FORCONNECT2USER(me,friend);
+                                            //global.SendData_to_mSocket_FORCONNECT2USER(me,friend);
+
+                                            //bật dialog hỏi
+                                            connectionRequestDialog = new RequestDialog(voiceTranslationActivity, "user is not available, so send notification to call " + peer.getName() + " ?",  new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
+
+
+
+                                                    //chơi ăn gian===> đi thẳng vào luôn
+                                                    //check có file APIKEY chưa đã
+                                                    if(!global.getApiKeyFileName().equals("")) {
+                                                        // voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                                        //chổ này mình không cho user vào chat ngay lâp tức, mà phải có sự OK từ user phía kia
+                                                        //ta phải nghe event socket tra ve là accept hay reject
+
+                                                        //emit call len serversocket
+                                                        global.SendData_to_mSocket_FORCONNECT2USER(me,friend);
+                                                        //khi qua trang khac thi bỏ ghe event receive_call socket của chính mình
+                                                        //global.mSocket.off("receive_call");
+
+                                                        //show diaglog box wait for your friend accept
+                                                        //===SHOW DIALOG BOX WAIT NHAN CALL====//
+                                                        DialogInterface.OnClickListener confirmExitListenerWait = new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                dialog.dismiss();
+                                                            }
+                                                        };
+                                                        //creazione del dialog.
+                                                        AlertDialog.Builder builder = new AlertDialog.Builder(voiceTranslationActivity);
+                                                        builder.setCancelable(true);
+                                                        builder.setMessage("Please wait for you friend accept!");
+                                                        builder.setPositiveButton(android.R.string.ok, confirmExitListenerWait);
+
+
+                                                        dialogWait = builder.create();
+                                                        dialogWait.show();
+                                                    }
+                                                    else{
+                                                        Intent intent = new Intent(voiceTranslationActivity, ApiManagementActivity.class);
+                                                        startActivity(intent);
+
+                                                    }
+                                                }
+                                            }, new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> CANCEL"));
+                                                }
+                                            });
+                                            connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                                @Override
+                                                public void onCancel(DialogInterface dialog) {
+                                                    connectionRequestDialog = null;
+                                                }
+                                            });
+                                            connectionRequestDialog.show();
 
                                         }
                                     }
