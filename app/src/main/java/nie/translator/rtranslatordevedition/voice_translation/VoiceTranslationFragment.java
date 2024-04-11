@@ -787,6 +787,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                         if (previewIndex != -1) {
                             Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(1) -> %s",message.getMessage().getText()));
                             //======ban data text cho socket========//
+                            if(nameOfpeerWantConnect.equals("")){
+                                nameOfpeerWantConnect = global.getPeerWantTalkName();
+                            }
                             global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect);
 
                             mAdapter.setMessage(previewIndex, message);

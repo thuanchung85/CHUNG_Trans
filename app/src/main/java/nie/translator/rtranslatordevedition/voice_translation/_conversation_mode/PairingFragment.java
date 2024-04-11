@@ -982,7 +982,12 @@ public class PairingFragment extends PairingToolbarFragment {
                                             Toast.makeText(voiceTranslationActivity, "user is busy", Toast.LENGTH_SHORT).show();
                                         }
                                         else {
-                                            Toast.makeText(voiceTranslationActivity, "user is not available", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(voiceTranslationActivity, "user is not available, so send notification to call", Toast.LENGTH_SHORT).show();
+                                            //when user offline mode, we send notification for that user
+                                            String me = global.getName();
+                                            String friend = global.getPeerWantTalkName();
+                                            global.SendData_to_mSocket_FORCONNECT2USER(me,friend);
+
                                         }
                                     }
                                 }
@@ -1062,11 +1067,11 @@ public class PairingFragment extends PairingToolbarFragment {
                 current_user_image.setClipToOutline(true);
             } else {
                 // Handle case where bitmap is null (failed to decode bitmap)
-                current_user_image.setColorFilter(ContextCompat.getColor(voiceTranslationActivity, R.color.green), PorterDuff.Mode.SRC_IN);
+                //current_user_image.setColorFilter(ContextCompat.getColor(voiceTranslationActivity, R.color.green), PorterDuff.Mode.SRC_IN);
             }
         } else {
             // Handle case where file does not exist
-            current_user_image.setColorFilter(ContextCompat.getColor(voiceTranslationActivity, R.color.green), PorterDuff.Mode.SRC_IN);
+            //current_user_image.setColorFilter(ContextCompat.getColor(voiceTranslationActivity, R.color.green), PorterDuff.Mode.SRC_IN);
         }
 
         //restore status

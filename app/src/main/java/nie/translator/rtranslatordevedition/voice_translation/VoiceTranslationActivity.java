@@ -17,6 +17,7 @@
 package nie.translator.rtranslatordevedition.voice_translation;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -33,6 +34,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,6 +47,7 @@ import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -138,7 +141,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
 
         //release micro hold, nếu không nó chiếm micro hoài không cho các app khác dùng
-        android.os.Process.killProcess(android.os.Process.myPid());
+        //android.os.Process.killProcess(android.os.Process.myPid());
         super.onDestroy();
     }
 
@@ -164,8 +167,34 @@ public class VoiceTranslationActivity extends GeneralActivity {
         //TUY LUC ĐÓ 2 USER KHAC ĐANG NÓI CHUYÊN, KHÔNG PHẢI USER NÀY.
     }
 
+    // Method to request notification permissions
+    private void requestNotificationPermissions() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Notification Permission Required");
+        builder.setMessage("Please grant notification permissions to receive notifications.");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Open app settings to allow the user to grant notification permissions
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.setData(android.net.Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, 101);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Handle the case where the user cancels the permission request
+            }
+        });
+        builder.show();
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        //TRY to ask notification permission
+        if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+            requestNotificationPermissions();
+        }
 
         // Keep the screen on for this activity
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -253,9 +282,9 @@ public class VoiceTranslationActivity extends GeneralActivity {
             Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> GET BACK DATA WHEN OPEN BY NOTIFICATION TAP: " + actionNotificationCall);
             if (actionNotificationCall != null) {
                 // Use the action data here
-                Toast.makeText(getBaseContext(), "Notification Call DATA: " +  actionNotificationCall + " " + toNotificationCall + " " + fromNotificationCall, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getBaseContext(), "Notification Call DATA: " +  actionNotificationCall + " " + toNotificationCall + " " + fromNotificationCall, Toast.LENGTH_SHORT).show();
                //show dialobox ok cuoc goi
-                //show dialogbox ok connect or not
+                //show dialog ok connect or not
                 RequestDialog connectionRequestDialog = new RequestDialog(this,
                         fromNotificationCall + " want connect with you ?", new DialogInterface.OnClickListener() {
                     @Override
@@ -268,6 +297,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
                         global.mSocket.off("receive_call");
                         global.mSocket.off("users");
 
+                        //ghi lai user đang muốn call mình
+                        global.setPeerWantTalkName(fromNotificationCall);
                         //======QUAN TRONG: chơi ăn gian===> đi thẳng vào luôn DI VAO TRANG CHAT VOICE ===//
                         setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
 
@@ -294,6 +325,13 @@ public class VoiceTranslationActivity extends GeneralActivity {
         } else {
             // Handle case where intent is null
         }
+
+        //try clear off all notification when app open
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager != null) {
+            notificationManager.cancelAll();
+        }
+
 
     }
 

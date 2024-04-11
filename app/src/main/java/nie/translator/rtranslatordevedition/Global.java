@@ -133,7 +133,7 @@ public class Global extends Application {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             mSocket.emit("send_message", jsonObject);
-            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"send_message\", jsonObject);");
+            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"send_message\" " +jsonString);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -146,7 +146,7 @@ public class Global extends Application {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             mSocket.emit("accept_call", jsonObject);
-            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"accept_call\", jsonObject);");
+            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"accept_call\"" + jsonString);
         } catch (JSONException e) {
             e.printStackTrace();
         }
