@@ -152,6 +152,20 @@ public class Global extends Application {
         }
     }
 
+    public void SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER( int  n, String lydo){
+        String jsonString = String.format("{\"status\": %d}",n);
+        //covert string to json
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            System.out.println(mSocket.isActive());
+            mSocket.emit("update_status", jsonObject);
+            Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"update_status\"" + jsonString + " " + lydo);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     ////////////////////////////===============================END SOCKET ZONE=================//////
     public static final List<String> SCOPE = Collections.singletonList("https://www.googleapis.com/auth/cloud-platform");
     private static final int TOKEN_FETCH_MARGIN = 60 * 1000; // one minute

@@ -6,7 +6,9 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -14,17 +16,30 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Arrays;
+
+import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
+import nie.translator.rtranslatordevedition.tools.gui.RequestDialog;
 import nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationActivity;
 
 public class ChungForegroundService extends Service {
+
+
+
+
     private Global global;
     public static final String CHANNEL_ID = "SocketForegroundServiceChannel";
     @Override
     public void onCreate() {
         super.onCreate();
         global = (Global) getApplication();
+
         Log.w("CHUNG", "CHUNG ChungForegroundService for socket of:" +  global.getName());
     }
     @Override
@@ -42,12 +57,17 @@ public class ChungForegroundService extends Service {
                 .build();
         startForeground(1, notification);
         //do heavy work on a background thread
+
+
+
         //stopSelf();
         return START_NOT_STICKY;
     }
     @Override
     public void onDestroy() {
+        global = null;
         super.onDestroy();
+
     }
     @Nullable
     @Override

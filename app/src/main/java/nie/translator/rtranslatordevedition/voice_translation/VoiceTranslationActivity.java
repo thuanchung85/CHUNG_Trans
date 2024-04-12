@@ -138,30 +138,51 @@ public class VoiceTranslationActivity extends GeneralActivity {
         Intent serviceIntent = new Intent(this, ChungForegroundService.class);
         serviceIntent.putExtra("inputExtra", "Foreground Service rTranslator socket in Android");
         ContextCompat.startForegroundService(this, serviceIntent);
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0, "Foreground Service -> startService()" );
     }
     public void stopService() {
         Intent serviceIntent = new Intent(this, ChungForegroundService.class);
         stopService(serviceIntent);
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(1, "Foreground Service -> stopService()");
+    }
+
+
+
+
+    @Override
+    protected void onPause() {
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0, "VoiceTranslationActivity -> onPause");
+        super.onPause();
+        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onPause");
+
+
+        stopConversationService();
+        stopWalkieTalkieService();
+        //Start socket serivce foreground for offline call
+        startService();
+
+        if(getCurrentFragment() == (VoiceTranslationActivity.CONVERSATION_FRAGMENT))  {
+            setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
+            global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0, "VoiceTranslationActivity -> onPause");
+        }
+
+
     }
 
     @Override
     protected void onDestroy() {
-        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> onDestroy");
-        if(global != null) {
-            if(global.mSocket != null) {
-                global.mSocket.disconnect();
-            }
-        }
-        //release micro hold, nếu không nó chiếm micro hoài không cho các app khác dùng
-        //android.os.Process.killProcess(android.os.Process.myPid());
+        //global.mSocket.disconnect();
+        //thay vì disconnect mình gọi socket update status
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0, "VoiceTranslationActivity -> onDestroy");
         super.onDestroy();
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        stopConversationService();
-        stopWalkieTalkieService();
+    protected void onResume() {
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(1, "VoiceTranslationActivity -> onResume");
+        super.onResume();
+        //stop foreground service when app active
+        stopService();
     }
 
     //biến dùng để check khi nào activity này stop bởi chính nó, không phải bởi activity khác
@@ -251,11 +272,22 @@ public class VoiceTranslationActivity extends GeneralActivity {
         //fragment_container CÁI NÀY khai báo trong layout activity_main.xml
         fragmentContainer = findViewById(R.id.fragment_container);
 
+
+        //RE LOGIN NOW! with FMC_token
+        String tempUserChungPhone =  global.getName();
+        String tempUserChungPhoneFirstname =  "f_" + global.getName();
+        String tempUserChungPhoneLastname =  "l_" + global.getName();
+        String tempUserChungPhoneLanguage = getResources().getConfiguration().locale.getLanguage();
+        String FMC_token = global.FMCToken;
+        global.SendData_to_mSocketFORLOGIN(tempUserChungPhone, tempUserChungPhoneFirstname, tempUserChungPhoneLastname, tempUserChungPhoneLanguage, FMC_token);
+
+
         /*if (savedInstanceState != null) {
             //Restore the fragment's instance
             fragment = getSupportFragmentManager().getFragment(savedInstanceState, "myFragmentName");
         }*/
 
+        /*
         //===FIRE BASE TOKEN====//
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(new OnCompleteListener<String>() {
@@ -284,6 +316,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     }
                 });
 
+*/
 
         //===GET BACK DATA WHEN OPEN BY NOTIFICATION TAP======///
         Intent intent = getIntent();
@@ -347,10 +380,10 @@ public class VoiceTranslationActivity extends GeneralActivity {
         }
 
 
-        //Start socket serivce foreground
-        startService();
+
     }
 
+    /*
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -369,6 +402,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
             }
         }
     }
+*/
 
     @Override
     protected void onStart() {
@@ -473,7 +507,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
         switch (fragmentName) {
             //0 là đi tới PAIRING_FRAGMENT
             case PAIRING_FRAGMENT: {
-
+                global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(1, "VoiceTranslationActivity -> setFragment -> PAIRING_FRAGMENT");
                 // possible stop of the Conversation and WalkieTalkie Service
                 stopConversationService();
                 stopWalkieTalkieService();
@@ -499,6 +533,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
             //1 là đi tới CONVERSATION_FRAGMENT
             case CONVERSATION_FRAGMENT: {
+                global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0, "VoiceTranslationActivity -> setFragment -> CONVERSATION_FRAGMENT");
                 // possible setting of the fragment
                 if (getCurrentFragment() != CONVERSATION_FRAGMENT) {
                     Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> new ConversationFragment ");
@@ -523,6 +558,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
             //2 là đi tới WALKIE_TALKIE_FRAGMENT
             case WALKIE_TALKIE_FRAGMENT: {
+                global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0, "VoiceTranslationActivity -> setFragment -> WALKIE_TALKIE_FRAGMENT");
                 // possible setting of the fragment
                 if (getCurrentFragment() != WALKIE_TALKIE_FRAGMENT) {
                     WalkieTalkieFragment walkieTalkieFragment = new WalkieTalkieFragment();
@@ -701,7 +737,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
     @Override
     //khi user bấm nút back hình cái cửa trên góc trên tay phải của app
     public void onBackPressed() {
-
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(1, "VoiceTranslationActivity -> onBackPressed");
         DialogInterface.OnClickListener confirmExitListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -750,6 +786,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
     }
     public void onBackPressed_NOTCALL_AGAIN() {
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(1, "VoiceTranslationActivity -> onBackPressed_NOTCALL_AGAIN");
         DialogInterface.OnClickListener confirmExitListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

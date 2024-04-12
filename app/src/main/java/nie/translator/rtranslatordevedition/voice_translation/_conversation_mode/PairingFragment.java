@@ -15,12 +15,22 @@
  */
 
 package nie.translator.rtranslatordevedition.voice_translation._conversation_mode;
+import static androidx.core.content.ContextCompat.getSystemService;
+import static com.google.common.reflect.Reflection.getPackageName;
+
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,8 +45,12 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,6 +61,7 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
@@ -284,69 +299,150 @@ public class PairingFragment extends PairingToolbarFragment {
                     //ta phải save lại ai là người đang call ta
                     JSONObject dataJS = jsonObject.getJSONObject("data");
                     String from = dataJS.getString("from");
+                    //save lai người đang call cho mình
                     global.setPeerWantTalkName(from);
 
-                    //chuyen lên main thread ui
-                    voiceTranslationActivity.runOnUiThread(new Runnable() {
+                    String to = dataJS.getString("to");
+                    //kiểm tra lại "to" có phải là trùng tên của chính mình không, nêu đung thi ok là gọi mình
+                    if(to.equals(global.getName())){
+                        Boolean offlineCall = dataJS.getBoolean("offlineCall");
+                        //nếu đang là cuộc call trong tình trạng OFFLINE
+                        if(offlineCall == true){
+                            //làm gi đó bật notification báo cho người offline biết có ai đang call mình
+                            try {
+                                String action = "offlineCall";
+                                Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + voiceTranslationActivity.getPackageName() + "/" + R.raw.ringring);
+                                MediaPlayer  mediaPlayer = MediaPlayer.create(voiceTranslationActivity, soundUri);
+                                mediaPlayer.setVolume(0.1f,0.1f);
+                                mediaPlayer.start();
 
-                                               @Override
-                                               public void run() {
-                                                   //chơi ringring thông báo cho người khác biết đang đươc gọi bởi ai đó
-                                                   //load ringring wav file
-                                                   mediaPlayer = MediaPlayer.create(voiceTranslationActivity, R.raw.ringring);
-                                                   mediaPlayer.setVolume(0.5f,0.5f);
-                                                   mediaPlayer.setLooping(true); // Enable looping
-                                                   mediaPlayer.start(); // Start playback
-                                                   //show dialogbox ok connect or not
-                                                   connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
-                                                            room.split(":")[0] + " want connect with you ?", new DialogInterface.OnClickListener() {
-                                                       @Override
-                                                       //==> OK USER XAC NHAN BAM NUT OK ACCEPT CONNECT
-                                                       public void onClick(DialogInterface dialog, int which) {
-                                                           Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
+                                RemoteViews contentView = new RemoteViews(voiceTranslationActivity.getPackageName(), R.layout.custom_push);
+                                contentView.setImageViewResource(R.id.image, R.mipmap.ic_launcher);
+                                contentView.setTextViewText(R.id.title, "Some Called You:");
+                                contentView.setTextViewText(R.id.text,   from+ " " +  action + " "+ to + "." );
+                                AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                                        .build();
 
-                                                           //sound ring ring stop
-                                                           if(mediaPlayer !=null) {
-                                                               mediaPlayer.stop();
-                                                               mediaPlayer.release();
-                                                               mediaPlayer = null;
-                                                           }
-                                                           //thông báo socket tôi OK connect "accept_call"
-                                                           global.SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER( global.getPeerWantTalkName(),global.getName(),true);
+                                String NOTIFICATION_CHANNEL_ID = "rTranslator_channel";
+                                long[] pattern = {0, 1000, 500, 1000};
+                                NotificationManager mNotificationManager = (NotificationManager) voiceTranslationActivity.getSystemService(Context.NOTIFICATION_SERVICE);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "rTranslator Notifications",
+                                            NotificationManager.IMPORTANCE_HIGH);
 
-                                                           //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
-                                                           global.mSocket.off("receive_call");
-                                                           global.mSocket.off("users");
+                                    notificationChannel.setDescription("");
+                                    notificationChannel.setSound(soundUri,audioAttributes);
+                                    mNotificationManager.createNotificationChannel(notificationChannel);
+                                }
+                                // to display notification in DND Mode
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    NotificationChannel channel = mNotificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
+                                    channel.canBypassDnd();
 
-                                                           //======QUAN TRONG: chơi ăn gian===> đi thẳng vào luôn DI VAO TRANG CHAT VOICE ===//
-                                                           voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                                    channel.setSound(soundUri,audioAttributes);
+                                    mNotificationManager.createNotificationChannel(channel);
+                                }
 
-                                                       }
-                                                   }, new DialogInterface.OnClickListener() {
-                                                       @Override
-                                                       //==> OK USER KHONG CHIU BAM NUT HUY CANCEL-> reject CONNECT
-                                                       public void onClick(DialogInterface dialog, int which) {
-                                                           Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> reject"));
-                                                           if(mediaPlayer !=null) {
-                                                               mediaPlayer.stop();
-                                                               mediaPlayer.release();
-                                                               mediaPlayer = null;
-                                                           }
-                                                           //thông báo socket tôi REJECT connect "REJECT accept_call"
-                                                           global.SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER( global .getPeerWantTalkName(),global.getName(),false);
-                                                       }
-                                                   });
-                                                   connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                                       @Override
-                                                       public void onCancel(DialogInterface dialog) {
-                                                           connectionRequestDialog = null;
-                                                       }
-                                                   });
-                                                   connectionRequestDialog.show();
-                                               }
-                                           });
-                    //============
-                    break;
+                                Intent rTranlateActivity =  new Intent(voiceTranslationActivity.getApplicationContext(), VoiceTranslationActivity.class);
+                                rTranlateActivity.putExtra("action", action);
+                                rTranlateActivity.putExtra("_to", to);
+                                rTranlateActivity.putExtra("_from", from);
+                                rTranlateActivity.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                PendingIntent pendingIntent = PendingIntent.getActivity(voiceTranslationActivity, 0, rTranlateActivity, PendingIntent.FLAG_UPDATE_CURRENT );
+                                contentView.setOnClickPendingIntent(R.id.okButton, pendingIntent);
+                                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(voiceTranslationActivity.getApplicationContext(), NOTIFICATION_CHANNEL_ID);
+                                notificationBuilder.setAutoCancel(true)
+                                        .setColor(ContextCompat.getColor(voiceTranslationActivity, R.color.primary))
+                                        .setContentTitle("rTranslator")
+                                        .setWhen(System.currentTimeMillis())
+                                        .setSmallIcon(R.drawable.app_icon)
+                                        .setContent(contentView)
+                                        .setContentIntent(pendingIntent)
+                                        .setSound(soundUri)
+                                        .setAutoCancel(true);
+                                Notification n = notificationBuilder.build();
+                                n.sound = soundUri;
+                                mNotificationManager.notify(1000, n);
+
+                            }
+                            catch (Exception e){
+                                throw new RuntimeException(e);
+                            }
+                            break;
+                        }
+
+
+                        //=====nếu đang là cuộc call trong tình trang ONLINE========//
+                        else{
+                            //chuyển lên main thread ui để làm việc
+                            voiceTranslationActivity.runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    //chơi ringring thông báo cho người khác biết đang đươc gọi bởi ai đó
+                                    //load ringring wav file
+                                    mediaPlayer = MediaPlayer.create(voiceTranslationActivity, R.raw.ringring);
+                                    mediaPlayer.setVolume(0.5f,0.5f);
+                                    mediaPlayer.setLooping(true); // Enable looping
+                                    mediaPlayer.start(); // Start playback
+                                    //show dialogbox ok connect or not
+                                    connectionRequestDialog = new RequestDialog(voiceTranslationActivity,
+                                            room.split(":")[0] + " want connect with you ?", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        //==> OK USER XAC NHAN BAM NUT OK ACCEPT CONNECT
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> onlick OK GO"));
+
+                                            //sound ring ring stop
+                                            if(mediaPlayer !=null) {
+                                                mediaPlayer.stop();
+                                                mediaPlayer.release();
+                                                mediaPlayer = null;
+                                            }
+                                            //thông báo socket tôi OK connect "accept_call"
+                                            global.SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER( global.getPeerWantTalkName(),global.getName(),true);
+
+                                            //khi qua trang khac thi bỏ ghe event receive_call socket của user khac ban qua
+                                            global.mSocket.off("receive_call");
+                                            global.mSocket.off("users");
+
+                                            //======QUAN TRONG: chơi ăn gian===> đi thẳng vào luôn DI VAO TRANG CHAT VOICE ===//
+                                            voiceTranslationActivity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+
+                                        }
+                                    }, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        //==> OK USER KHONG CHIU BAM NUT HUY CANCEL-> reject CONNECT
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Log.d("CHUNG-", String.format("CHUNG- PairingFragment() -> connectionRequestDialog -> reject"));
+                                            if(mediaPlayer !=null) {
+                                                mediaPlayer.stop();
+                                                mediaPlayer.release();
+                                                mediaPlayer = null;
+                                            }
+                                            //thông báo socket tôi REJECT connect "REJECT accept_call"
+                                            global.SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER( global .getPeerWantTalkName(),global.getName(),false);
+                                        }
+                                    });
+                                    connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                        @Override
+                                        public void onCancel(DialogInterface dialog) {
+                                            connectionRequestDialog = null;
+                                        }
+                                    });
+                                    connectionRequestDialog.show();
+                                }
+                            });
+                            //============
+                            break;
+                        }
+                    }
+
+
+
+
+
                 }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -765,7 +861,6 @@ public class PairingFragment extends PairingToolbarFragment {
 
 
 
-       //
 
         // setting of listeners
         //tma thời thay chức năng nút WalkieTalkieButton thành bật settting view
@@ -774,8 +869,9 @@ public class PairingFragment extends PairingToolbarFragment {
             public void onClick(View view) {
                 if (walkieTalkieButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
                     if(!global.getApiKeyFileName().equals("")) {
-                        Log.d("CHUNG-", "CHUNG- VoiceTranslationActivity() -> SettingsActivity ");
+                        Log.d("CHUNG-", "CHUNG- PairingFragment() -> walkieTalkieButton ");
                         voiceTranslationActivity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
+                        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0, "PairingFragment -> walkieTalkieButton");
                     }
                     //chưa có api key file
                     else{
@@ -820,7 +916,8 @@ public class PairingFragment extends PairingToolbarFragment {
                     String tempUserChungPhoneLanguage = voiceTranslationActivity.getResources().getConfiguration().locale.getLanguage();
                     Toast.makeText(voiceTranslationActivity, "BLUETOOTH MODE Current language: "  + tempUserChungPhoneLanguage, Toast.LENGTH_SHORT).show();
                     //clear socket and diaconnect
-                    global.mSocket.disconnect();
+                    Log.d("CHUNG-", "CHUNG- global.mSocket.disconnect()() ->bluetoothModeButton onClick");
+                    //global.mSocket.disconnect();
                     arr_recentPeersFormWebSocket.clear();
                     listView = new PeerListAdapter(voiceTranslationActivity,
                             new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), null);
@@ -845,14 +942,15 @@ public class PairingFragment extends PairingToolbarFragment {
                 if (settingButton.getState() == WalkieTalkieButton.STATE_SINGLE) {
                     currentMode_BlueOrSoc = true;
                     //clear socket and disconnect
-                    global.mSocket.disconnect();
+                    Log.d("CHUNG-", "CHUNG- global.mSocket.disconnect()() ->socketModeButton onClick");
+                    //global.mSocket.disconnect();
                     arr_recentPeersFormWebSocket.clear();
                     listView = new PeerListAdapter(voiceTranslationActivity,
                             new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), null);
 
                     listViewGui.setAdapter(listView);
                    //reconnect again
-                    global.mSocket.connect();
+                   // global.mSocket.connect();
                     //bắn data vào websocket thông tin của user
                     String tempUserChungPhone =  global.getName();
                     String tempUserChungPhoneFirstname =  "f_" + global.getName();
@@ -1066,7 +1164,10 @@ public class PairingFragment extends PairingToolbarFragment {
 
         ///====KHỞi Tạo SOCKET CONNECTION========//
         Log.d("CHUNG-", "CHUNG- PairingFragment() -> onCreate - > gọi mSocket.connect()");
-        global.mSocket.disconnect();
+
+        //global.mSocket.disconnect();
+        //Log.d("CHUNG-", "CHUNG- PairingFragment() ->  global.mSocket.disconnect(); - >init pairring()");
+
         global.mSocket.off("users");
         global.mSocket.off("receive_call");
         global.mSocket.off("receive_accept_call");
@@ -1088,6 +1189,17 @@ public class PairingFragment extends PairingToolbarFragment {
         //an nut di sau khi bam
         socketModeButton.setVisibility(View.GONE);
 
+
+        //send socket update my status to online
+        //delay khoan 3s để cho các fragment khac huy hoan toàn
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Do something after 5s = 5000ms
+                global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(1,"PairingFragment -> onActivityCreated");
+            }
+        }, 5000);
 
     }
 
@@ -1174,7 +1286,7 @@ public class PairingFragment extends PairingToolbarFragment {
     public void onDestroy() {
         super.onDestroy();
         //khi qua trang khac thi bỏ connect socket củ
-        Log.d("CHUNG-", "CHUNG- PairingFragment() -> onDestroy - > gọi mSocket.disconnect()");
+       // Log.d("CHUNG-", "CHUNG- PairingFragment() -> onDestroy - > gọi mSocket.disconnect()");
        // mSocket.off("receive_call");
        // mSocket.disconnect();
 

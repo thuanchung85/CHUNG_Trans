@@ -4,9 +4,14 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.AudioAttributes;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -33,6 +38,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void handleIntent(Intent intent) {
+        /*
         super.handleIntent(intent);
         try {
             if (intent.getExtras() != null) {
@@ -46,11 +52,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         } catch (Exception e) {
             super.handleIntent(intent);
-        }
+        }*/
     }
 
     @Override
     public void onNewToken(String s) {
+        /*
         global = (Global) getApplication();
 
         Log.d("CHUNG-",  global.getName() + "CHUNG- MyFirebaseMessagingService() -> onNewToken" + s);
@@ -78,10 +85,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 }
             }
         }
+        */
+
     }
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
+        /*
         System.out.println(remoteMessage);
         global = (Global) getApplication();
 
@@ -100,6 +110,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 String to = object.getString("_to");
                 String from = object.getString("_from");
 
+                AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+
+                        .build();
+                Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getPackageName() + "/" + R.raw.ringring);
+                MediaPlayer  mediaPlayer = MediaPlayer.create(this, soundUri);
+                mediaPlayer.start();
 
                 RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.custom_push);
                 contentView.setImageViewResource(R.id.image, R.mipmap.ic_launcher);
@@ -116,16 +133,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                             NotificationManager.IMPORTANCE_HIGH);
 
                     notificationChannel.setDescription("");
-                    notificationChannel.enableLights(true);
-                    notificationChannel.setLightColor(Color.RED);
-                    notificationChannel.setVibrationPattern(pattern);
-                    notificationChannel.enableVibration(true);
+                    notificationChannel.setSound(soundUri,audioAttributes);
                     mNotificationManager.createNotificationChannel(notificationChannel);
                 }
                 // to display notification in DND Mode
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     NotificationChannel channel = mNotificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
                     channel.canBypassDnd();
+
+                    channel.setSound(soundUri,audioAttributes);
+                    mNotificationManager.createNotificationChannel(channel);
                 }
 
                 Intent rTranlateActivity =  new Intent(this.getApplicationContext(), VoiceTranslationActivity.class);
@@ -139,14 +156,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 notificationBuilder.setAutoCancel(true)
                         .setColor(ContextCompat.getColor(this, R.color.primary))
                         .setContentTitle(getString(R.string.app_name))
-                        .setDefaults(Notification.DEFAULT_ALL)
                         .setWhen(System.currentTimeMillis())
                         .setSmallIcon(R.drawable.app_icon)
                         .setContent(contentView)
                         .setContentIntent(pendingIntent)
+                        .setSound(soundUri)
                         .setAutoCancel(true);
-
-                mNotificationManager.notify(1000, notificationBuilder.build());
+             Notification n = notificationBuilder.build();
+             n.sound = soundUri;
+                mNotificationManager.notify(1000, n);
 
             } catch (JSONException e) {
                 throw new RuntimeException(e);

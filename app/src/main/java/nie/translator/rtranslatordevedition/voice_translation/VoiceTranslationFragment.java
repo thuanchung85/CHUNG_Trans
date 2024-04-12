@@ -497,6 +497,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
             textToSpeech.shutdown();
             //textToSpeech = null;
         }
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0,"VoiceTranslationFragment() -> onDestroy");
     }
 
 
@@ -515,6 +516,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         if(audioRecorder!=null) {
             audioRecorder.stopRecording();
         }
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0, "VoiceTranslationFragment() -> onStop");
     }
 
     public void restoreAttributesFromService() {
