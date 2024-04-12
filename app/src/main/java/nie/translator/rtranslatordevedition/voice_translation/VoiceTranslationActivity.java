@@ -97,6 +97,7 @@ import nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mod
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.mySocketForeGroundService.ChungForegroundService;
 
 ///CỔNG VÀO THỨ 2
 //đây là activity chổ show các user co thể connect với máy mình
@@ -133,7 +134,15 @@ public class VoiceTranslationActivity extends GeneralActivity {
     private int connectionId = 1;
 
 
-
+    public void startService() {
+        Intent serviceIntent = new Intent(this, ChungForegroundService.class);
+        serviceIntent.putExtra("inputExtra", "Foreground Service rTranslator socket in Android");
+        ContextCompat.startForegroundService(this, serviceIntent);
+    }
+    public void stopService() {
+        Intent serviceIntent = new Intent(this, ChungForegroundService.class);
+        stopService(serviceIntent);
+    }
 
     @Override
     protected void onDestroy() {
@@ -338,6 +347,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
         }
 
 
+        //Start socket serivce foreground
+        startService();
     }
 
     @Override

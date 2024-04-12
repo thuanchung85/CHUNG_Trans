@@ -97,6 +97,11 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".voice_translation.cloud_apis.mySocketForeGroundService.ChungForegroundService"
+            android:enabled="true"
+            android:exported="true"></service>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.gallery.RTranslator.provider"
