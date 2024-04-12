@@ -477,6 +477,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
             }
         }*/
 
+        //set trang thai của user là 2 thể hiện đang busy nói chuyên
+        global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(2,"VoiceTranslationFragment -> onActivityCreated");
 
     }//end onActivityCreated
 
