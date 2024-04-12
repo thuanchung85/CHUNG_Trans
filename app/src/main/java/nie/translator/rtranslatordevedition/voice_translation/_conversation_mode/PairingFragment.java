@@ -24,6 +24,8 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -71,6 +73,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
@@ -594,6 +597,9 @@ public class PairingFragment extends PairingToolbarFragment {
     private MediaPlayer mediaPlayer;
 
     AlertDialog dialogWait;
+
+    final Handler handler = new Handler();
+    final WeakReference<PairingFragment> activityRef = new WeakReference<>(this); // Replace 'this' with your activity instance
 
     public PairingFragment() {
         // Required empty public constructor
@@ -1192,12 +1198,15 @@ public class PairingFragment extends PairingToolbarFragment {
 
         //send socket update my status to online
         //delay khoan 3s để cho các fragment khac huy hoan toàn
-        final Handler handler = new Handler();
+
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                // Do something after 5s = 5000ms
-                global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(1,"PairingFragment -> onActivityCreated");
+                PairingFragment thisFragment = activityRef.get();
+                if (thisFragment != null && thisFragment.isVisible()) {
+                    // Do something after 5s = 5000ms
+                    global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(1, "PairingFragment -> onActivityCreated");
+                }
             }
         }, 5000);
 
@@ -1284,6 +1293,7 @@ public class PairingFragment extends PairingToolbarFragment {
 
     @Override
     public void onDestroy() {
+
         super.onDestroy();
         //khi qua trang khac thi bỏ connect socket củ
        // Log.d("CHUNG-", "CHUNG- PairingFragment() -> onDestroy - > gọi mSocket.disconnect()");
