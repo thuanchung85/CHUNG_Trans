@@ -67,8 +67,8 @@ public class Global extends Application {
     {
         try {
             //String urlS = "http://27.74.249.34:8017";
-            String urlS = "http://192.168.1.52:4000";
-            //String urlS = "http://42.112.59.88:4000";
+            //String urlS = "http://192.168.1.52:4000";
+            String urlS = "http://42.112.59.88:4000";
 
             mSocket = IO.socket(urlS);
             Log.d("CHUNG-", "CHUNG- Global()  -> mSocket() Global -> DA TAO SUCCESSES!!"+ mSocket);

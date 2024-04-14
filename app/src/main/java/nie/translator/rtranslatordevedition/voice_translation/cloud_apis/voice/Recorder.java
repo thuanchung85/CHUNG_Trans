@@ -206,33 +206,57 @@ public class Recorder {
     private class ProcessVoice implements Runnable {
         @Override
         public void run() {
+            //tạo 1 vòng lặp chay hoài trong 1 thread riêng
             while (!Thread.currentThread().isInterrupted()) {
+                //bước 1 khai thác byte[] từ trong micro của phone ghi vào biến mBuffer
+                //biến size này nó trả ra là 1920, và mBuffter có 1920 phần tử
+                //size này có thể thay đổi tuỳ từng dong máy, như samsung là 2560, máy giả lập là 1920
                 final int size = mAudioRecord.read(mBuffer, 0, mBuffer.length);
+
+                //add biến mBuffer vaò array hàng đợi (mPrevBuffer)
                 mPrevBuffer.addLast(mBuffer.clone());
+                //nếu mà hàng đợi bị dài quá quy định thì cắt bỏ mBuffer đầu hàng, để dành chổ cho mBuffer tới sau.
                 if (mPrevBuffer.size() > mPrevBufferMaxSize) {
                     mPrevBuffer.pollFirst();   // the excess buffer is eliminated, since the prevBuffer must only store the last buffers, the number is decided by prevBufferMaxSize
                 }
+
+                //ghi nhận thời gian hiện tai đang là bao nhiêu milliseconds, tính từ 0h 1/1/1970
                 final long now = System.currentTimeMillis();
+
+                //===nếu micro có voice data trong mBuffer===//
                 if (isHearingVoice(mBuffer, size)) {
-                    if (mLastVoiceHeardMillis == Long.MAX_VALUE) {    // use Long's maximum limit to indicate that we have no voice
+                    //nếu mà đang là trang thái dừng nghe, thi kich hoạt lại trạng thái nghe
+                    if (mLastVoiceHeardMillis == Long.MAX_VALUE)
+                    {    // use Long's maximum limit to indicate that we have no voice
                         mVoiceStartedMillis = now;
                         if (!isListening) {
+                            //kích hoat lại trạng thái nghe
                             mCallback.onListenStart();
                         }
+
                         mCallback.onVoiceStart();
                         // we send the previous section (PREV_VOICE_DURATION seconds) when the voice is recognized
                         while (mPrevBuffer.size() > 0) {
+                            //cắt phần tử đầu trong mPrevBuffer ra bằng pollFirst rồi bắn cái mBuffer đó vào callback
+                            //hàm pollfirst vừa trả ra phần tữ đầu trong mPrevBuffer vừa làm mPrevBuffer giảm size
                             mCallback.onVoice(mPrevBuffer.pollFirst(), size);
+                            //làm cho tới khi hết while
                         }
                     } else {
+                        //gởi buffer data co voice bên trong ra ngoài callback
                         mCallback.onVoice(mBuffer, size);
                     }
                     mLastVoiceHeardMillis = now;
+
+                    //nếu thơi gian hiên tai tính bằng millisecond - thơi gian bắt đầu nói mà vượt qua mức cho phép chờ lắng nghe thì coi như nói xong.
                     if (now - mVoiceStartedMillis > MAX_SPEECH_LENGTH_MILLIS) {
                         end();
                         mCallback.onListenEnd();
                     }
-                } else if (mLastVoiceHeardMillis != Long.MAX_VALUE) {
+                }
+
+                //===nếu micro KHONG CO voice data trong mBuffer===//
+                else if (mLastVoiceHeardMillis != Long.MAX_VALUE) {
                     mCallback.onVoice(mBuffer, size);
                     if (now - mLastVoiceHeardMillis > global.getSpeechTimeout()) {
                         end();
@@ -247,13 +271,23 @@ public class Recorder {
         }
 
         private boolean isHearingVoice(byte[] buffer, int size) {
+            //for duyệt qua cac buffer nằm ở vi trí chẵn
             for (int i = 0; i < size - 1; i += 2) {
                 // The buffer has LINEAR16 in little endian.
+                //Note that the default behavior of byte-to-int conversion is to preserve the sign of the value (remember byte is a signed type in Java). So for instance:
+                //
+                //byte b1 = -100;
+                //int i1 = b1;
+                //System.out.println(i1); // -100
                 int s = buffer[i + 1];
                 if (s < 0) s *= -1;
+                //DỊCH 8 BIT QUA TRÁI NGHỈA LÀ S SẼ MŨ 8 LẦN LÊN
                 s <<= 8;
+                //đem s + với giá trị phần tữ trước đó, vi trí lẽ
                 s += Math.abs(buffer[i]);
+                //KHAI BÁO NGƯỠNG ÂM THANH, mà nếu vượt nguonng này thi coi như là có data voice thường là 2000
                 int amplitudeThreshold = global.getAmplitudeThreshold();
+                //nếu s vượt ngưỡng âm thanh 2000 thì coi như có tiếng con người nói vào buffter
                 if (s > amplitudeThreshold) {
                     return true;
                 }

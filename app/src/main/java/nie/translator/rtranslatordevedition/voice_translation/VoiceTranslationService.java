@@ -172,6 +172,7 @@ public abstract class VoiceTranslationService extends GeneralService {
         } else {
             if (mVoiceRecorder == null && !isMicMute) {
                 mVoiceRecorder = new Recorder((Global) getApplication(), mVoiceCallback);
+                //mVoiceRecorder là object trong nó có chứa AudioRecorder, mà trong AudioRecorder lại có chưa buffer
                 mVoiceRecorder.start();
             }
         }
