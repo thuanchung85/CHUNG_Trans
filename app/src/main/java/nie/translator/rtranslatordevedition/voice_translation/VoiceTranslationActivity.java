@@ -614,8 +614,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
     public int startSearch() {
         //tạm thời bỏ tính năng search các thiết bị bluetooth xung quanh, vi đang dung socket
-        return BluetoothCommunicator.BLUETOOTH_LE_NOT_SUPPORTED;
-        /*
+        //return BluetoothCommunicator.BLUETOOTH_LE_NOT_SUPPORTED;
+
         if (global.getBluetoothCommunicator().isBluetoothLeSupported()) {
             if (Tools.hasPermissions(this, REQUIRED_PERMISSIONS)) {
                 return global.getBluetoothCommunicator().startSearch();
@@ -627,7 +627,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
             return BluetoothCommunicator.BLUETOOTH_LE_NOT_SUPPORTED;
         }
 
-        */
+
     }
 
     public int stopSearch(boolean tryRestoreBluetoothStatus) {

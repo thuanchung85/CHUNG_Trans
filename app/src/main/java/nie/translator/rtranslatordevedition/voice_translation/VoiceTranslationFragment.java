@@ -625,19 +625,20 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
                 //bắn text qua socket cho user ben kia chổ này mình dung whipper nên vậy
                 //======ban data text cho socket========//
-                //global.SendData_to_mSocket_FOR_SENDMESSAGE(value, global.getName(), nameOfpeerWantConnect);
+                //global.SendData_to_mSocket_FOR_SENDMESSAGE(value, global.getName(), nameOfpeerWantConnect, "WHIPPER");
 
 
 
             }
 
             //retrat lai micro cho nguoi dung noi tiep
-            startMicrophone(true);
+            //startMicrophone(true);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        //retrat lai micro cho nguoi dung noi tiep
+        startMicrophone(true);
 
 
     }
@@ -764,7 +765,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             if(nameOfpeerWantConnect.equals("")){
                                 nameOfpeerWantConnect = global.getPeerWantTalkName();
                             }
-                            global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect);
+                            //bắn text của google api cho socket
+                            global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
 
                             mAdapter.setMessage(previewIndex, message);
 
@@ -785,8 +787,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
 
                             //======ban data text cho socket========//
-                            global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect);
-
+                            global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                            //==run whipper test==//
+                            callWhipper();
                         }
                     }
                     else

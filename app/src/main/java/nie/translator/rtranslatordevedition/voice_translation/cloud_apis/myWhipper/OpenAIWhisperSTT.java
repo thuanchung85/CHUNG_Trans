@@ -20,7 +20,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class OpenAIWhisperSTT extends AsyncTask<File, Void, String> {
-
+    static File copyF = new File( new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName"),
+            "CHUNGrecorded_audio_tempCopy.wav");
     private static final String OPENAI_API_KEY = "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";
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/audio/transcriptions";
 
@@ -36,8 +37,28 @@ public class OpenAIWhisperSTT extends AsyncTask<File, Void, String> {
             File audioFile = new File(directory, OUTPUT_FILE);
             System.out.println(audioFile);
             if (audioFile.exists()) {
-                //File copyF = new File(directory, "CHUNGrecorded_audio_tempCopy.wav");
-               // copy(audioFile, copyF);
+
+              return  copy(audioFile, copyF);
+
+            }
+        }
+        return "error in wav file";
+    }
+
+    public static String copy(File src, File dst) throws IOException {
+        InputStream in = new FileInputStream(src);
+        try {
+            OutputStream out = new FileOutputStream(dst);
+            try {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            } finally {
+                out.close();
+
                 OkHttpClient client = new OkHttpClient();
 
                 String currentlang = "en";
@@ -46,8 +67,8 @@ public class OpenAIWhisperSTT extends AsyncTask<File, Void, String> {
                         .setType(MultipartBody.FORM)
                         .addFormDataPart("model", "whisper-1")
                         .addFormDataPart("language", currentlang)
-                        .addFormDataPart("file",audioFile.getPath(),
-                                RequestBody.create(MediaType.parse("audio/wav"), audioFile))
+                        .addFormDataPart("file",copyF.getPath(),
+                                RequestBody.create(MediaType.parse("audio/wav"), copyF))
                         .build();
 
                 Request request = new Request.Builder()
@@ -65,24 +86,6 @@ public class OpenAIWhisperSTT extends AsyncTask<File, Void, String> {
                     String responseBody = response.body().string();
                     return responseBody; // Response body contains the transcription
                 }
-            }
-        }
-        return "error in wav file";
-    }
-
-    public static void copy(File src, File dst) throws IOException {
-        InputStream in = new FileInputStream(src);
-        try {
-            OutputStream out = new FileOutputStream(dst);
-            try {
-                // Transfer bytes from in to out
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-            } finally {
-                out.close();
             }
         } finally {
             in.close();

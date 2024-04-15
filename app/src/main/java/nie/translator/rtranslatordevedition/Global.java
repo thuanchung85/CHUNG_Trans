@@ -126,8 +126,9 @@ public class Global extends Application {
 
 
     //bắn vào socket thông tin event là send_message json là { message, username, to, createdtime }
-    public void SendData_to_mSocket_FOR_SENDMESSAGE(String message, String fromUser, String toOtherUser ) {
-
+    public void SendData_to_mSocket_FOR_SENDMESSAGE(String message, String fromUser, String toOtherUser , String boiAPI) {
+        Log.d("CHUNG-", "CHUNG- global() -> mSocket.emit(\"send_message\" " +boiAPI);
+        
         String jsonString = String.format("{\"message\": \"%s\", \"from\": \"%s\", \"to\": \"%s\"}",message, fromUser, toOtherUser);
         //covert string to json
         try {
