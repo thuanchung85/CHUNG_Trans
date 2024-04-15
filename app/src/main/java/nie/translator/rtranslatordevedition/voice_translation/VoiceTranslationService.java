@@ -23,12 +23,16 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import androidx.annotation.Nullable;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import nie.translator.rtranslatordevedition.GeneralService;
 import nie.translator.rtranslatordevedition.Global;
@@ -167,11 +171,19 @@ public abstract class VoiceTranslationService extends GeneralService {
     }
 
     public void startVoiceRecorder() {
+
+
+
+
         if (!Tools.hasPermissions(this, REQUIRED_PERMISSIONS)) {
             notifyError(new int[]{MISSING_MIC_PERMISSION}, -1);
         } else {
             if (mVoiceRecorder == null && !isMicMute) {
-                mVoiceRecorder = new Recorder((Global) getApplication(), mVoiceCallback);
+                try {
+                    mVoiceRecorder = new Recorder((Global) getApplication(), mVoiceCallback);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 //mVoiceRecorder là object trong nó có chứa AudioRecorder, mà trong AudioRecorder lại có chưa buffer
                 mVoiceRecorder.start();
             }
@@ -269,6 +281,8 @@ public abstract class VoiceTranslationService extends GeneralService {
             switch (command) {
                 case START_MIC:
                     isMicMute = false;
+
+
                     startVoiceRecorder();
                     return true;
                 case STOP_MIC:

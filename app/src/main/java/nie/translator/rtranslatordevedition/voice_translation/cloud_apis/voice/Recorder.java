@@ -37,6 +37,7 @@ import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.tools.Timer;
 
 
+
 /**
  * Continuously records audio and notifies the {@link Recorder.Callback} when voice (or any
  * sound) is heard. Furthermore, when it calls the onVoice method, it passes a buffer obtained from the AudioRecord,
@@ -81,9 +82,12 @@ public class Recorder {
      * The timestamp when the current voice is started.
      */
     private long mVoiceStartedMillis;
+    FileOutputStream os = null;
 
-
-    public Recorder(Global global, @NonNull Callback callback) {
+    public Recorder(Global global, @NonNull Callback callback) throws IOException {
+        if(os != null) {
+            os.close();
+        }
         this.global = global;
         global.getMicSensitivity();
         global.getSpeechTimeout();
@@ -124,6 +128,7 @@ public class Recorder {
     public void start() {
         // Stop recording if it is currently ongoing.
         stop();
+
         // Try to create a new recording session.
         mAudioRecord = createAudioRecord();
         if (mAudioRecord == null) {
@@ -228,6 +233,7 @@ public class Recorder {
                  File outputFileWav;
                 outputFileWav = new File(directory, OUTPUT_FILE_WAV);
                 try {
+                    Log.d("CHUNG-", String.format("CHUNG-  ProcessVoice outputFile.createNewFile()"));
                     outputFile.createNewFile();
                     outputFileWav.createNewFile();
                 } catch (IOException e) {
@@ -235,7 +241,7 @@ public class Recorder {
                 }
                 System.out.println(outputFile);
 
-            FileOutputStream os = null;
+
             try {
                 os = new FileOutputStream(outputFile.getPath());
             } catch (FileNotFoundException e) {
@@ -324,7 +330,9 @@ public class Recorder {
                         File read = new File(outputFile.getPath());
                         File out = new File(outputFileWav.getPath());
                         try {
+
                             PCMToWAV(read, out, mAudioRecord.getChannelCount(), getSampleRate(), 16);
+
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -349,10 +357,13 @@ public class Recorder {
 
                     if (now - mLastVoiceHeardMillis > global.getSpeechTimeout()) {
                         end();
+
                         File read = new File(outputFile.getPath());
                         File out = new File(outputFileWav.getPath());
                         try {
+
                             PCMToWAV(read, out, mAudioRecord.getChannelCount(), getSampleRate(), 16);
+
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -364,6 +375,8 @@ public class Recorder {
         private void end() {
             mLastVoiceHeardMillis = Long.MAX_VALUE;
             mCallback.onVoiceEnd();
+
+
         }
 
         private boolean isHearingVoice(byte[] buffer, int size) {

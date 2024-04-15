@@ -1,10 +1,15 @@
 package nie.translator.rtranslatordevedition.voice_translation.cloud_apis.myWhipper;
 
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Locale;
 
 import okhttp3.MediaType;
@@ -22,60 +27,78 @@ public class OpenAIWhisperSTT extends AsyncTask<File, Void, String> {
     public OpenAIWhisperSTT(AsyncTaskListener listener) {
         this.listener = listener;
     }
-    public static void main(String[] args) {
-        // Replace "audio.wav" with the path to your WAV audio file
-        File audioFile = new File("audio.wav");
 
-        try {
-            String transcription = transcribeAudio(audioFile);
-            System.out.println("Transcription: " + transcription);
-        } catch (IOException e) {
-            System.err.println("Error reading audio file: " + e.getMessage());
-        }
-    }
 
-    public static String transcribeAudio(File audioFile) throws IOException {
-        OkHttpClient client = new OkHttpClient();
+    public static String transcribeAudio() throws IOException {
+        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
+        if (directory.exists()) {
+            String OUTPUT_FILE = "CHUNGrecorded_audio.wav";
+            File audioFile = new File(directory, OUTPUT_FILE);
+            System.out.println(audioFile);
+            if (audioFile.exists()) {
+                //File copyF = new File(directory, "CHUNGrecorded_audio_tempCopy.wav");
+               // copy(audioFile, copyF);
+                OkHttpClient client = new OkHttpClient();
 
-        String currentlang = "en";
-        currentlang = Locale.getDefault().getLanguage();
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("model", "whisper-1")
-                .addFormDataPart("language", currentlang)
-                .addFormDataPart("file", audioFile.getAbsolutePath(),
-                        RequestBody.create(MediaType.parse("audio/mp3"), audioFile))
-                .build();
+                String currentlang = "en";
+                currentlang = Locale.getDefault().getLanguage();
+                RequestBody requestBody = new MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("model", "whisper-1")
+                        .addFormDataPart("language", currentlang)
+                        .addFormDataPart("file",audioFile.getPath(),
+                                RequestBody.create(MediaType.parse("audio/wav"), audioFile))
+                        .build();
 
-        Request request = new Request.Builder()
+                Request request = new Request.Builder()
 
-                .url(OPENAI_API_URL)
-                .addHeader("Authorization", "Bearer " + OPENAI_API_KEY)
-                .addHeader("Content-Type" , "multipart/form-data")
-                .post(requestBody)
-                .build();
+                        .url(OPENAI_API_URL)
+                        .addHeader("Authorization", "Bearer " + OPENAI_API_KEY)
+                        .addHeader("Content-Type", "multipart/form-data")
+                        .post(requestBody)
+                        .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
+                try (Response response = client.newCall(request).execute()) {
+                    if (!response.isSuccessful()) {
+                        throw new IOException("Unexpected code " + response);
+                    }
+                    String responseBody = response.body().string();
+                    return responseBody; // Response body contains the transcription
+                }
             }
-            String responseBody = response.body().string();
-            return responseBody; // Response body contains the transcription
         }
+        return "error in wav file";
     }
 
-
+    public static void copy(File src, File dst) throws IOException {
+        InputStream in = new FileInputStream(src);
+        try {
+            OutputStream out = new FileOutputStream(dst);
+            try {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
+        }
+    }
 
     private Exception exception;
 
     @Override
     protected String doInBackground(File... files) {
         try {
-            String txt = transcribeAudio(files[0]);
+            String txt = transcribeAudio();
             System.out.println(txt);
             return txt;
         }catch (IOException error){
-            Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> IOException() "));
+            Log.d("CHUNG-", "CHUNG- WHIPPER() ERROR -> IOException() " + error.getMessage());
         }
 
         return null;

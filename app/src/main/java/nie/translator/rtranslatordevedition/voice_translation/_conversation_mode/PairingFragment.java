@@ -79,6 +79,7 @@ import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -267,11 +268,15 @@ public class PairingFragment extends PairingToolbarFragment {
 
                             @Override
                             public void run() {
-                                listView = new PeerListAdapter(voiceTranslationActivity,
-                                        new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), callback);
+                                try {
+                                    listView = new PeerListAdapter(voiceTranslationActivity,
+                                            new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), callback);
 
-                                listViewGui.setAdapter(listView);
+                                    listViewGui.setAdapter(listView);
+                                }
+                                catch (ConcurrentModificationException e){
 
+                                }
                             }
 
                             ;
