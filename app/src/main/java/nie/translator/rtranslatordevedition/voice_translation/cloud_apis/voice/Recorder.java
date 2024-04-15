@@ -16,12 +16,22 @@
 
 package nie.translator.rtranslatordevedition.voice_translation.cloud_apis.voice;
 
+import static nie.translator.rtranslatordevedition.voice_translation.cloud_apis.myWhipper.PCmTowav.PCMToWAV;
+
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.Environment;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.tools.Timer;
@@ -206,12 +216,41 @@ public class Recorder {
     private class ProcessVoice implements Runnable {
         @Override
         public void run() {
+
+                String OUTPUT_FILE = "CHUNGrecorded_audio.pcm";
+                String OUTPUT_FILE_WAV = "CHUNGrecorded_audio.wav";
+                File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                }
+                File outputFile;
+                outputFile = new File(directory, OUTPUT_FILE);
+                 File outputFileWav;
+                outputFileWav = new File(directory, OUTPUT_FILE_WAV);
+                try {
+                    outputFile.createNewFile();
+                    outputFileWav.createNewFile();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println(outputFile);
+
+            FileOutputStream os = null;
+            try {
+                os = new FileOutputStream(outputFile.getPath());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
             //tạo 1 vòng lặp chay hoài trong 1 thread riêng
             while (!Thread.currentThread().isInterrupted()) {
                 //bước 1 khai thác byte[] từ trong micro của phone ghi vào biến mBuffer
                 //biến size này nó trả ra là 1920, và mBuffter có 1920 phần tử
                 //size này có thể thay đổi tuỳ từng dong máy, như samsung là 2560, máy giả lập là 1920
                 final int size = mAudioRecord.read(mBuffer, 0, mBuffer.length);
+
+
+
 
                 //add biến mBuffer vaò array hàng đợi (mPrevBuffer)
                 mPrevBuffer.addLast(mBuffer.clone());
@@ -241,10 +280,39 @@ public class Recorder {
                             //hàm pollfirst vừa trả ra phần tữ đầu trong mPrevBuffer vừa làm mPrevBuffer giảm size
                             mCallback.onVoice(mPrevBuffer.pollFirst(), size);
                             //làm cho tới khi hết while
+
+                            //===NEW==//
+
+                            byte[] pcmData = mPrevBuffer.pollFirst();
+                            try {
+                                assert os != null;
+                                if(pcmData != null) {
+                                    os.write(pcmData);
+                                }
+
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            //===NEW==//
+
                         }
                     } else {
                         //gởi buffer data co voice bên trong ra ngoài callback
                         mCallback.onVoice(mBuffer, size);
+
+                        //===NEW==//
+                        byte[] pcmData = mBuffer;
+                        try {
+                            assert os != null;
+                            if(pcmData != null) {
+                                os.write(pcmData);
+                            }
+
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        //===NEW==//
                     }
                     mLastVoiceHeardMillis = now;
 
@@ -252,14 +320,42 @@ public class Recorder {
                     if (now - mVoiceStartedMillis > MAX_SPEECH_LENGTH_MILLIS) {
                         end();
                         mCallback.onListenEnd();
+
+                        File read = new File(outputFile.getPath());
+                        File out = new File(outputFileWav.getPath());
+                        try {
+                            PCMToWAV(read, out, mAudioRecord.getChannelCount(), getSampleRate(), 16);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
 
                 //===nếu micro KHONG CO voice data trong mBuffer===//
                 else if (mLastVoiceHeardMillis != Long.MAX_VALUE) {
                     mCallback.onVoice(mBuffer, size);
+                    //===NEW==//
+                    byte[] pcmData = mBuffer;
+                    try {
+                        assert os != null;
+                        if(pcmData != null) {
+                            os.write(pcmData);
+                        }
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    //===NEW==//
+
                     if (now - mLastVoiceHeardMillis > global.getSpeechTimeout()) {
                         end();
+                        File read = new File(outputFile.getPath());
+                        File out = new File(outputFileWav.getPath());
+                        try {
+                            PCMToWAV(read, out, mAudioRecord.getChannelCount(), getSampleRate(), 16);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
@@ -296,6 +392,11 @@ public class Recorder {
         }
 
     }
+
+
+
+    //===========NEW====//
+
 
     public static abstract class Callback {
         private Recorder recorder;
@@ -379,4 +480,9 @@ public class Recorder {
         public void onListenEnd() {
         }
     }
+
+
+
+
+
 }

@@ -262,18 +262,21 @@ public class PairingFragment extends PairingToolbarFragment {
                             Toast.makeText(voiceTranslationActivity, getResources().getString(R.string.error_cannot_interact_connection), Toast.LENGTH_SHORT).show();
                         }
                     };
-                    voiceTranslationActivity.runOnUiThread(new Runnable() {
+                    if(!arr_recentPeersFormWebSocket.isEmpty()) {
+                        voiceTranslationActivity.runOnUiThread(new Runnable() {
 
-                                                               @Override
-                                                               public void run() {
-                                                                   listView = new PeerListAdapter(voiceTranslationActivity,
-                                                                           new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), callback);
+                            @Override
+                            public void run() {
+                                listView = new PeerListAdapter(voiceTranslationActivity,
+                                        new PairingArray(voiceTranslationActivity, arr_recentPeersFormWebSocket), callback);
 
-                                                                   listViewGui.setAdapter(listView);
+                                listViewGui.setAdapter(listView);
 
-                                                               };
-                                                           });
+                            }
 
+                            ;
+                        });
+                    }
                 }
             } catch (JSONException e) {
                 throw new RuntimeException(e);

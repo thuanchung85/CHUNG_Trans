@@ -272,8 +272,12 @@ public class WalkieTalkieService extends VoiceTranslationService {
         //stop the two services that recognizes voice
         firstLanguageServiceCommunicator.stopCommunication();
         secondLanguageServiceCommunicator.stopCommunication();
-        unbindService(firstLanguageConnection);
-        unbindService(secondLanguageConnection);
+        try {
+            unbindService(firstLanguageConnection);
+            unbindService(secondLanguageConnection);
+        }catch (IllegalArgumentException error){
+
+        }
         super.onDestroy();
     }
 
