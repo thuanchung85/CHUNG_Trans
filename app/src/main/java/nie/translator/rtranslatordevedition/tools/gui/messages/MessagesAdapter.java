@@ -154,6 +154,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();  // not animation
         //notifyItemChanged(index);  //animation
     }
+    public void removeLastMessage() {
+        mResults.remove(getItemCount() - 1);
+        notifyItemRemoved(getItemCount());
+    }
 
     public GuiMessage getMessage(int index) {
         return mResults.get(index);

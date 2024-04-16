@@ -671,7 +671,10 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 if (message.isFinal()) {
                     if (message.isMine()) {
                         Message mM = message.getMessage();
-                        mM.setText("GOOGLE: " + message.getMessage().getText() + "\n\n (tap to send)");
+                        if(global.getAIMode() ==0) {
+                            mM.setText("GOOGLE: " + message.getMessage().getText() + "\n\n (tap to send)");
+                        }
+
                         GuiMessage myNewGoogleMessage = new GuiMessage(mM, true, true, false);
                         int previewIndex = mAdapter.getPreviewIndex();
                         if (previewIndex != -1) {
@@ -681,8 +684,10 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                                 nameOfpeerWantConnect = global.getPeerWantTalkName();
                             }
                             //AUTO bắn text của google api cho socket
-                            //global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                            if(global.getAIMode() >=2 ) {
 
+                                global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                            }
                             //mAdapter.setMessage(previewIndex, message);
                             mAdapter.setMessage(previewIndex, myNewGoogleMessage);
                             //smooth scroll
@@ -692,6 +697,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             //==run whipper test==//
                             if(voiceTranslationActivity.getCurrentFragment() == VoiceTranslationActivity.CONVERSATION_FRAGMENT) {
                                 callWhipper();
+
                             }
 
                         } else {
@@ -707,9 +713,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             //======ban data text cho socket========//
                            // global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
                             //==run whipper test==//
-                            if(voiceTranslationActivity.getCurrentFragment() == VoiceTranslationActivity.CONVERSATION_FRAGMENT) {
-                            callWhipper();
-                            }
+                            //if(voiceTranslationActivity.getCurrentFragment() == VoiceTranslationActivity.CONVERSATION_FRAGMENT) {
+                            //callWhipper();
+                            //}
                         }
                     }
                     else
@@ -851,24 +857,40 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
 
     public void callWhipper(){
-        // When recording is done (e.g., when user presses a button to stop recording):
-        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> callWhipper() "));
+        //neu AImode la = 1 thi la open ai whisper duoc active
+        if(global.getAIMode() == 1 || global.getAIMode() == 0) {
+            // When recording is done (e.g., when user presses a button to stop recording):
+            Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> callWhipper() "));
 
-        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
-        if (directory.exists()) {
-            String OUTPUT_FILE = "CHUNGrecorded_audio.wav";
-            File outputFile = new File(directory, OUTPUT_FILE);
-            System.out.println(outputFile);
+            File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
+            if (directory.exists()) {
+                String OUTPUT_FILE = "CHUNGrecorded_audio.wav";
+                File outputFile = new File(directory, OUTPUT_FILE);
+                System.out.println(outputFile);
 
-            if(outputFile.exists()) {
-                Log.d("CHUNG-", String.format("CHUNG- truyền cho OPENAI() -> OpenAIWhisperSTT() "));
-                //truyền cho OPENAI
-                OpenAIWhisperSTT openAIWhipper = new OpenAIWhisperSTT(this);
+                if (outputFile.exists()) {
+                    Log.d("CHUNG-", String.format("CHUNG- truyền cho OPENAI() -> OpenAIWhisperSTT() "));
+                    //truyền cho OPENAI
+                    OpenAIWhisperSTT openAIWhipper = new OpenAIWhisperSTT(this);
 
-                openAIWhipper.execute();
+                    openAIWhipper.execute();
+                }
             }
         }
+        //neu khong phai la mode cua openai ma goi whisper thi se xoa file audio local
+        else{
+            File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
+            if (directory.exists()){
+                String OUTPUT_FILE = "CHUNGrecorded_audio.wav";
+                File outputFile = new File(directory, OUTPUT_FILE);
+                outputFile.deleteOnExit();
 
+                String OUTPUT_FILE2 = "CHUNGrecorded_audio.pcm";
+                File outputFile2 = new File(directory, OUTPUT_FILE2);
+                outputFile2.deleteOnExit();
+                System.out.println(outputFile);
+            }
+        }
     }
     //=======WHIPPER RETURN DATA=====///
     @Override
@@ -877,8 +899,20 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         Log.d("CHUNG-", "CHUNG- WHIPPER onTaskComplete result() -> " + result);
         stopMicrophone(true);
 
+        //xoa message cuoi cung cua google api
+        if(global.getAIMode() == 1){
+            if (mAdapter.getItemCount()>0) {
+                mAdapter.removeLastMessage();
+            }
+        }
         //show on screen
-        String value =  "WHISPER: " + result +("\n (tap on to send!)");
+        String value = "";
+        if(global.getAIMode() != 1 ) {
+             value = "WHISPER: " + result + ("\n (tap on to send!)");
+        }
+        else{
+            value =  result.trim();
+        }
         Message mstypeFORGUI = new Message(voiceTranslationActivity, value);
         GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true, true);
         if (mAdapter != null) {
@@ -892,8 +926,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
             //bắn text qua socket cho user ben kia chổ này mình dung whipper nên vậy
             //======ban data text cho socket========//
-            //global.SendData_to_mSocket_FOR_SENDMESSAGE(value, global.getName(), nameOfpeerWantConnect, "WHIPPER");
-
+            if(global.getAIMode() ==1) {
+                global.SendData_to_mSocket_FOR_SENDMESSAGE(value, global.getName(), nameOfpeerWantConnect, "WHIPPER");
+            }
 
 
         }
