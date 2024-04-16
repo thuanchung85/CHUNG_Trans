@@ -23,7 +23,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.ImageButton;
-import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
@@ -34,28 +33,16 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import io.socket.client.IO;
-import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.tools.gui.CustomFragmentPagerAdapter;
 import nie.translator.rtranslatordevedition.tools.gui.animations.CustomAnimator;
-import nie.translator.rtranslatordevedition.tools.gui.peers.PeerListAdapter;
-import nie.translator.rtranslatordevedition.tools.gui.peers.array.PairingArray;
 import nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.PairingToolbarFragment;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.connection_info.PeersInfoFragment;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.main.ConversationMainFragment;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 
 ///==Cổng thứ 3====///
 //đây là ConversationFragment chổ người dùng connect và nói chuyên
@@ -319,34 +306,24 @@ public class ConversationFragment extends PairingToolbarFragment {
 
         // insertion of the list of titles
         List<String> titles = new ArrayList<>();
-        titles.add(getResources().getString(R.string.conversation));
-        titles.add(getResources().getString(R.string.connection));
+        titles.add("CHAT LOG");
+
 
         //có 2 page trong adapter là "conversation", và "connection"
         //page chính là ConversationMainFragment xử lý âm thanh, nó được bỏ vào adapter để chuyển qua lại
+        ConversationMainFragment f1 = new ConversationMainFragment();
+       // Fragment f2 =  new ConversationMainFragment(true);
+
         pagerAdapter = new CustomFragmentPagerAdapter(voiceTranslationActivity,
                 getChildFragmentManager(), titles,
-                new Fragment[]{new ConversationMainFragment()});
-                //new Fragment[]{new ConversationMainFragment(), new PeersInfoFragment()});
+                //new Fragment[]{new ConversationMainFragment()});
+                new Fragment[]{f1});
 
         pager.setAdapter(pagerAdapter);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 Log.d("CHUNG-", "CHUNG- ConversationFragment() -> onPageScrolled()");
-                if (position == 0 && positionOffset == 0 && pagerPosition == 1) {
-                    pagerPosition = 0;
-                    global.getBluetoothCommunicator().removeCallback(communicatorCallback);
-                    ((PeersInfoFragment) pagerAdapter.getFragment(1)).onDeselected();
-                    buttonSearch.setVisible(false,null);
-                } else if (position == 1 && positionOffset == 0 && pagerPosition == 0) {
-                    pagerPosition = 1;
-                    global.getBluetoothCommunicator().addCallback(communicatorCallback);
-                    ((PeersInfoFragment) pagerAdapter.getFragment(1)).onSelected();
-                    if(!isLoadingVisible) {
-                        buttonSearch.setVisible(true, null);
-                    }
-                }
             }
 
             @Override

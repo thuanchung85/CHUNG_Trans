@@ -36,6 +36,9 @@ public class CustomFragmentPagerAdapter extends FragmentPagerAdapter {
         this.titles = titles;
         this.fragments = fragments;
     }
+   public void setTitles(List<String> titles) {
+       this.titles =  titles;
+    }
 
     @Override
     public Fragment getItem(int position) {

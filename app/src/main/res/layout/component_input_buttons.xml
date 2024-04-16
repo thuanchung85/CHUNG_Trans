@@ -51,6 +51,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <nie.translator.rtranslatordevedition.tools.gui.ButtonAutoSendMessage
+            android:id="@+id/buttonAUTOSEND"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@null"
+            android:src="@drawable/sendmsg"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/buttonSound"
+            app:layout_constraintHorizontal_bias="0.559"
+            app:layout_constraintStart_toEndOf="@+id/linearLayout"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <nie.translator.rtranslatordevedition.tools.gui.ButtonSound
             android:id="@+id/buttonSound"
             android:layout_width="wrap_content"
@@ -89,6 +104,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -112,9 +128,9 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="12dp"
                 android:background="@null"
-                android:visibility="visible"
                 android:scaleType="fitCenter"
-                android:src="@drawable/mic" />
+                android:src="@drawable/mic"
+                android:visibility="visible" />
 
             <TextView
                 android:id="@+id/inputMicType"

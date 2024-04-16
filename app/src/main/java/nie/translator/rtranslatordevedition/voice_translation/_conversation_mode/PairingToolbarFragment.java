@@ -70,7 +70,7 @@ public abstract class PairingToolbarFragment extends Fragment {
                     voiceTranslationActivity.stopSearch(false);
                     clearFoundPeers();
                 } else {
-                    startSearch();
+                    //startSearch();
                 }
             }
         });

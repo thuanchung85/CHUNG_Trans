@@ -64,6 +64,8 @@ public class Global extends Application {
     ////////////////////////////===============================START SOCKET ZONE=================//////
     //khởi tạo websocket object
     public Socket mSocket;
+    private boolean autoSendMessage = true;
+
     {
         try {
             //String urlS = "http://27.74.249.34:8017";
@@ -210,6 +212,13 @@ public class Global extends Application {
     }
     public void setFileVoiceRecordStringPath(String path) {
         FileVoiceRecordStringPath = path;
+
+    }
+    public void  setAutoSendMessage(boolean autoSendMessage) {
+        this.autoSendMessage = autoSendMessage;
+    }
+    public boolean getAutoSendMessage() {
+        return autoSendMessage;
 
     }
 

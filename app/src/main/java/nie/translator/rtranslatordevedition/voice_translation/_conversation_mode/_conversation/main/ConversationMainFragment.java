@@ -38,8 +38,10 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     private TextView micInput;
     private Handler mHandler = new Handler();
 
-    public ConversationMainFragment() {
+
+    public ConversationMainFragment( ) {
         //an empty constructor is always needed for fragments
+
     }
 
     @Override
@@ -57,7 +59,9 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
             @Override
             public void onBluetoothHeadsetDisconnected() {
                 super.onBluetoothHeadsetDisconnected();
-                micInput.setText(getResources().getString(R.string.mic));
+
+                    micInput.setText("mic");
+
             }
         };
     }
@@ -67,7 +71,9 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
         // Inflate the layout for this fragment
         //đây là chổ show ra text đã translante trên page ConversationMainFragment -> recycler_view
         //===QUAN TRONG===///
-        return inflater.inflate(R.layout.fragment_voice_translation, container, false);
+
+            return inflater.inflate(R.layout.fragment_voice_translation, container, false);
+
     }
 
     @Override

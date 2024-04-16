@@ -687,7 +687,7 @@ public class PairingFragment extends PairingToolbarFragment {
                     } else {
                         // the timer has expired, so the failure is notified
                         clearFoundPeers();
-                        startSearch();
+                        //startSearch();
                         activateInputs();
                         disappearLoading(true, null);
                         connectingPeer = null;
@@ -802,7 +802,7 @@ public class PairingFragment extends PairingToolbarFragment {
                     //reset list view
                     clearFoundPeers();
                 }
-                startSearch();
+                //startSearch();
             }
         };
 
@@ -943,7 +943,7 @@ public class PairingFragment extends PairingToolbarFragment {
                     bluetoothModeButton.setVisibility(view.GONE);
 
                     //==kich hoat bluetooth dò tìm user khac
-                    startSearch();
+                    //startSearch();
 
                 }
             }

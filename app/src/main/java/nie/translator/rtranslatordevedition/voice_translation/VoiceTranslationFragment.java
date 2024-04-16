@@ -55,6 +55,7 @@ import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.api_management.ApiManagementActivity;
 import nie.translator.rtranslatordevedition.tools.ErrorCodes;
+import nie.translator.rtranslatordevedition.tools.gui.ButtonAutoSendMessage;
 import nie.translator.rtranslatordevedition.tools.gui.ButtonKeyboard;
 import nie.translator.rtranslatordevedition.tools.gui.ButtonMic;
 import nie.translator.rtranslatordevedition.tools.gui.ButtonSound;
@@ -196,6 +197,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     protected ButtonMic microphone;
     protected TextView description;
     private ButtonSound sound;
+
+    private ButtonAutoSendMessage autoSendMessageButton;
     private EditText editText;
     private MessagesAdapter mAdapter;
     private RecyclerView mRecyclerView;
@@ -228,6 +231,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         keyboard = view.findViewById(R.id.buttonKeyboard);
         microphone = view.findViewById(R.id.buttonMic);
         sound = view.findViewById(R.id.buttonSound);
+        autoSendMessageButton = view.findViewById(R.id.buttonAUTOSEND);
         editText = view.findViewById(R.id.editText);
         microphone.setFragment(this);
         microphone.setEditText(editText);
@@ -302,9 +306,25 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
             }
         });
 
+        autoSendMessageButton.setOnClickListenerForActivated(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (autoSendMessageButton.isEnable() == true) {
+                    autoSendMessageButton.setDisable();
+                    global.setAutoSendMessage(false);
+                } else {
+                    autoSendMessageButton.setEnable();
+                    global.setAutoSendMessage(true);
+                }
+            }
+        });
+
+
         keyboard.setOnClickListenerForActivated(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                autoSendMessageButton.setVisibility(View.GONE);
                 isEditTextOpen = true;
                 keyboard.generateEditText(voiceTranslationActivity, VoiceTranslationFragment.this, microphone, editText, true);
                 voiceTranslationServiceCommunicator.setEditTextOpen(true);
@@ -314,21 +334,26 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         microphone.setOnClickListenerForActivated(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 switch (microphone.getState()) {
                     case ButtonMic.STATE_NORMAL:
                         if (microphone.isMute()) {
                             Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onClick() -> startMicrophone");
                             startMicrophone(true);
+                            autoSendMessageButton.setVisibility(View.VISIBLE);
                         } else {
                             stopMicrophone(true);
+                            autoSendMessageButton.setVisibility(View.VISIBLE);
                         }
                         break;
                     case ButtonMic.STATE_RETURN:
+                        autoSendMessageButton.setVisibility(View.VISIBLE);
                         isEditTextOpen = false;
                         voiceTranslationServiceCommunicator.setEditTextOpen(false);
                         microphone.deleteEditText(voiceTranslationActivity, VoiceTranslationFragment.this, keyboard, editText);
                         break;
                     case ButtonMic.STATE_SEND:
+
                         // sending the message to be translated to the service
                         voiceTranslationServiceCommunicator.receiveText(editText.getText().toString());
                         editText.setText("");
@@ -539,9 +564,18 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     @Override
                     public void monClick(int position, String message) {
                         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> mAdapter ITEM Click() "));
-                        //khi tap lên message cua whipper thi send message qua bên kia
-                        String StringFilter = message.replaceAll("WHIPPER:", "").trim().replace("\n (tap on to send!)", "");
-                       global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                        //nếu tap lên massage của whipper
+                        if(message.contains("WHISPER:")) {
+                            //khi tap lên message cua whipper thi send message qua bên kia
+                            String StringFilter = message.replaceAll("WHISPER:", "").trim().replace("\n (tap on to send!)", "");
+                            global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                        }
+                        //nếu tap lên message cua google
+                        if(message.contains("GOOGLE:")) {
+                            //khi tap lên message cua whipper thi send message qua bên kia
+                            String StringFilter = message.replaceAll("GOOGLE:", "").trim().replace("\n\n (tap to send)", "");
+                            global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                        }
                     }
 
 
@@ -614,7 +648,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         stopMicrophone(true);
 
         //show on screen
-        String value =  "WHIPPER: " + result +("\n (tap on to send!)");
+        String value =  "WHISPER: " + result +("\n (tap on to send!)");
         Message mstypeFORGUI = new Message(voiceTranslationActivity, value);
         GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true, true);
         if (mAdapter != null) {
@@ -791,6 +825,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
             if (message != null) {
                 if (message.isFinal()) {
                     if (message.isMine()) {
+                        Message mM = message.getMessage();
+                        mM.setText("GOOGLE: " + message.getMessage().getText() + "\n\n (tap to send)");
+                        GuiMessage myNewGoogleMessage = new GuiMessage(mM, true, true, false);
                         int previewIndex = mAdapter.getPreviewIndex();
                         if (previewIndex != -1) {
                             Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(1) -> %s",message.getMessage().getText()));
@@ -798,31 +835,36 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             if(nameOfpeerWantConnect.equals("")){
                                 nameOfpeerWantConnect = global.getPeerWantTalkName();
                             }
-                            //bắn text của google api cho socket
-                            global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                            //AUTO bắn text của google api cho socket
+                            //global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
 
-                            mAdapter.setMessage(previewIndex, message);
-
+                            //mAdapter.setMessage(previewIndex, message);
+                            mAdapter.setMessage(previewIndex, myNewGoogleMessage);
                             //smooth scroll
                             smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
                             mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
 
                             //==run whipper test==//
-                            callWhipper();
+                            if(voiceTranslationActivity.getCurrentFragment() == VoiceTranslationActivity.CONVERSATION_FRAGMENT) {
+                                callWhipper();
+                            }
 
                         } else {
                             Message mm = message.getMessage();
                             String smm = mm.getText();
                             Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(2) -> %s",smm));
-                            mAdapter.addMessage(message);
+
+                            mAdapter.addMessage(myNewGoogleMessage);
                             //smooth scroll
                             smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
                             mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
 
                             //======ban data text cho socket========//
-                            global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                           // global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
                             //==run whipper test==//
+                            if(voiceTranslationActivity.getCurrentFragment() == VoiceTranslationActivity.CONVERSATION_FRAGMENT) {
                             callWhipper();
+                            }
                         }
                     }
                     else
