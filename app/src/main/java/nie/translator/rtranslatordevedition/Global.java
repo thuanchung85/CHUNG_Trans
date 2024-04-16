@@ -64,7 +64,7 @@ public class Global extends Application {
     ////////////////////////////===============================START SOCKET ZONE=================//////
     //khởi tạo websocket object
     public Socket mSocket;
-    private boolean autoSendMessage = true;
+    private int aiMode = 99;//default is google cloud api ai mode
 
     {
         try {
@@ -214,11 +214,11 @@ public class Global extends Application {
         FileVoiceRecordStringPath = path;
 
     }
-    public void  setAutoSendMessage(boolean autoSendMessage) {
-        this.autoSendMessage = autoSendMessage;
+    public void  setAIMode(int AiMode) {
+        this.aiMode = AiMode;
     }
-    public boolean getAutoSendMessage() {
-        return autoSendMessage;
+    public int getAIMode() {
+        return this.aiMode;
 
     }
 

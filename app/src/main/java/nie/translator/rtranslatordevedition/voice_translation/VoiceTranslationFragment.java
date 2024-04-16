@@ -231,6 +231,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         microphone = view.findViewById(R.id.buttonMic);
         sound = view.findViewById(R.id.buttonSound);
         buttonChooseModeAI = view.findViewById(R.id.buttonAUTOSEND);
+
         editText = view.findViewById(R.id.editText);
         microphone.setFragment(this);
         microphone.setEditText(editText);
@@ -305,17 +306,19 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
             }
         });
 
+        buttonChooseModeAI.setAimode(global.getAIMode());
         buttonChooseModeAI.setOnClickListenerForActivated(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 int currentAImode = buttonChooseModeAI.getAimode();
                 currentAImode += 1;
-
+                global.setAIMode(currentAImode);
                  buttonChooseModeAI.setAimode(currentAImode);
                 if(currentAImode > 2) {
                     currentAImode = 0;
                     buttonChooseModeAI.setAimode(currentAImode);
+                    global.setAIMode(currentAImode);
                 }
             }
         });
@@ -801,18 +804,21 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 mAdapter.setOnClickListener(new MessagesAdapter.OnClickListener() {
                     @Override
                     public void monClick(int position, String message) {
-                        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> mAdapter ITEM Click() "));
-                        //nếu tap lên massage của whipper
-                        if(message.contains("WHISPER:")) {
-                            //khi tap lên message cua whipper thi send message qua bên kia
-                            String StringFilter = message.replaceAll("WHISPER:", "").trim().replace("\n (tap on to send!)", "");
-                            global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
-                        }
-                        //nếu tap lên message cua google
-                        if(message.contains("GOOGLE:")) {
-                            //khi tap lên message cua whipper thi send message qua bên kia
-                            String StringFilter = message.replaceAll("GOOGLE:", "").trim().replace("\n\n (tap to send)", "");
-                            global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                        //mode 0 la mode tu do chon all ai message click de send message
+                        if(global.getAIMode() == 0) {
+                            Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> mAdapter ITEM Click() "));
+                            //nếu tap lên massage của whipper
+                            if (message.contains("WHISPER:")) {
+                                //khi tap lên message cua whipper thi send message qua bên kia
+                                String StringFilter = message.replaceAll("WHISPER:", "").trim().replace("\n (tap on to send!)", "");
+                                global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                            }
+                            //nếu tap lên message cua google
+                            if (message.contains("GOOGLE:")) {
+                                //khi tap lên message cua whipper thi send message qua bên kia
+                                String StringFilter = message.replaceAll("GOOGLE:", "").trim().replace("\n\n (tap to send)", "");
+                                global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                            }
                         }
                     }
 
