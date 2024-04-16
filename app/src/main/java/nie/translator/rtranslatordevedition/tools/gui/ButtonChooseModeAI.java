@@ -21,31 +21,38 @@ import android.util.AttributeSet;
 import nie.translator.rtranslatordevedition.R;
 
 
-public class ButtonAutoSendMessage extends DeactivableButton {
-    private boolean isEnable=false;
+public class ButtonChooseModeAI extends DeactivableButton {
+    private int aimode=0;
 
-    public ButtonAutoSendMessage(Context context) {
+    public ButtonChooseModeAI(Context context) {
         super(context);
     }
 
-    public ButtonAutoSendMessage(Context context, AttributeSet attrs) {
+    public ButtonChooseModeAI(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public ButtonAutoSendMessage(Context context, AttributeSet attrs, int defStyleAttr) {
+    public ButtonChooseModeAI(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
-    public boolean isEnable() {
-        return isEnable;
+    public int getAimode() {
+        return aimode;
     }
 
-    public void setEnable(){
-        isEnable = true;
-        setImageDrawable(getResources().getDrawable(R.drawable.sendmsg,null));
+    public void setAimode(int choose_aimode){
+        aimode = choose_aimode;
+        switch (aimode){
+            case 0:
+                setImageDrawable(getResources().getDrawable(R.drawable.sendmsg,null));
+                break;
+            case 1:
+                setImageDrawable(getResources().getDrawable(R.drawable.openai_icon,null));
+                break;
+
+                default: setImageDrawable(getResources().getDrawable(R.drawable.google_cloud,null));
+        }
+
     }
-    public void setDisable(){
-        isEnable = false;
-        setImageDrawable(getResources().getDrawable(R.drawable.sendmsgdis,null));
-    }
+
 }

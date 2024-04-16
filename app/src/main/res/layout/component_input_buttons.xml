@@ -51,7 +51,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <nie.translator.rtranslatordevedition.tools.gui.ButtonAutoSendMessage
+        <nie.translator.rtranslatordevedition.tools.gui.ButtonChooseModeAI
             android:id="@+id/buttonAUTOSEND"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

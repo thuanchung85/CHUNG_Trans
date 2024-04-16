@@ -55,7 +55,7 @@ import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.api_management.ApiManagementActivity;
 import nie.translator.rtranslatordevedition.tools.ErrorCodes;
-import nie.translator.rtranslatordevedition.tools.gui.ButtonAutoSendMessage;
+import nie.translator.rtranslatordevedition.tools.gui.ButtonChooseModeAI;
 import nie.translator.rtranslatordevedition.tools.gui.ButtonKeyboard;
 import nie.translator.rtranslatordevedition.tools.gui.ButtonMic;
 import nie.translator.rtranslatordevedition.tools.gui.ButtonSound;
@@ -64,7 +64,6 @@ import nie.translator.rtranslatordevedition.tools.gui.MicrophoneComunicable;
 import nie.translator.rtranslatordevedition.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslatordevedition.tools.gui.messages.MessagesAdapter;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.myWhipper.AsyncTaskListener;
-import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.myWhipper.AudioRecorder;
 
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.myWhipper.OpenAIWhisperSTT;
 
@@ -198,7 +197,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     protected TextView description;
     private ButtonSound sound;
 
-    private ButtonAutoSendMessage autoSendMessageButton;
+    private ButtonChooseModeAI buttonChooseModeAI;
     private EditText editText;
     private MessagesAdapter mAdapter;
     private RecyclerView mRecyclerView;
@@ -231,7 +230,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         keyboard = view.findViewById(R.id.buttonKeyboard);
         microphone = view.findViewById(R.id.buttonMic);
         sound = view.findViewById(R.id.buttonSound);
-        autoSendMessageButton = view.findViewById(R.id.buttonAUTOSEND);
+        buttonChooseModeAI = view.findViewById(R.id.buttonAUTOSEND);
         editText = view.findViewById(R.id.editText);
         microphone.setFragment(this);
         microphone.setEditText(editText);
@@ -306,16 +305,17 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
             }
         });
 
-        autoSendMessageButton.setOnClickListenerForActivated(new View.OnClickListener() {
+        buttonChooseModeAI.setOnClickListenerForActivated(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if (autoSendMessageButton.isEnable() == true) {
-                    autoSendMessageButton.setDisable();
-                    global.setAutoSendMessage(false);
-                } else {
-                    autoSendMessageButton.setEnable();
-                    global.setAutoSendMessage(true);
+                int currentAImode = buttonChooseModeAI.getAimode();
+                currentAImode += 1;
+
+                 buttonChooseModeAI.setAimode(currentAImode);
+                if(currentAImode > 2) {
+                    currentAImode = 0;
+                    buttonChooseModeAI.setAimode(currentAImode);
                 }
             }
         });
@@ -324,7 +324,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         keyboard.setOnClickListenerForActivated(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                autoSendMessageButton.setVisibility(View.GONE);
+                buttonChooseModeAI.setVisibility(View.GONE);
                 isEditTextOpen = true;
                 keyboard.generateEditText(voiceTranslationActivity, VoiceTranslationFragment.this, microphone, editText, true);
                 voiceTranslationServiceCommunicator.setEditTextOpen(true);
@@ -340,14 +340,14 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                         if (microphone.isMute()) {
                             Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onClick() -> startMicrophone");
                             startMicrophone(true);
-                            autoSendMessageButton.setVisibility(View.VISIBLE);
+                            buttonChooseModeAI.setVisibility(View.VISIBLE);
                         } else {
                             stopMicrophone(true);
-                            autoSendMessageButton.setVisibility(View.VISIBLE);
+                            buttonChooseModeAI.setVisibility(View.VISIBLE);
                         }
                         break;
                     case ButtonMic.STATE_RETURN:
-                        autoSendMessageButton.setVisibility(View.VISIBLE);
+                        buttonChooseModeAI.setVisibility(View.VISIBLE);
                         isEditTextOpen = false;
                         voiceTranslationServiceCommunicator.setEditTextOpen(false);
                         microphone.deleteEditText(voiceTranslationActivity, VoiceTranslationFragment.this, keyboard, editText);
@@ -546,186 +546,28 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         global.SendData_to_mSocket_FOR_UPDATE_STATUS_OF_USER(0, "VoiceTranslationFragment() -> onStop");
     }
 
-    public void restoreAttributesFromService() {
-        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> restoreAttributesFromService() "));
-        voiceTranslationServiceCommunicator.getAttributes(new VoiceTranslationService.AttributesListener() {
-            @Override
-            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected) {
-                // initialization with service values
-                mAdapter = new MessagesAdapter(messages, new MessagesAdapter.Callback() {
-                    @Override
-                    public void onFirstItemAdded() {
-                        description.setVisibility(View.GONE);
-                        mRecyclerView.setVisibility(View.VISIBLE);
-                    }
-                });
-                // Applying OnClickListener to our Adapter
-                mAdapter.setOnClickListener(new MessagesAdapter.OnClickListener() {
-                    @Override
-                    public void monClick(int position, String message) {
-                        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> mAdapter ITEM Click() "));
-                        //nếu tap lên massage của whipper
-                        if(message.contains("WHISPER:")) {
-                            //khi tap lên message cua whipper thi send message qua bên kia
-                            String StringFilter = message.replaceAll("WHISPER:", "").trim().replace("\n (tap on to send!)", "");
-                            global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
-                        }
-                        //nếu tap lên message cua google
-                        if(message.contains("GOOGLE:")) {
-                            //khi tap lên message cua whipper thi send message qua bên kia
-                            String StringFilter = message.replaceAll("GOOGLE:", "").trim().replace("\n\n (tap to send)", "");
-                            global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
-                        }
-                    }
-
-
-                });
-                mRecyclerView.setAdapter(mAdapter);
-                // restore microphone and sound status
-                microphone.setMute(isMicMute);
-                sound.setMute(isAudioMute);
-                // restore editText
-                VoiceTranslationFragment.this.isEditTextOpen = isEditTextOpen;
-                if (isEditTextOpen) {
-                    keyboard.generateEditText(voiceTranslationActivity, VoiceTranslationFragment.this, microphone, editText, false);
-                }
-                if (isBluetoothHeadsetConnected) {
-                    voiceTranslationServiceCallback.onBluetoothHeadsetConnected();
-                } else {
-                    voiceTranslationServiceCallback.onBluetoothHeadsetDisconnected();
-                }
-
-                if (!microphone.isMute() && !isEditTextOpen) {
-                    activateInputs(true);
-                } else {
-                    activateInputs(false);
-                }
-            }
-        });
-    }
 
     @Override
     //start micro phone khi vào fragment này bắt đầu noí chuyên, thu âm giọng nói và chuyển qua text.
     public void startMicrophone(boolean changeAspect) {
-
-         //tam off su dung stt cua rtranlate
+        //tam off su dung stt cua rtranlate
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> startMicrophone() "));
         if (changeAspect) {
             microphone.setMute(false);
         }
-
         voiceTranslationServiceCommunicator.startMic();
-
     }
 
 
-
-    public void callWhipper(){
-        // When recording is done (e.g., when user presses a button to stop recording):
-        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> callWhipper() "));
-
-        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
-        if (directory.exists()) {
-            String OUTPUT_FILE = "CHUNGrecorded_audio.wav";
-            File outputFile = new File(directory, OUTPUT_FILE);
-            System.out.println(outputFile);
-
-            if(outputFile.exists()) {
-                Log.d("CHUNG-", String.format("CHUNG- truyền cho OPENAI() -> OpenAIWhisperSTT() "));
-                //truyền cho OPENAI
-                OpenAIWhisperSTT openAIWhipper = new OpenAIWhisperSTT(this);
-
-                openAIWhipper.execute();
-            }
-        }
-
-    }
-    //=======WHIPPER RETURN DATA=====///
-    @Override
-    public void onTaskComplete(String result) {
-        // Handle the result here
-        Log.d("CHUNG-", "CHUNG- WHIPPER onTaskComplete result() -> " + result);
-        stopMicrophone(true);
-
-        //show on screen
-        String value =  "WHISPER: " + result +("\n (tap on to send!)");
-        Message mstypeFORGUI = new Message(voiceTranslationActivity, value);
-        GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true, true);
-        if (mAdapter != null) {
-            mAdapter.addMessage(msFOR_recyclerview);
-            //auto scroll
-            //smooth scroll
-            smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
-            mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
-
-
-
-            //bắn text qua socket cho user ben kia chổ này mình dung whipper nên vậy
-            //======ban data text cho socket========//
-            //global.SendData_to_mSocket_FOR_SENDMESSAGE(value, global.getName(), nameOfpeerWantConnect, "WHIPPER");
-
-
-
-        }
-        /*
-        try {
-            // Parse the JSON string
-            JSONObject jsonObject = new JSONObject(result);
-
-            // Extract the value associated with the key "text"
-            String value =  "WHIPPER: " + jsonObject.getString("text");
-
-
-            Message mstypeFORGUI = new Message(voiceTranslationActivity, value);
-            GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true);
-
-            if (mAdapter != null) {
-                mAdapter.addMessage(msFOR_recyclerview);
-                //auto scroll
-                //smooth scroll
-                smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
-                mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
-
-
-
-                //bắn text qua socket cho user ben kia chổ này mình dung whipper nên vậy
-                //======ban data text cho socket========//
-                //global.SendData_to_mSocket_FOR_SENDMESSAGE(value, global.getName(), nameOfpeerWantConnect, "WHIPPER");
-
-
-
-            }
-
-            //retrat lai micro cho nguoi dung noi tiep
-            //startMicrophone(true);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-         */
-        //retrat lai micro cho nguoi dung noi tiep
-        startMicrophone(true);
-
-
-    }
 
     @Override
     public void stopMicrophone(boolean changeAspect) {
-
           //tam off su dung stt cua rtranlate
         Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> stopMicrophone() "));
         if (changeAspect) {
             microphone.setMute(true);
         }
-
         voiceTranslationServiceCommunicator.stopMic(changeAspect);
-
-
-
-
-
-
     }
 
 
@@ -939,6 +781,121 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 }
             }
         }
+    }
+
+
+    public void restoreAttributesFromService() {
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> restoreAttributesFromService() "));
+        voiceTranslationServiceCommunicator.getAttributes(new VoiceTranslationService.AttributesListener() {
+            @Override
+            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected) {
+                // initialization with service values
+                mAdapter = new MessagesAdapter(messages, new MessagesAdapter.Callback() {
+                    @Override
+                    public void onFirstItemAdded() {
+                        description.setVisibility(View.GONE);
+                        mRecyclerView.setVisibility(View.VISIBLE);
+                    }
+                });
+                // Applying OnClickListener to our Adapter
+                mAdapter.setOnClickListener(new MessagesAdapter.OnClickListener() {
+                    @Override
+                    public void monClick(int position, String message) {
+                        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> mAdapter ITEM Click() "));
+                        //nếu tap lên massage của whipper
+                        if(message.contains("WHISPER:")) {
+                            //khi tap lên message cua whipper thi send message qua bên kia
+                            String StringFilter = message.replaceAll("WHISPER:", "").trim().replace("\n (tap on to send!)", "");
+                            global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                        }
+                        //nếu tap lên message cua google
+                        if(message.contains("GOOGLE:")) {
+                            //khi tap lên message cua whipper thi send message qua bên kia
+                            String StringFilter = message.replaceAll("GOOGLE:", "").trim().replace("\n\n (tap to send)", "");
+                            global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                        }
+                    }
+
+
+                });
+                mRecyclerView.setAdapter(mAdapter);
+                // restore microphone and sound status
+                microphone.setMute(isMicMute);
+                sound.setMute(isAudioMute);
+                // restore editText
+                VoiceTranslationFragment.this.isEditTextOpen = isEditTextOpen;
+                if (isEditTextOpen) {
+                    keyboard.generateEditText(voiceTranslationActivity, VoiceTranslationFragment.this, microphone, editText, false);
+                }
+                if (isBluetoothHeadsetConnected) {
+                    voiceTranslationServiceCallback.onBluetoothHeadsetConnected();
+                } else {
+                    voiceTranslationServiceCallback.onBluetoothHeadsetDisconnected();
+                }
+
+                if (!microphone.isMute() && !isEditTextOpen) {
+                    activateInputs(true);
+                } else {
+                    activateInputs(false);
+                }
+            }
+        });
+    }
+
+
+
+    public void callWhipper(){
+        // When recording is done (e.g., when user presses a button to stop recording):
+        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> callWhipper() "));
+
+        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/YourAppName");
+        if (directory.exists()) {
+            String OUTPUT_FILE = "CHUNGrecorded_audio.wav";
+            File outputFile = new File(directory, OUTPUT_FILE);
+            System.out.println(outputFile);
+
+            if(outputFile.exists()) {
+                Log.d("CHUNG-", String.format("CHUNG- truyền cho OPENAI() -> OpenAIWhisperSTT() "));
+                //truyền cho OPENAI
+                OpenAIWhisperSTT openAIWhipper = new OpenAIWhisperSTT(this);
+
+                openAIWhipper.execute();
+            }
+        }
+
+    }
+    //=======WHIPPER RETURN DATA=====///
+    @Override
+    public void onTaskComplete(String result) {
+        // Handle the result here
+        Log.d("CHUNG-", "CHUNG- WHIPPER onTaskComplete result() -> " + result);
+        stopMicrophone(true);
+
+        //show on screen
+        String value =  "WHISPER: " + result +("\n (tap on to send!)");
+        Message mstypeFORGUI = new Message(voiceTranslationActivity, value);
+        GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true, true);
+        if (mAdapter != null) {
+            mAdapter.addMessage(msFOR_recyclerview);
+            //auto scroll
+            //smooth scroll
+            smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
+            mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
+
+
+
+            //bắn text qua socket cho user ben kia chổ này mình dung whipper nên vậy
+            //======ban data text cho socket========//
+            //global.SendData_to_mSocket_FOR_SENDMESSAGE(value, global.getName(), nameOfpeerWantConnect, "WHIPPER");
+
+
+
+        }
+
+        //retreat lai micro cho nguoi dung noi tiep
+        startMicrophone(true);
+
+
     }
 
     protected void onFailureConnectingWithService(int[] reasons, long value) {
