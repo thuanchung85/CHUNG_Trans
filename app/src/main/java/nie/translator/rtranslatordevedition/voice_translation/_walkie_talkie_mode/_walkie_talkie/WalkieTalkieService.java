@@ -212,7 +212,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
             public void onTranslatedText(String text,String textToTranslate, CustomLocale languageOfText) {
                 speak(text, languageOfText);
                 String textDisplay = new Locale(global.getInputLanguage()).getDisplayLanguage() + " : " + textToTranslate + "\n\n" + new Locale(global.getOutputLanguage()).getDisplayLanguage()+ " : " + text;
-                GuiMessage message = new GuiMessage(new Message(WalkieTalkieService.this, textDisplay), true,true);
+                GuiMessage message = new GuiMessage(new Message(WalkieTalkieService.this, textDisplay), true,true,false);
                 WalkieTalkieService.super.notifyMessage(message);
                 // we save every new message in the exchanged messages so that the fragment can restore them
                 WalkieTalkieService.super.addMessage(message);
@@ -228,7 +228,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
             public void onTranslatedText(String text,String textToTranslate, CustomLocale languageOfText) {
                 speak(text, languageOfText);
                 String textDisplay = new Locale(global.getInputLanguage()).getDisplayLanguage() + " : " + textToTranslate + "\n\n" + new Locale(global.getOutputLanguage()).getDisplayLanguage()+ " : " + text;
-                GuiMessage message = new GuiMessage(new Message(WalkieTalkieService.this, textDisplay), false,true);
+                GuiMessage message = new GuiMessage(new Message(WalkieTalkieService.this, textDisplay), false,true,false);
                 WalkieTalkieService.super.notifyMessage(message);
                 // we save every new message in the exchanged messages so that the fragment can restore them
                 WalkieTalkieService.super.addMessage(message);

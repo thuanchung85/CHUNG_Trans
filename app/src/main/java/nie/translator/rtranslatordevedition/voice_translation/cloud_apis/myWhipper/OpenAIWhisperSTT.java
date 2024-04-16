@@ -66,6 +66,7 @@ public class OpenAIWhisperSTT extends AsyncTask<File, Void, String> {
                 RequestBody requestBody = new MultipartBody.Builder()
                         .setType(MultipartBody.FORM)
                         .addFormDataPart("model", "whisper-1")
+                        .addFormDataPart("response_format", "text")
                         .addFormDataPart("language", currentlang)
                         .addFormDataPart("file",copyF.getPath(),
                                 RequestBody.create(MediaType.parse("audio/wav"), copyF))

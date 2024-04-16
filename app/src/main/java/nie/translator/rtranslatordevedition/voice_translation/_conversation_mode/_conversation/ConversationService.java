@@ -146,7 +146,7 @@ public class ConversationService extends VoiceTranslationService {
                                     public void onSuccess(CustomLocale language) {
                                         String text = message.getData().getString("text");
                                         if (text != null) {
-                                            GuiMessage guiMessage = new GuiMessage(new Message(global, text), true, true);
+                                            GuiMessage guiMessage = new GuiMessage(new Message(global, text), true, true,false);
                                             // send the message
                                             sendMessage(new ConversationMessage(new CloudApiText(text, language)));
 
@@ -186,7 +186,7 @@ public class ConversationService extends VoiceTranslationService {
                             public void onTranslatedMessage(ConversationMessage conversationMessage) {
                                 speak(conversationMessage.getPayload().getText(), conversationMessage.getPayload().getLanguage());
                                 message.setText(conversationMessage.getPayload().getText());   // updating the text with the new translated text (and without the language code)
-                                GuiMessage guiMessage = new GuiMessage(message, false, true);
+                                GuiMessage guiMessage = new GuiMessage(message, false, true,false);
                                 notifyMessage(guiMessage);
                                 // we save every new message in the exchanged messages so that the fragment can restore them
                                 addMessage(guiMessage);
@@ -223,7 +223,7 @@ public class ConversationService extends VoiceTranslationService {
             public void onSpeechRecognizedResult(String text, String languageCode, float confidenceScore, boolean isFinal) {
                 if (text != null && languageCode != null && !text.equals("")) {
                     CustomLocale language = CustomLocale.getInstance(languageCode);
-                    GuiMessage guiMessage = new GuiMessage(new Message(global, text), true, isFinal);
+                    GuiMessage guiMessage = new GuiMessage(new Message(global, text), true, isFinal, false);
                     if (isFinal) {
                         textRecognized = "";  // to ensure that we continue to listen since in this case the result is automatically extracted
                         // send the message

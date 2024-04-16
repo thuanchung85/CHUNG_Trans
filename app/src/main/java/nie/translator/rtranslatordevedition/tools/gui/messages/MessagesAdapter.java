@@ -32,11 +32,21 @@ import nie.translator.rtranslatordevedition.R;
 
 /** Is used to connect to the RecycleView, which functions as a ListView, a list of strings, which will be inserted in the ViewHolder layout and this will be inserted in the list**/
 public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private  OnClickListener mClickListener;
     private static final int MINE = 0;
+    private static final int MINE_Whipper = 3;
     private static final int NON_MINE = 1;
     private static final int PREVIEW = 2;
     private ArrayList<GuiMessage> mResults = new ArrayList<>();
     private Callback callback;
+    // A function to bind the onclickListener.
+// onClickListener Interface
+    public interface OnClickListener {
+        void monClick(int position, String   txt);
+    }
+    public void setOnClickListener(OnClickListener onClickListener) {
+        this.mClickListener = onClickListener;
+    }
 
     public MessagesAdapter(ArrayList<GuiMessage> messages, @NonNull Callback callback) {
         this.callback = callback;
@@ -49,12 +59,15 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         switch (viewType) {
             case MINE:
                 return new SendHolder(LayoutInflater.from(parent.getContext()), parent);
+            case MINE_Whipper:
+                return new SendHolder_Whipper(LayoutInflater.from(parent.getContext()), parent);
             case NON_MINE:
                 return new ReceivedHolder(LayoutInflater.from(parent.getContext()), parent);
             case PREVIEW:
@@ -71,8 +84,18 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 ((ReceivedHolder) holder).text.setVisibility(View.GONE);
                 ((ReceivedHolder) holder).containerSender.setVisibility(View.VISIBLE);
                 ((ReceivedHolder) holder).sender.setText(message.getMessage().getSender().getName());
+
             }
             ((MessageHolder) holder).setText(message.getMessage().getText());
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mClickListener != null) {
+                        mClickListener.monClick(position, message.getMessage().getText());
+                    }
+                }
+            });
+
         }
     }
 
@@ -81,6 +104,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         GuiMessage message = mResults.get(position);
         if (message.isMine()) {
             if (message.isFinal()) {
+                if(message.isWhipper()){
+                    return MINE_Whipper;
+                }
                 return MINE;
             } else {
                 return PREVIEW;
@@ -206,11 +232,33 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             card = itemView.findViewById(R.id.card);
         }
 
+
+
         @Override
         public void setText(String text) {
             this.text.setText(text);
         }
     }
+
+
+    private class SendHolder_Whipper extends RecyclerView.ViewHolder implements MessageHolder {
+        TextView text;
+        CardView card;
+
+        SendHolder_Whipper(LayoutInflater inflater, ViewGroup parent) {
+            super(inflater.inflate(R.layout.component_message_send_whipper, parent, false));
+            text = itemView.findViewById(R.id.text);
+            card = itemView.findViewById(R.id.card);
+        }
+
+
+
+        @Override
+        public void setText(String text) {
+            this.text.setText(text);
+        }
+    }
+
 
     private class PreviewHolder extends RecyclerView.ViewHolder implements MessageHolder {
         TextView text;

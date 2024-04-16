@@ -144,7 +144,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             public void run() {
                                 Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() ->runOnUiThread update recyclerview ");
                                 Message mstypeFORGUI = new Message(voiceTranslationActivity, socketreturn_from, socketreturn_translated + "\n(" + socketreturn_message +")");
-                                GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, false, true);
+                                GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, false, true,false);
                                 if (mAdapter != null) {
                                     mAdapter.addMessage(msFOR_recyclerview);
                                     //auto scroll
@@ -534,6 +534,18 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                         mRecyclerView.setVisibility(View.VISIBLE);
                     }
                 });
+                // Applying OnClickListener to our Adapter
+                mAdapter.setOnClickListener(new MessagesAdapter.OnClickListener() {
+                    @Override
+                    public void monClick(int position, String message) {
+                        Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> mAdapter ITEM Click() "));
+                        //khi tap lên message cua whipper thi send message qua bên kia
+                        String StringFilter = message.replaceAll("WHIPPER:", "").trim().replace("\n (tap on to send!)", "");
+                       global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                    }
+
+
+                });
                 mRecyclerView.setAdapter(mAdapter);
                 // restore microphone and sound status
                 microphone.setMute(isMicMute);
@@ -602,7 +614,26 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         stopMicrophone(true);
 
         //show on screen
+        String value =  "WHIPPER: " + result +("\n (tap on to send!)");
+        Message mstypeFORGUI = new Message(voiceTranslationActivity, value);
+        GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true, true);
+        if (mAdapter != null) {
+            mAdapter.addMessage(msFOR_recyclerview);
+            //auto scroll
+            //smooth scroll
+            smoothScroller.setTargetPosition(mAdapter.getItemCount() - 1);
+            mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
 
+
+
+            //bắn text qua socket cho user ben kia chổ này mình dung whipper nên vậy
+            //======ban data text cho socket========//
+            //global.SendData_to_mSocket_FOR_SENDMESSAGE(value, global.getName(), nameOfpeerWantConnect, "WHIPPER");
+
+
+
+        }
+        /*
         try {
             // Parse the JSON string
             JSONObject jsonObject = new JSONObject(result);
@@ -637,6 +668,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+         */
         //retrat lai micro cho nguoi dung noi tiep
         startMicrophone(true);
 

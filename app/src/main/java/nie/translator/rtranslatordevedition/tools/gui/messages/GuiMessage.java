@@ -25,11 +25,17 @@ public class GuiMessage implements Parcelable {
     private boolean isMine;
     private boolean isFinal;
 
+    private boolean isWhipper = false;
+    public boolean isWhipper() {
+        return isWhipper;
 
-    public GuiMessage(Message message, boolean isMine, boolean isFinal) {
+    }
+
+    public GuiMessage(Message message, boolean isMine, boolean isFinal, boolean isWhipper) {
         this.message=message;
         this.isMine = isMine;
         this.isFinal = isFinal;
+        this.isWhipper = isWhipper;
     }
 
     public Message getMessage() {
