@@ -306,6 +306,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
             }
         });
 
+        if(voiceTranslationActivity.getCurrentFragment() == VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT){
+            buttonChooseModeAI.setVisibility(View.GONE);
+        }
         buttonChooseModeAI.setAimode(global.getAIMode());
         buttonChooseModeAI.setOnClickListenerForActivated(new View.OnClickListener() {
             @Override
@@ -343,14 +346,20 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                         if (microphone.isMute()) {
                             Log.d("CHUNG-", "CHUNG- VoiceTranslationFragment() -> onClick() -> startMicrophone");
                             startMicrophone(true);
-                            buttonChooseModeAI.setVisibility(View.VISIBLE);
+                            if(voiceTranslationActivity.getCurrentFragment() != VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT) {
+                                buttonChooseModeAI.setVisibility(View.VISIBLE);
+                            }
                         } else {
                             stopMicrophone(true);
-                            buttonChooseModeAI.setVisibility(View.VISIBLE);
+                            if(voiceTranslationActivity.getCurrentFragment() != VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT) {
+                                buttonChooseModeAI.setVisibility(View.VISIBLE);
+                            }
                         }
                         break;
                     case ButtonMic.STATE_RETURN:
-                        buttonChooseModeAI.setVisibility(View.VISIBLE);
+                        if(voiceTranslationActivity.getCurrentFragment() != VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT){
+                            buttonChooseModeAI.setVisibility(View.VISIBLE);
+                        }
                         isEditTextOpen = false;
                         voiceTranslationServiceCommunicator.setEditTextOpen(false);
                         microphone.deleteEditText(voiceTranslationActivity, VoiceTranslationFragment.this, keyboard, editText);
