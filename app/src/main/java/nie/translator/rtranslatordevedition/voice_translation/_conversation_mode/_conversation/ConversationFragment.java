@@ -306,7 +306,7 @@ public class ConversationFragment extends PairingToolbarFragment {
 
         // insertion of the list of titles
         List<String> titles = new ArrayList<>();
-        titles.add("CHAT LOG");
+        titles.add("with: " + global.getPeerWantTalkName() );
 
 
         //có 2 page trong adapter là "conversation", và "connection"

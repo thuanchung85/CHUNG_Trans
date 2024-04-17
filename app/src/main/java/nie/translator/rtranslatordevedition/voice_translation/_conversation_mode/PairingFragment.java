@@ -1056,13 +1056,15 @@ public class PairingFragment extends PairingToolbarFragment {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
                                                             dialog.dismiss();
+                                                            //send huy cuoc goi vi chính mình đổi ý
+
                                                         }
                                                     };
                                                     //creazione del dialog.
                                                     AlertDialog.Builder builder = new AlertDialog.Builder(voiceTranslationActivity);
                                                     builder.setCancelable(true);
-                                                    builder.setMessage("Please wait for you friend accept!");
-                                                    builder.setPositiveButton(android.R.string.ok, confirmExitListenerWait);
+                                                    builder.setMessage("Please wait for you friend accept! or you can cancel the call.");
+                                                    builder.setPositiveButton(android.R.string.cancel, confirmExitListenerWait);
 
 
                                                      dialogWait = builder.create();

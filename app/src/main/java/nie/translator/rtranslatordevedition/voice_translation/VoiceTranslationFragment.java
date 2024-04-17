@@ -324,7 +324,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                // mRecyclerView.getRecycledViewPool().clear();
 
                 if(currentAImode > 2) {
-                    currentAImode = 0;
+                    currentAImode = 1;
                     buttonChooseModeAI.setAimode(currentAImode);
                     global.setAIMode(currentAImode);
 
@@ -719,7 +719,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
 
                             }
 
-                        } else {
+                        }
+                        //cai nay la cua keyboard message gởi
+                        else {
                             Message mm = message.getMessage();
                             String smm = mm.getText();
                             Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> onMessage(2) -> %s",smm));
@@ -730,7 +732,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                             mRecyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
 
                             //======ban data text cho socket========//
-                           // global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                            global.SendData_to_mSocket_FOR_SENDMESSAGE(message.getMessage().getText(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
                             //==run whipper test==//
                             //if(voiceTranslationActivity.getCurrentFragment() == VoiceTranslationActivity.CONVERSATION_FRAGMENT) {
                             //callWhipper();
