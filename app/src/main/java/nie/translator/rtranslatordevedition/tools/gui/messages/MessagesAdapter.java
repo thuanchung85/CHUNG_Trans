@@ -38,11 +38,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final int NON_MINE = 1;
     private static final int PREVIEW = 2;
     private ArrayList<GuiMessage> mResults = new ArrayList<>();
+
     private Callback callback;
     // A function to bind the onclickListener.
 // onClickListener Interface
     public interface OnClickListener {
-        void monClick(int position, String   txt);
+        void monClick(int position, String   txt, View thisItem);
     }
     public void setOnClickListener(OnClickListener onClickListener) {
         this.mClickListener = onClickListener;
@@ -87,11 +88,14 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             }
             ((MessageHolder) holder).setText(message.getMessage().getText());
+
+            holder.itemView.setAlpha(1F);
+
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (mClickListener != null) {
-                        mClickListener.monClick(position, message.getMessage().getText());
+                        mClickListener.monClick(position, message.getMessage().getText(), holder.itemView);
                     }
                 }
             });
@@ -147,16 +151,25 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             mResults.add(getItemCount() - 1, message);  // - 1 and not -2 because the getItemCount before the add () is already -1 compared to after the add ()
             notifyItemInserted(getItemCount() - 2);
         }
+
+
     }
 
     public void setMessage(int index, GuiMessage message) {
         mResults.set(index, message);
         notifyDataSetChanged();  // not animation
         //notifyItemChanged(index);  //animation
+
     }
     public void removeLastMessage() {
         mResults.remove(getItemCount() - 1);
         notifyItemRemoved(getItemCount());
+    }
+    public void removeAllMessage() {
+        mResults.clear();
+
+        notifyItemRemoved(getItemCount());
+        notifyDataSetChanged();
     }
 
     public GuiMessage getMessage(int index) {

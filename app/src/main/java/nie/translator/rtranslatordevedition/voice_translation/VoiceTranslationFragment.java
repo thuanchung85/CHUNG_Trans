@@ -314,15 +314,25 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
             @Override
             public void onClick(View view) {
 
+
                 int currentAImode = buttonChooseModeAI.getAimode();
                 currentAImode += 1;
                 global.setAIMode(currentAImode);
                  buttonChooseModeAI.setAimode(currentAImode);
+                mRecyclerView.getRecycledViewPool().clear();
+                mAdapter.removeAllMessage();
+               // mRecyclerView.getRecycledViewPool().clear();
+
                 if(currentAImode > 2) {
                     currentAImode = 0;
                     buttonChooseModeAI.setAimode(currentAImode);
                     global.setAIMode(currentAImode);
+
+                    mRecyclerView.getRecycledViewPool().clear();
+                    mAdapter.removeAllMessage();
+                   // mRecyclerView.getRecycledViewPool().clear();
                 }
+
             }
         });
 
@@ -818,21 +828,28 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                 // Applying OnClickListener to our Adapter
                 mAdapter.setOnClickListener(new MessagesAdapter.OnClickListener() {
                     @Override
-                    public void monClick(int position, String message) {
+                    public void monClick(int position, String message, View item) {
                         //mode 0 la mode tu do chon all ai message click de send message
                         if(global.getAIMode() == 0) {
                             Log.d("CHUNG-", String.format("CHUNG- VoiceTranslationFragment() -> mAdapter ITEM Click() "));
                             //nếu tap lên massage của whipper
                             if (message.contains("WHISPER:")) {
+                                //disable message được chọn
+                                item.setAlpha(0.1F);
+                                //item.setEnabled(false);
                                 //khi tap lên message cua whipper thi send message qua bên kia
                                 String StringFilter = message.replaceAll("WHISPER:", "").trim().replace("\n (tap on to send!)", "");
                                 global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
                             }
-                            //nếu tap lên message cua google
-                            if (message.contains("GOOGLE:")) {
-                                //khi tap lên message cua whipper thi send message qua bên kia
-                                String StringFilter = message.replaceAll("GOOGLE:", "").trim().replace("\n\n (tap to send)", "");
-                                global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                            else {
+                                //nếu tap lên message cua google
+                                if (message.contains("GOOGLE:")) {
+                                    item.setAlpha(0.1F);
+                                    //item.setEnabled(false);
+                                    //khi tap lên message cua whipper thi send message qua bên kia
+                                    String StringFilter = message.replaceAll("GOOGLE:", "").trim().replace("\n\n (tap to send)", "");
+                                    global.SendData_to_mSocket_FOR_SENDMESSAGE(StringFilter.trim(), global.getName(), nameOfpeerWantConnect, "GOOGLE CLOUD");
+                                }
                             }
                         }
                     }
@@ -920,7 +937,11 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
              value = "WHISPER: " + result + ("\n (tap on to send!)");
         }
         else{
-            value =  result.trim();
+            if(result == null){
+                value = "no voice data, sorry please try again";
+            }else {
+                value = result.trim();
+            }
         }
         Message mstypeFORGUI = new Message(voiceTranslationActivity, value);
         GuiMessage msFOR_recyclerview = new GuiMessage(mstypeFORGUI, true, true, true);

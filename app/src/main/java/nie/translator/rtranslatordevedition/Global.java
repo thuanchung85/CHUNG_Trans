@@ -64,7 +64,7 @@ public class Global extends Application {
     ////////////////////////////===============================START SOCKET ZONE=================//////
     //khởi tạo websocket object
     public Socket mSocket;
-    private int aiMode = 99;//default is google cloud api ai mode
+    private int aiMode = 1;//default is google cloud api ai mode
 
     {
         try {
