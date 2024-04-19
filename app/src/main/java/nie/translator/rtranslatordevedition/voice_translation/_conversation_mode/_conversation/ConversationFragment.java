@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
@@ -244,7 +245,7 @@ public class ConversationFragment extends PairingToolbarFragment {
     private VoiceTranslationActivity.Callback communicatorCallback;
     private CustomAnimator animator = new CustomAnimator();
     private int pagerPosition = 0;
-
+    TextView title;
     public ConversationFragment() {
         // Required empty public constructor
     }
@@ -290,6 +291,7 @@ public class ConversationFragment extends PairingToolbarFragment {
         exitButton = view.findViewById(R.id.exitButton);
         tabLayout = view.findViewById(R.id.tabsLayout);
         pager = view.findViewById(R.id.tabs);
+      title =  view.findViewById(R.id.title);
     }
 
     @Override
@@ -308,6 +310,7 @@ public class ConversationFragment extends PairingToolbarFragment {
         List<String> titles = new ArrayList<>();
         titles.add("with: " + global.getPeerWantTalkName() );
 
+        title.setText(global.getPeerWantTalkName());
 
         //có 2 page trong adapter là "conversation", và "connection"
         //page chính là ConversationMainFragment xử lý âm thanh, nó được bỏ vào adapter để chuyển qua lại
