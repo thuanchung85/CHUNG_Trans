@@ -532,6 +532,18 @@ public class PairingFragment extends PairingToolbarFragment {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 dialog.dismiss();
+                                                //khi nay thi tắt dialog xac nhan reject thi tat hết
+                                                if (mediaPlayer != null) {
+                                                    mediaPlayer.stop();
+                                                    mediaPlayer.release();
+                                                    mediaPlayer = null;
+                                                }
+                                                if(dialogWait != null) {
+                                                    dialogWait.dismiss();
+                                                }
+                                                if(connectionRequestDialog != null){
+                                                    connectionRequestDialog.cancel();
+                                                }
                                             }
                                         };
                                         //creazione del dialog.
@@ -1057,7 +1069,7 @@ public class PairingFragment extends PairingToolbarFragment {
                                                         public void onClick(DialogInterface dialog, int which) {
                                                             dialog.dismiss();
                                                             //send huy cuoc goi vi chính mình đổi ý
-
+                                                            global.SendData_to_mSocket_FOR_ACCEPT_CONNECT2USER(global.getPeerWantTalkName(),global.getName(),false);
                                                         }
                                                     };
                                                     //creazione del dialog.
