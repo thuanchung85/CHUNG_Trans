@@ -296,7 +296,7 @@ android:visibility="gone"
 
 
     <nie.translator.rtranslatordevedition.tools.gui.WalkieTalkieButton
-
+        android:visibility="gone"
         android:id="@+id/buttonStart3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
